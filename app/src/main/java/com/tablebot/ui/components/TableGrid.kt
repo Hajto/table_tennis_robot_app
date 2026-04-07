@@ -8,6 +8,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -16,6 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tablebot.data.AppPrefs
 import com.tablebot.data.Point
 
 /**
@@ -27,14 +30,19 @@ import com.tablebot.data.Point
  *
  * The robot's x parameter maps to cell number (1-15).
  * The y parameter is depth (1=short, 2=medium, 3=long).
+ *
+ * @param cellBallNumbers optional map of cell number → list of ball sequence numbers to display.
+ *   When provided, selected cells show ball numbers instead of cell numbers (capped at 4 per cell).
  */
 @Composable
 fun TableGrid(
     selectedPoints: List<Point>,
     onCellClick: ((Int) -> Unit)? = null,
     modifier: Modifier = Modifier,
+    cellBallNumbers: Map<Int, List<Int>>? = null,
 ) {
     val selectedCells = selectedPoints.map { it.x }.toSet()
+    val showFieldNumbers by AppPrefs.showFieldNumbers.collectAsState()
 
     Column(
         modifier = modifier
@@ -67,6 +75,7 @@ fun TableGrid(
                     for (col in 0..4) {
                         val cellNum = row * 5 + col + 1
                         val isSelected = cellNum in selectedCells
+                        val ballNums = cellBallNumbers?.get(cellNum)?.take(MAX_BALLS_PER_CELL)
 
                         Box(
                             modifier = Modifier
@@ -83,14 +92,25 @@ fun TableGrid(
                                 ),
                             contentAlignment = Alignment.Center,
                         ) {
-                            Text(
-                                text = "$cellNum",
-                                fontSize = 11.sp,
-                                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                color = if (isSelected) MaterialTheme.colorScheme.onPrimary
-                                else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
-                                textAlign = TextAlign.Center,
-                            )
+                            if (ballNums != null && isSelected) {
+                                Text(
+                                    text = ballNums.joinToString(","),
+                                    fontSize = if (ballNums.size > 2) 9.sp else 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    textAlign = TextAlign.Center,
+                                    maxLines = 1,
+                                )
+                            } else if (showFieldNumbers) {
+                                Text(
+                                    text = "$cellNum",
+                                    fontSize = 11.sp,
+                                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary
+                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                    textAlign = TextAlign.Center,
+                                )
+                            }
                         }
                     }
                 }
@@ -104,4 +124,17 @@ fun TableGrid(
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
+}
+
+const val MAX_BALLS_PER_CELL = 4
+
+/** Build a cell→ball-numbers map from a list of [BallEntry]-like items. */
+fun buildCellBallNumbers(ballEntries: List<Pair<Int, List<Point>>>): Map<Int, List<Int>> {
+    val result = mutableMapOf<Int, MutableList<Int>>()
+    ballEntries.forEach { (ballIndex, points) ->
+        points.forEach { point ->
+            result.getOrPut(point.x) { mutableListOf() }.add(ballIndex)
+        }
+    }
+    return result
 }

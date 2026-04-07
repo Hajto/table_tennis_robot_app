@@ -12,6 +12,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.tablebot.data.AppPrefs
 import com.tablebot.ui.screens.*
 import com.tablebot.ui.theme.TableBotTheme
 import com.tablebot.viewmodel.RobotViewModel
@@ -21,6 +22,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        AppPrefs.init(this)
 
         setContent {
             TableBotTheme {
@@ -40,6 +42,10 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
+                    composable("settings") {
+                        SettingsScreen(onBack = { navController.popBackStack() })
+                    }
+
                     composable("home") {
                         HomeScreen(
                             robotVm = robotVm,
@@ -54,6 +60,7 @@ class MainActivity : ComponentActivity() {
                             },
                             onDebug = { navController.navigate("debug") },
                             onCalibrate = { navController.navigate("calibration") },
+                            onSettings = { navController.navigate("settings") },
                         )
                     }
 
