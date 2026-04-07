@@ -31,9 +31,13 @@ Built because Joola shut down their servers and the official app stopped working
 - [x] Favourites
 - [x] Search/filter trainings
 - [x] Delete trainings
+- [ ] Quick play mode — set up ball params and play immediately, optionally save as drill
+- [ ] Test drill button — fire a single ball to verify settings before committing
+- [ ] Reorder balls in advanced drill sequences (drag to rearrange)
+- [ ] Restrict ball grid placement based on ball type and power (not all positions are valid for all combos)
 - [ ] Training categories / exercise grouping
 - [ ] Skill level filtering (Beginner / Intermediate / Advanced)
-- [ ] Import/export drills (file-based)
+- [ ] Import/export drills (file-based JSON)
 
 ### Calibration & Fine-Tuning
 - [x] Motor config from bundled base-conf (465 entries)
@@ -41,7 +45,7 @@ Built because Joola shut down their servers and the official app stopped working
 - [x] Debug screen with raw motor control
 - [ ] Fine adjustment: Adjust Spin per drill (spin gear, side spin gear)
 - [ ] Fine adjustment: Adjust Position per drill (X/Y position offset)
-- [ ] Per-device motor calibration import/export
+- [x] Per-device motor calibration import/export
 
 ### UI & Polish
 - [x] Correct naming (Serve/Normal/Lob, spin names, power names)
@@ -59,6 +63,11 @@ Built because Joola shut down their servers and the official app stopped working
 - [ ] Import/export motor calibration
 - [ ] Backup & restore all data
 - [ ] Share drills via file/link
+
+### Stretch Goals
+- [ ] Delayed start — countdown timer (e.g. 10s) before drill begins, so you can place the phone on a tripod
+- [ ] Camera sync — auto-start video recording when drill starts
+- [ ] Remote start button support (e.g. Bluetooth clicker/shutter remote)
 
 ## How it works
 
