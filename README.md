@@ -1,4 +1,4 @@
-# TableBot
+ # TableBot
 
 Offline Android app for controlling the Joola Infinity table tennis robot via Bluetooth Low Energy. No internet connection, no accounts, no servers required.
 
@@ -34,7 +34,7 @@ Built because Joola shut down their servers and the official app stopped working
 - [ ] Quick play mode — set up ball params and play immediately, optionally save as drill
 - [ ] Test drill button — fire a single ball to verify settings before committing
 - [ ] Reorder balls in advanced drill sequences (drag to rearrange)
-- [ ] Restrict ball grid placement based on ball type and power (not all positions are valid for all combos)
+- [x] Restrict ball grid placement based on ball type and power (not all positions are valid for all combos)
 - [ ] Training categories / exercise grouping
 - [ ] Skill level filtering (Beginner / Intermediate / Advanced)
 - [ ] Import/export drills (file-based JSON)
