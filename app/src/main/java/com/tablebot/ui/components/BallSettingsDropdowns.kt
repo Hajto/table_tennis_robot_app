@@ -52,6 +52,10 @@ fun <T> LabeledDropdown(
     }
 }
 
+/**
+ * @param validSpins if non-null, only these spin values are selectable (others hidden).
+ * @param validPowers if non-null, only these power values are selectable (others hidden).
+ */
 @Composable
 fun BallSettingsDropdowns(
     ball: Int,
@@ -61,7 +65,17 @@ fun BallSettingsDropdowns(
     onSpinChange: (Int) -> Unit,
     onPowerChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
+    validSpins: Set<Int>? = null,
+    validPowers: Set<Int>? = null,
 ) {
+    val availableSpins = if (validSpins != null) {
+        SpinType.entries.filter { it.value in validSpins }
+    } else SpinType.entries.toList()
+
+    val availablePowers = if (validPowers != null) {
+        PowerType.entries.filter { it.value in validPowers }
+    } else PowerType.entries.toList()
+
     Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             LabeledDropdown(
@@ -74,7 +88,7 @@ fun BallSettingsDropdowns(
             )
             LabeledDropdown(
                 label = "Power",
-                entries = PowerType.entries.toList(),
+                entries = availablePowers,
                 selected = PowerType.fromValue(power),
                 labelOf = { it.label },
                 onSelect = { onPowerChange(it.value) },
@@ -83,7 +97,7 @@ fun BallSettingsDropdowns(
         }
         LabeledDropdown(
             label = "Spin",
-            entries = SpinType.entries.toList(),
+            entries = availableSpins,
             selected = SpinType.fromValue(spin),
             labelOf = { it.label },
             onSelect = { onSpinChange(it.value) },

@@ -34,12 +34,18 @@ import com.tablebot.data.Point
  * @param cellBallNumbers optional map of cell number → list of ball sequence numbers to display.
  *   When provided, selected cells show ball numbers instead of cell numbers (capped at 4 per cell).
  */
+/**
+ * @param enabledCells if non-null, only these cell numbers are clickable/valid.
+ *   Cells outside this set are dimmed and ignore clicks.
+ *   Pass null to allow all cells (backwards-compatible default).
+ */
 @Composable
 fun TableGrid(
     selectedPoints: List<Point>,
     onCellClick: ((Int) -> Unit)? = null,
     modifier: Modifier = Modifier,
     cellBallNumbers: Map<Int, List<Int>>? = null,
+    enabledCells: Set<Int>? = null,
 ) {
     val selectedCells = selectedPoints.map { it.x }.toSet()
     val showFieldNumbers by AppPrefs.showFieldNumbers.collectAsState()
@@ -75,6 +81,7 @@ fun TableGrid(
                     for (col in 0..4) {
                         val cellNum = row * 5 + col + 1
                         val isSelected = cellNum in selectedCells
+                        val isEnabled = enabledCells == null || cellNum in enabledCells
                         val ballNums = cellBallNumbers?.get(cellNum)?.take(MAX_BALLS_PER_CELL)
 
                         Box(
@@ -83,11 +90,14 @@ fun TableGrid(
                                 .aspectRatio(1f)
                                 .clip(RoundedCornerShape(4.dp))
                                 .background(
-                                    if (isSelected) MaterialTheme.colorScheme.primary
-                                    else Color(0xFF2E7D32).copy(alpha = 0.25f)
+                                    when {
+                                        !isEnabled -> Color(0xFF2E7D32).copy(alpha = 0.08f)
+                                        isSelected -> MaterialTheme.colorScheme.primary
+                                        else -> Color(0xFF2E7D32).copy(alpha = 0.25f)
+                                    }
                                 )
                                 .then(
-                                    if (onCellClick != null) Modifier.clickable { onCellClick(cellNum) }
+                                    if (onCellClick != null && isEnabled) Modifier.clickable { onCellClick(cellNum) }
                                     else Modifier
                                 ),
                             contentAlignment = Alignment.Center,
@@ -106,8 +116,11 @@ fun TableGrid(
                                     text = "$cellNum",
                                     fontSize = 11.sp,
                                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                                    color = if (isSelected) MaterialTheme.colorScheme.onPrimary
-                                    else MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f),
+                                    color = when {
+                                        !isEnabled -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
+                                        isSelected -> MaterialTheme.colorScheme.onPrimary
+                                        else -> MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+                                    },
                                     textAlign = TextAlign.Center,
                                 )
                             }

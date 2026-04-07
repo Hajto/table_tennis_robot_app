@@ -27,6 +27,27 @@ class MotorConfig(private val context: Context) {
         return configs.find { it.ball == ball && it.spin == spin && it.power == power && it.landarea == landarea }
     }
 
+    /** Returns the set of valid landarea cell numbers (1-15) for a given ball/spin/power combo. */
+    fun validLandareas(ball: Int, spin: Int, power: Int): Set<Int> {
+        return configs.filter { it.ball == ball && it.spin == spin && it.power == power }
+            .map { it.landarea }
+            .toSet()
+    }
+
+    /** Returns the set of power values that have at least one valid landarea for the given ball/spin. */
+    fun validPowers(ball: Int, spin: Int): Set<Int> {
+        return configs.filter { it.ball == ball && it.spin == spin }
+            .map { it.power }
+            .toSet()
+    }
+
+    /** Returns the set of spin values that have at least one valid landarea for the given ball type. */
+    fun validSpins(ball: Int): Set<Int> {
+        return configs.filter { it.ball == ball }
+            .map { it.spin }
+            .toSet()
+    }
+
     suspend fun save(params: MotorParams) = withContext(Dispatchers.IO) {
         val idx = configs.indexOfFirst { it.id == params.id }
         if (idx >= 0) configs[idx] = params else configs.add(params)
