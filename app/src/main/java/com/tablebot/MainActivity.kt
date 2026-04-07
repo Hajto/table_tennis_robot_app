@@ -80,6 +80,7 @@ class MainActivity : ComponentActivity() {
                             },
                             onBack = { navController.popBackStack() },
                             nextId = { trainingVm.nextBasicId() },
+                            motorConfig = robotVm.motorConfig,
                         )
                     }
 
@@ -99,6 +100,7 @@ class MainActivity : ComponentActivity() {
                             },
                             onBack = { navController.popBackStack() },
                             nextId = { trainingVm.nextAdvancedId() },
+                            motorConfig = robotVm.motorConfig,
                         )
                     }
                 }

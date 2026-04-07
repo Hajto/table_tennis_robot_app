@@ -25,6 +25,7 @@ fun AdvancedEditorScreen(
     onSave: (AdvancedTraining) -> Unit,
     onBack: () -> Unit,
     nextId: () -> Int,
+    motorConfig: MotorConfig? = null,
 ) {
     var name by remember { mutableStateOf(initial?.name ?: "") }
     var repeatNum by remember { mutableIntStateOf(initial?.repeatNum ?: 10) }
@@ -120,6 +121,7 @@ fun AdvancedEditorScreen(
                     onRemove = if (ballList.size > 1) {
                         { ballList = ballList.toMutableList().apply { removeAt(index) } }
                     } else null,
+                    motorConfig = motorConfig,
                 )
             }
 
@@ -149,8 +151,40 @@ private fun BallEntryEditor(
     ballNumber: Int,
     onUpdate: (BallEntry) -> Unit,
     onRemove: (() -> Unit)?,
+    motorConfig: MotorConfig? = null,
 ) {
     var expanded by remember { mutableStateOf(false) }
+
+    // Placement restrictions for this entry
+    val availableSpins = remember(entry.ball) { motorConfig?.validSpins(entry.ball) }
+    val availablePowers = remember(entry.ball, entry.spin) { motorConfig?.validPowers(entry.ball, entry.spin) }
+    val enabledCells = remember(entry.ball, entry.spin, entry.power) {
+        motorConfig?.validLandareas(entry.ball, entry.spin, entry.power)
+    }
+
+    // Auto-correct spin when ball type changes
+    LaunchedEffect(entry.ball) {
+        val vs = motorConfig?.validSpins(entry.ball) ?: return@LaunchedEffect
+        if (entry.spin !in vs) {
+            onUpdate(entry.copy(spin = vs.minOrNull() ?: 2))
+        }
+    }
+    // Auto-correct power when spin changes
+    LaunchedEffect(entry.ball, entry.spin) {
+        val vp = motorConfig?.validPowers(entry.ball, entry.spin) ?: return@LaunchedEffect
+        if (entry.power !in vp) {
+            onUpdate(entry.copy(power = vp.minOrNull() ?: 2))
+        }
+    }
+    // Remove invalid points when placement changes
+    LaunchedEffect(enabledCells) {
+        val ec = enabledCells ?: return@LaunchedEffect
+        if (ec.isEmpty()) return@LaunchedEffect
+        val filtered = entry.points.filter { it.x in ec }
+        if (filtered.size != entry.points.size) {
+            onUpdate(entry.copy(points = filtered))
+        }
+    }
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -191,7 +225,17 @@ private fun BallEntryEditor(
                     onBallChange = { onUpdate(entry.copy(ball = it)) },
                     onSpinChange = { onUpdate(entry.copy(spin = it)) },
                     onPowerChange = { onUpdate(entry.copy(power = it)) },
+                    validSpins = availableSpins,
+                    validPowers = availablePowers,
                 )
+
+                if (enabledCells != null && enabledCells!!.isEmpty()) {
+                    Text(
+                        "This ball/spin/power combination is not available.",
+                        color = MaterialTheme.colorScheme.error,
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
 
                 StepSlider("Ball Interval", entry.ballTime, 2..30) { onUpdate(entry.copy(ballTime = it)) }
 
@@ -211,6 +255,7 @@ private fun BallEntryEditor(
                         onUpdate(entry.copy(points = newPoints))
                     },
                     cellBallNumbers = entryBallNumbers,
+                    enabledCells = enabledCells,
                 )
             }
         }

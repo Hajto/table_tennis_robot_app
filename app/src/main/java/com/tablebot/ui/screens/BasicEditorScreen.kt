@@ -28,6 +28,7 @@ fun BasicEditorScreen(
     onSave: (BasicTraining) -> Unit,
     onBack: () -> Unit,
     nextId: () -> Int,
+    motorConfig: MotorConfig? = null,
 ) {
     var name by remember { mutableStateOf(initial?.name ?: "") }
     var ball by remember { mutableIntStateOf(initial?.ball ?: 1) }
@@ -39,6 +40,35 @@ fun BasicEditorScreen(
     var points by remember { mutableStateOf(initial?.points ?: listOf(Point(8, 2))) }
     var adjustSpin by remember { mutableIntStateOf(initial?.adjustSpin ?: 0) }
     var adjustPosition by remember { mutableIntStateOf(initial?.adjustPosition ?: 0) }
+
+    // Placement restrictions derived from motor config
+    val availableSpins = remember(ball) { motorConfig?.validSpins(ball) }
+    val availablePowers = remember(ball, spin) { motorConfig?.validPowers(ball, spin) }
+    val enabledCells = remember(ball, spin, power) { motorConfig?.validLandareas(ball, spin, power) }
+
+    // Auto-correct spin when ball type changes and current spin is unavailable
+    LaunchedEffect(ball) {
+        val vs = motorConfig?.validSpins(ball) ?: return@LaunchedEffect
+        if (spin !in vs) {
+            spin = vs.minOrNull() ?: 2
+        }
+    }
+    // Auto-correct power when spin changes and current power is unavailable
+    LaunchedEffect(ball, spin) {
+        val vp = motorConfig?.validPowers(ball, spin) ?: return@LaunchedEffect
+        if (power !in vp) {
+            power = vp.minOrNull() ?: 2
+        }
+    }
+    // Remove points on cells that became invalid
+    LaunchedEffect(enabledCells) {
+        val ec = enabledCells ?: return@LaunchedEffect
+        if (ec.isEmpty()) return@LaunchedEffect
+        val filtered = points.filter { it.x in ec }
+        if (filtered.size != points.size) {
+            points = filtered
+        }
+    }
 
     val isNew = initial == null
 
@@ -101,7 +131,18 @@ fun BasicEditorScreen(
                 onBallChange = { ball = it },
                 onSpinChange = { spin = it },
                 onPowerChange = { power = it },
+                validSpins = availableSpins,
+                validPowers = availablePowers,
             )
+
+            // Warning when no valid placements exist
+            if (enabledCells != null && enabledCells!!.isEmpty()) {
+                Text(
+                    "This ball/spin/power combination is not available.",
+                    color = MaterialTheme.colorScheme.error,
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            }
 
             // Ball interval
             StepSlider("Ball Interval", ballTime, 2..30) { ballTime = it }
@@ -164,6 +205,7 @@ fun BasicEditorScreen(
                     }
                 },
                 cellBallNumbers = if (isLoopMode) cellBallNumbers else null,
+                enabledCells = enabledCells,
             )
 
             // Depth selector for selected points
