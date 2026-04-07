@@ -3,6 +3,7 @@ package com.tablebot.ble
 import com.tablebot.data.BasicTraining
 import com.tablebot.data.AdvancedTraining
 import com.tablebot.data.MotorConfig
+import com.tablebot.data.MotorParams
 
 object RobotProtocol {
 
@@ -106,6 +107,28 @@ object RobotProtocol {
     // Post-pattern: cmd 0x03 with payload 0x00
     fun buildPostPatternFrame(deviceId: String): ByteArray =
         buildFrame(deviceId, 0x03, byteArrayOf(0x00))
+
+    fun encodeSingleBall(params: MotorParams, ballTime: Int = 15): ByteArray {
+        val buf = ByteArray(16) // 12 per point + 4 trailer
+        buf[0] = params.m1speed.toByte()
+        buf[1] = params.m2speed.toByte()
+        buf[2] = params.xaxis.toByte()
+        buf[3] = params.yaxis.toByte()
+        buf[4] = params.zaxis.toByte()
+        buf[5] = 0  // repeatDelay high
+        buf[6] = 1  // repeatDelay low
+        buf[7] = 0
+        buf[8] = (ballTime and 0xFF).toByte()
+        buf[9] = 1
+        buf[10] = 0
+        buf[11] = 0
+        // trailer: 1 rep
+        buf[12] = 1
+        buf[13] = 1
+        buf[14] = 0
+        buf[15] = 0
+        return buf
+    }
 
     fun encodeBasicPattern(
         drill: BasicTraining,

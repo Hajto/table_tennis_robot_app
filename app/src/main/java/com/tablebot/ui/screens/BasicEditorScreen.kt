@@ -11,6 +11,8 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.tablebot.data.*
+import com.tablebot.ui.components.BallSettingsDropdowns
+import com.tablebot.ui.components.StepSlider
 import com.tablebot.ui.components.TableGrid
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -86,59 +88,20 @@ fun BasicEditorScreen(
                 singleLine = true,
             )
 
-            // Ball type
-            Text("Ball Type", style = MaterialTheme.typography.labelLarge)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                BallType.entries.forEach { type ->
-                    FilterChip(
-                        selected = ball == type.value,
-                        onClick = { ball = type.value },
-                        label = { Text(type.label) },
-                    )
-                }
-            }
-
-            // Spin
-            Text("Spin: ${SpinType.fromValue(spin).label}", style = MaterialTheme.typography.labelLarge)
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                SpinType.entries.forEach { type ->
-                    FilterChip(
-                        selected = spin == type.value,
-                        onClick = { spin = type.value },
-                        label = { Text(type.label, style = MaterialTheme.typography.labelSmall) },
-                    )
-                }
-            }
-
-            // Power
-            Text("Power: ${PowerType.fromValue(power).label}", style = MaterialTheme.typography.labelLarge)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                PowerType.entries.forEach { type ->
-                    FilterChip(
-                        selected = power == type.value,
-                        onClick = { power = type.value },
-                        label = { Text(type.label) },
-                    )
-                }
-            }
+            BallSettingsDropdowns(
+                ball = ball,
+                spin = spin,
+                power = power,
+                onBallChange = { ball = it },
+                onSpinChange = { spin = it },
+                onPowerChange = { power = it },
+            )
 
             // Ball interval
-            Text("Ball Interval: $ballTime", style = MaterialTheme.typography.labelLarge)
-            Slider(
-                value = ballTime.toFloat(),
-                onValueChange = { ballTime = it.toInt() },
-                valueRange = 2f..30f,
-                steps = 27,
-            )
+            StepSlider("Ball Interval", ballTime, 2..30) { ballTime = it }
 
             // Repetitions
-            Text("Repetitions: $times", style = MaterialTheme.typography.labelLarge)
-            Slider(
-                value = times.toFloat(),
-                onValueChange = { times = it.toInt() },
-                valueRange = 1f..100f,
-                steps = 98,
-            )
+            StepSlider("Repetitions", times, 1..100) { times = it }
 
             // Land type
             Text("Landing Pattern", style = MaterialTheme.typography.labelLarge)

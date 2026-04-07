@@ -10,6 +10,7 @@ import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -28,6 +29,7 @@ fun HomeScreen(
     onEditBasic: (Int?) -> Unit,     // null = new
     onEditAdvanced: (Int?) -> Unit,
     onDebug: () -> Unit = {},
+    onCalibrate: () -> Unit = {},
 ) {
     val connectionState by robotVm.connectionState.collectAsState()
     val deviceName by robotVm.deviceName.collectAsState()
@@ -81,6 +83,25 @@ fun HomeScreen(
             Column {
                 CenterAlignedTopAppBar(
                     title = { Text("TableBot") },
+                    actions = {
+                        var menuExpanded by remember { mutableStateOf(false) }
+                        IconButton(onClick = { menuExpanded = true }) {
+                            Icon(Icons.Default.MoreVert, "Menu")
+                        }
+                        DropdownMenu(
+                            expanded = menuExpanded,
+                            onDismissRequest = { menuExpanded = false },
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("Calibration") },
+                                onClick = { menuExpanded = false; onCalibrate() },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Debug") },
+                                onClick = { menuExpanded = false; onDebug() },
+                            )
+                        }
+                    },
                 )
                 ConnectionBar(
                     state = connectionState,

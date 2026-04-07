@@ -12,9 +12,11 @@ import androidx.compose.ui.unit.dp
 import com.tablebot.ble.ConnectionState
 import com.tablebot.ble.RobotProtocol
 import com.tablebot.ui.components.ConnectionBar
+import com.tablebot.ui.components.StepSlider
 import com.tablebot.viewmodel.RobotViewModel
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DebugScreen(robotVm: RobotViewModel) {
     val connectionState by robotVm.connectionState.collectAsState()
@@ -37,33 +39,35 @@ fun DebugScreen(robotVm: RobotViewModel) {
 
     val connected = connectionState == ConnectionState.CONNECTED
 
-    Column(modifier = Modifier.fillMaxSize()) {
-        ConnectionBar(
-            state = connectionState,
-            deviceName = deviceName,
-            statusMessage = statusMessage,
-            isPlaying = isPlaying,
-            currentTrainingName = currentTrainingName,
-            onScanClick = { robotVm.scan() },
-            onDisconnectClick = { robotVm.disconnect() },
-            onStopClick = { robotVm.stop() },
-        )
-
+    Scaffold(
+        topBar = {
+            Column {
+                TopAppBar(title = { Text("Raw Motor Debug") })
+                ConnectionBar(
+                    state = connectionState,
+                    deviceName = deviceName,
+                    statusMessage = statusMessage,
+                    isPlaying = isPlaying,
+                    currentTrainingName = currentTrainingName,
+                    onScanClick = { robotVm.scan() },
+                    onDisconnectClick = { robotVm.disconnect() },
+                    onStopClick = { robotVm.stop() },
+                )
+            }
+        },
+    ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .padding(padding)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            Text("Raw Motor Debug", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
             Text("Adjust values and send directly to robot", style = MaterialTheme.typography.bodySmall)
 
-            HorizontalDivider()
-
             // Command byte selector
-            Text("Command: 0x${"%02x".format(cmdByte)} ($cmdByte)", style = MaterialTheme.typography.labelLarge)
-            SliderRow("Cmd Byte", cmdByte, 0..255) { cmdByte = it }
+            StepSlider("Cmd Byte (0x${"%02x".format(cmdByte)})", cmdByte, 0..255) { cmdByte = it }
             Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 listOf(0x01 to "PAT", 0x02 to "02", 0x03 to "CAL", 0x04 to "04", 0x05 to "STP", 0x06 to "06", 0x07 to "07", 0x0A to "0A").forEach { (cmd, label) ->
                     FilterChip(
@@ -76,15 +80,15 @@ fun DebugScreen(robotVm: RobotViewModel) {
 
             HorizontalDivider()
 
-            SliderRow("M1 Speed", m1, 0..255) { m1 = it }
-            SliderRow("M2 Speed", m2, 0..255) { m2 = it }
-            SliderRow("X Axis", xAxis, 0..255) { xAxis = it }
-            SliderRow("Y Axis", yAxis, 0..255) { yAxis = it }
-            SliderRow("Z Axis", zAxis, 0..255) { zAxis = it }
-            SliderRow("Ball Time", ballTime, 1..60) { ballTime = it }
-            SliderRow("Spin", spin, 0..4) { spin = it }
-            SliderRow("Pos X (1-15)", posX, 1..15) { posX = it }
-            SliderRow("Pos Y (depth)", posY, 1..3) { posY = it }
+            StepSlider("M1 Speed", m1, 0..255) { m1 = it }
+            StepSlider("M2 Speed", m2, 0..255) { m2 = it }
+            StepSlider("X Axis", xAxis, 0..255) { xAxis = it }
+            StepSlider("Y Axis", yAxis, 0..255) { yAxis = it }
+            StepSlider("Z Axis", zAxis, 0..255) { zAxis = it }
+            StepSlider("Ball Time", ballTime, 1..60) { ballTime = it }
+            StepSlider("Spin", spin, 0..4) { spin = it }
+            StepSlider("Pos X (1-15)", posX, 1..15) { posX = it }
+            StepSlider("Pos Y (depth)", posY, 1..3) { posY = it }
 
             HorizontalDivider()
 
@@ -189,23 +193,3 @@ private fun buildRawPayload(
     return buf
 }
 
-@Composable
-private fun SliderRow(label: String, value: Int, range: IntRange, onChange: (Int) -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Text(
-            "$label: $value",
-            style = MaterialTheme.typography.bodyMedium,
-            modifier = Modifier.width(130.dp),
-        )
-        Slider(
-            value = value.toFloat(),
-            onValueChange = { onChange(it.toInt()) },
-            valueRange = range.first.toFloat()..range.last.toFloat(),
-            steps = (range.last - range.first - 1).coerceAtLeast(0),
-            modifier = Modifier.weight(1f),
-        )
-    }
-}

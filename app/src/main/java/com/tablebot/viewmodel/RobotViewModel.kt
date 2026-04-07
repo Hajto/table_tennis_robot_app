@@ -72,6 +72,17 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    fun sendTestBall(params: MotorParams, ballTime: Int = 15) {
+        viewModelScope.launch {
+            val payload = RobotProtocol.encodeSingleBall(params, ballTime)
+            robotManager.sendBasicDrill(payload, reps = 1)
+        }
+    }
+
+    fun saveMotorParams(params: MotorParams) {
+        viewModelScope.launch { motorConfig.save(params) }
+    }
+
     fun stop() {
         viewModelScope.launch {
             robotManager.stop()
