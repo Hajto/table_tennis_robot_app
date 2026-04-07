@@ -13,6 +13,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tablebot.data.*
+import com.tablebot.ui.components.BallSettingsDropdowns
+import com.tablebot.ui.components.StepSlider
 import com.tablebot.ui.components.TableGrid
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,21 +84,9 @@ fun AdvancedEditorScreen(
                 singleLine = true,
             )
 
-            Text("Repeat Count: $repeatNum", style = MaterialTheme.typography.labelLarge)
-            Slider(
-                value = repeatNum.toFloat(),
-                onValueChange = { repeatNum = it.toInt() },
-                valueRange = 1f..50f,
-                steps = 48,
-            )
+            StepSlider("Repeat Count", repeatNum, 1..50) { repeatNum = it }
 
-            Text("Repeat Delay: $repeatDelay", style = MaterialTheme.typography.labelLarge)
-            Slider(
-                value = repeatDelay.toFloat(),
-                onValueChange = { repeatDelay = it.toInt() },
-                valueRange = 0f..10f,
-                steps = 9,
-            )
+            StepSlider("Repeat Delay", repeatDelay, 0..10) { repeatDelay = it }
 
             HorizontalDivider()
 
@@ -176,46 +166,16 @@ private fun BallEntryEditor(
             if (expanded) {
                 Spacer(Modifier.height(8.dp))
 
-                // Ball type
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    BallType.entries.forEach { type ->
-                        FilterChip(
-                            selected = entry.ball == type.value,
-                            onClick = { onUpdate(entry.copy(ball = type.value)) },
-                            label = { Text(type.label) },
-                        )
-                    }
-                }
-
-                Text("Spin: ${SpinType.fromValue(entry.spin).label}", style = MaterialTheme.typography.labelMedium)
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    SpinType.entries.forEach { type ->
-                        FilterChip(
-                            selected = entry.spin == type.value,
-                            onClick = { onUpdate(entry.copy(spin = type.value)) },
-                            label = { Text(type.label, style = MaterialTheme.typography.labelSmall) },
-                        )
-                    }
-                }
-
-                Text("Power: ${PowerType.fromValue(entry.power).label}", style = MaterialTheme.typography.labelMedium)
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    PowerType.entries.forEach { type ->
-                        FilterChip(
-                            selected = entry.power == type.value,
-                            onClick = { onUpdate(entry.copy(power = type.value)) },
-                            label = { Text(type.label, style = MaterialTheme.typography.labelSmall) },
-                        )
-                    }
-                }
-
-                Text("Ball Interval: ${entry.ballTime}", style = MaterialTheme.typography.labelMedium)
-                Slider(
-                    value = entry.ballTime.toFloat(),
-                    onValueChange = { onUpdate(entry.copy(ballTime = it.toInt())) },
-                    valueRange = 2f..30f,
-                    steps = 27,
+                BallSettingsDropdowns(
+                    ball = entry.ball,
+                    spin = entry.spin,
+                    power = entry.power,
+                    onBallChange = { onUpdate(entry.copy(ball = it)) },
+                    onSpinChange = { onUpdate(entry.copy(spin = it)) },
+                    onPowerChange = { onUpdate(entry.copy(power = it)) },
                 )
+
+                StepSlider("Ball Interval", entry.ballTime, 2..30) { onUpdate(entry.copy(ballTime = it)) }
 
                 Text("Target Points", style = MaterialTheme.typography.labelMedium)
                 TableGrid(

@@ -33,6 +33,13 @@ class MainActivity : ComponentActivity() {
                         DebugScreen(robotVm = robotVm)
                     }
 
+                    composable("calibration") {
+                        CalibrationScreen(
+                            robotVm = robotVm,
+                            onBack = { navController.popBackStack() },
+                        )
+                    }
+
                     composable("home") {
                         HomeScreen(
                             robotVm = robotVm,
@@ -46,6 +53,7 @@ class MainActivity : ComponentActivity() {
                                 else navController.navigate("editAdvanced/-1")
                             },
                             onDebug = { navController.navigate("debug") },
+                            onCalibrate = { navController.navigate("calibration") },
                         )
                     }
 

@@ -12,6 +12,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tablebot.data.*
+import com.tablebot.ui.components.StepSlider
 import com.tablebot.ui.components.TableGrid
 
 @Composable
@@ -167,30 +168,8 @@ private fun BasicTrainingCard(
 
                 // Adjustable parameters
                 Spacer(Modifier.height(8.dp))
-                Text(
-                    "Ball Count: $times",
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Bold,
-                )
-                Slider(
-                    value = times.toFloat(),
-                    onValueChange = { times = it.toInt() },
-                    valueRange = 1f..100f,
-                    steps = 98,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Text(
-                    "Ball Timing: $ballTime",
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Bold,
-                )
-                Slider(
-                    value = ballTime.toFloat(),
-                    onValueChange = { ballTime = it.toInt() },
-                    valueRange = 1f..20f,
-                    steps = 18,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                StepSlider("Ball Count", times, 1..100) { times = it }
+                StepSlider("Ball Timing", ballTime, 1..20) { ballTime = it }
 
                 Spacer(Modifier.height(8.dp))
                 TableGrid(selectedPoints = training.points)
@@ -314,30 +293,8 @@ private fun AdvancedTrainingCard(
 
                 // Adjustable parameters
                 Spacer(Modifier.height(8.dp))
-                Text(
-                    "Repeat Count: $repeatNum",
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Bold,
-                )
-                Slider(
-                    value = repeatNum.toFloat(),
-                    onValueChange = { repeatNum = it.toInt() },
-                    valueRange = 1f..50f,
-                    steps = 48,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Text(
-                    "Repeat Delay: $repeatDelay (${"%.1f".format(repeatDelay * 0.2)}s)",
-                    style = MaterialTheme.typography.bodySmall,
-                    fontWeight = FontWeight.Bold,
-                )
-                Slider(
-                    value = repeatDelay.toFloat(),
-                    onValueChange = { repeatDelay = it.toInt() },
-                    valueRange = 1f..10f,
-                    steps = 8,
-                    modifier = Modifier.fillMaxWidth(),
-                )
+                StepSlider("Repeat Count", repeatNum, 1..50) { repeatNum = it }
+                StepSlider("Repeat Delay", repeatDelay, 1..10) { repeatDelay = it }
 
                 Spacer(Modifier.height(8.dp))
                 TableGrid(selectedPoints = allPoints)
