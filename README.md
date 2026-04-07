@@ -4,15 +4,61 @@ Offline Android app for controlling the Joola Infinity table tennis robot via Bl
 
 Built because Joola shut down their servers and the official app stopped working.
 
-## What it does
+<a href="https://www.youtube.com/watch?v=xyJTFank78I">
+  <img src="docs/screenshot.png" alt="TableBot screenshot" width="300" />
+</a>
 
-- Connects to the robot over BLE
-- Plays basic and advanced training drills with proper motor control
-- 100+ bundled training patterns (basic and advanced)
-- Create and edit custom trainings
-- Adjustable ball count, timing, repeat count, and repeat delay
-- Full-screen stop button that reliably halts the robot mid-drill
-- Works completely offline with bundled motor configuration data
+*Tap the screenshot to watch the demo video*
+
+## Status
+
+### Core Robot Control
+- [x] BLE connection (alt service `0000FEE7`, legacy `0000FFE0`)
+- [x] Basic drill playback with motor control
+- [x] Advanced drill playback (multi-ball sequences)
+- [x] Full-screen stop overlay with retry until robot confirms
+- [x] Reconnect handshake after stop
+- [x] Keepalive (CMD 0x04) during playback
+- [x] Pre-pattern sequence (STOP → PRE → PATTERN)
+
+### Training Management
+- [x] 36 legacy basic drills imported from original app
+- [x] 33 legacy advanced drills imported from original app
+- [x] Create/edit basic drills (ball type, spin, power, grid, timing)
+- [x] Create/edit advanced drills (multi-ball sequences)
+- [x] Adjustable ball count (1-100) and ball timing (1-20) for basic drills
+- [x] Adjustable repeat count (1-50) and repeat delay for advanced drills
+- [x] Favourites
+- [x] Search/filter trainings
+- [x] Delete trainings
+- [ ] Training categories / exercise grouping
+- [ ] Skill level filtering (Beginner / Intermediate / Advanced)
+- [ ] Import/export drills (file-based)
+
+### Calibration & Fine-Tuning
+- [x] Motor config from bundled base-conf (465 entries)
+- [x] Calibration screen (per ball/spin/power/position)
+- [x] Debug screen with raw motor control
+- [ ] Fine adjustment: Adjust Spin per drill (spin gear, side spin gear)
+- [ ] Fine adjustment: Adjust Position per drill (X/Y position offset)
+- [ ] Per-device motor calibration import/export
+
+### UI & Polish
+- [x] Correct naming (Serve/Normal/Lob, spin names, power names)
+- [x] Interactive 3x5 table grid with ball number display
+- [x] Connection status bar
+- [x] Dark/light theme support
+- [ ] Proper app icon (currently placeholder green square)
+- [ ] Onboarding / first-use guide
+- [ ] Training history / session logging
+- [ ] Cooldown timer warning (robot suggests 15min break every 2hrs)
+
+### Data Management
+- [ ] Import drills from JSON file
+- [ ] Export drills to JSON file
+- [ ] Import/export motor calibration
+- [ ] Backup & restore all data
+- [ ] Share drills via file/link
 
 ## How it works
 
@@ -63,11 +109,13 @@ app/src/main/java/com/tablebot/
       TrainingListScreen.kt  # Basic and advanced training cards
       BasicEditorScreen.kt   # Create/edit basic drills
       AdvancedEditorScreen.kt# Create/edit advanced drills
+      CalibrationScreen.kt   # Per-position motor calibration
+      DebugScreen.kt         # Raw byte control for testing
 
 app/src/main/assets/
   base-conf.json         # 465 motor config entries (ball/spin/power -> motor speeds)
-  basic-trainings.json   # ~100 preset basic drills
-  advanced-trainings.json# ~100 preset advanced drills
+  basic-trainings.json   # 36 legacy basic drills
+  advanced-trainings.json# 33 legacy advanced drills
 ```
 
 ## BLE Protocol Summary
@@ -78,7 +126,7 @@ The robot uses an HM-10/CC2541-based BLE module with a custom frame protocol:
 - **Write:** `0000FEC7` (Write Without Response)
 - **Notify:** `0000FEC8` + `0000FED6` (indications)
 - **Frame:** `68 01 [8-byte device ID] 68 [opcode] [length BE] [payload] [CRC-16] 16`
-- **Stop:** Opcode `0x99` with payload `0x00` (the only command accepted during drill execution along with `0x03`)
+- **Stop:** Opcode `0x99` with payload `0x00` (only command accepted during execution, along with `0x03` and `0x25`)
 
 ## Training Parameters
 
