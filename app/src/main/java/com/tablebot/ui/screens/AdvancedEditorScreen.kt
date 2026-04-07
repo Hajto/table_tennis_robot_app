@@ -16,6 +16,7 @@ import com.tablebot.data.*
 import com.tablebot.ui.components.BallSettingsDropdowns
 import com.tablebot.ui.components.StepSlider
 import com.tablebot.ui.components.TableGrid
+import com.tablebot.ui.components.buildCellBallNumbers
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -90,6 +91,21 @@ fun AdvancedEditorScreen(
 
             HorizontalDivider()
 
+            // Sequence overview grid
+            val allPoints = ballList.flatMap { it.points }
+            val overviewBallNumbers = remember(ballList) {
+                buildCellBallNumbers(
+                    ballList.mapIndexed { i, entry -> (i + 1) to entry.points }
+                )
+            }
+            Text("Sequence Overview", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+            TableGrid(
+                selectedPoints = allPoints,
+                cellBallNumbers = overviewBallNumbers,
+            )
+
+            HorizontalDivider()
+
             // Ball entries
             Text("Ball Sequence", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
 
@@ -97,6 +113,7 @@ fun AdvancedEditorScreen(
                 BallEntryEditor(
                     index = index,
                     entry = entry,
+                    ballNumber = index + 1,
                     onUpdate = { updated ->
                         ballList = ballList.toMutableList().apply { set(index, updated) }
                     },
@@ -129,6 +146,7 @@ fun AdvancedEditorScreen(
 private fun BallEntryEditor(
     index: Int,
     entry: BallEntry,
+    ballNumber: Int,
     onUpdate: (BallEntry) -> Unit,
     onRemove: (() -> Unit)?,
 ) {
@@ -178,6 +196,9 @@ private fun BallEntryEditor(
                 StepSlider("Ball Interval", entry.ballTime, 2..30) { onUpdate(entry.copy(ballTime = it)) }
 
                 Text("Target Points", style = MaterialTheme.typography.labelMedium)
+                val entryBallNumbers = remember(entry.points, ballNumber) {
+                    buildCellBallNumbers(listOf(ballNumber to entry.points))
+                }
                 TableGrid(
                     selectedPoints = entry.points,
                     onCellClick = { cellNum ->
@@ -189,6 +210,7 @@ private fun BallEntryEditor(
                         }
                         onUpdate(entry.copy(points = newPoints))
                     },
+                    cellBallNumbers = entryBallNumbers,
                 )
             }
         }

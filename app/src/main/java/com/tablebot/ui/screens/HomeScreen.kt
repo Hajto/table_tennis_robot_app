@@ -16,6 +16,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.tablebot.ble.ConnectionState
+import com.tablebot.data.AppPrefs
 import com.tablebot.ui.components.ConnectionBar
 import com.tablebot.viewmodel.RobotViewModel
 import com.tablebot.viewmodel.TrainingViewModel
@@ -30,6 +31,7 @@ fun HomeScreen(
     onEditAdvanced: (Int?) -> Unit,
     onDebug: () -> Unit = {},
     onCalibrate: () -> Unit = {},
+    onSettings: () -> Unit = {},
 ) {
     val connectionState by robotVm.connectionState.collectAsState()
     val deviceName by robotVm.deviceName.collectAsState()
@@ -88,6 +90,7 @@ fun HomeScreen(
                         IconButton(onClick = { menuExpanded = true }) {
                             Icon(Icons.Default.MoreVert, "Menu")
                         }
+                        val debugMode by AppPrefs.debugMode.collectAsState()
                         DropdownMenu(
                             expanded = menuExpanded,
                             onDismissRequest = { menuExpanded = false },
@@ -96,9 +99,15 @@ fun HomeScreen(
                                 text = { Text("Calibration") },
                                 onClick = { menuExpanded = false; onCalibrate() },
                             )
+                            if (debugMode) {
+                                DropdownMenuItem(
+                                    text = { Text("Debug") },
+                                    onClick = { menuExpanded = false; onDebug() },
+                                )
+                            }
                             DropdownMenuItem(
-                                text = { Text("Debug") },
-                                onClick = { menuExpanded = false; onDebug() },
+                                text = { Text("Settings") },
+                                onClick = { menuExpanded = false; onSettings() },
                             )
                         }
                     },

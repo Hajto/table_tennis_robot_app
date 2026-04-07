@@ -6,14 +6,20 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.tablebot.data.*
 import com.tablebot.ui.components.BallSettingsDropdowns
+import com.tablebot.ui.components.LabeledDropdown
+import com.tablebot.ui.components.MAX_BALLS_PER_CELL
 import com.tablebot.ui.components.StepSlider
 import com.tablebot.ui.components.TableGrid
+import com.tablebot.ui.components.buildCellBallNumbers
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -104,32 +110,60 @@ fun BasicEditorScreen(
             StepSlider("Repetitions", times, 1..100) { times = it }
 
             // Land type
-            Text("Landing Pattern", style = MaterialTheme.typography.labelLarge)
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                LandType.entries.forEach { type ->
-                    FilterChip(
-                        selected = landType == type.value,
-                        onClick = { landType = type.value },
-                        label = { Text(type.label) },
-                    )
-                }
-            }
+            LabeledDropdown(
+                label = "Landing Pattern",
+                entries = LandType.entries.toList(),
+                selected = LandType.fromValue(landType),
+                labelOf = { it.label },
+                onSelect = { landType = it.value },
+            )
+
+            val isLoopMode = landType == LandType.LOOP.value
 
             // Grid
-            Text(
-                "Target Points (tap to toggle, ${points.size} selected)",
-                style = MaterialTheme.typography.labelLarge,
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "Target Points (${points.size} selected)",
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.weight(1f),
+                )
+                if (isLoopMode && points.isNotEmpty()) {
+                    IconButton(onClick = { points = points.dropLast(1) }) {
+                        Icon(Icons.AutoMirrored.Filled.Undo, "Undo")
+                    }
+                    IconButton(onClick = { points = emptyList() }) {
+                        Icon(Icons.Default.Refresh, "Reset")
+                    }
+                }
+            }
+            val cellBallNumbers = remember(points) {
+                buildCellBallNumbers(
+                    points.mapIndexed { i, pt -> (i + 1) to listOf(pt) }
+                )
+            }
             TableGrid(
                 selectedPoints = points,
                 onCellClick = { cellNum ->
-                    val existing = points.find { it.x == cellNum }
-                    points = if (existing != null) {
-                        points.filter { it.x != cellNum }
+                    if (isLoopMode) {
+                        val countOnCell = points.count { it.x == cellNum }
+                        if (countOnCell >= MAX_BALLS_PER_CELL) {
+                            points = points.filter { it.x != cellNum }
+                        } else {
+                            points = points + Point(cellNum, 2)
+                        }
                     } else {
-                        points + Point(cellNum, 2)
+                        val existing = points.find { it.x == cellNum }
+                        points = if (existing != null) {
+                            points.filter { it.x != cellNum }
+                        } else {
+                            points + Point(cellNum, 2)
+                        }
                     }
                 },
+                cellBallNumbers = if (isLoopMode) cellBallNumbers else null,
             )
 
             // Depth selector for selected points

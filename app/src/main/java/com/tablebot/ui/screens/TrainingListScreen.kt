@@ -14,6 +14,7 @@ import androidx.compose.ui.unit.dp
 import com.tablebot.data.*
 import com.tablebot.ui.components.StepSlider
 import com.tablebot.ui.components.TableGrid
+import com.tablebot.ui.components.buildCellBallNumbers
 
 @Composable
 fun BasicTrainingList(
@@ -172,7 +173,15 @@ private fun BasicTrainingCard(
                 StepSlider("Ball Timing", ballTime, 1..20) { ballTime = it }
 
                 Spacer(Modifier.height(8.dp))
-                TableGrid(selectedPoints = training.points)
+                val cellBallNumbers = remember(training.points) {
+                    buildCellBallNumbers(
+                        training.points.mapIndexed { i, pt -> (i + 1) to listOf(pt) }
+                    )
+                }
+                TableGrid(
+                    selectedPoints = training.points,
+                    cellBallNumbers = cellBallNumbers,
+                )
 
                 Spacer(Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -297,7 +306,15 @@ private fun AdvancedTrainingCard(
                 StepSlider("Repeat Delay", repeatDelay, 1..10) { repeatDelay = it }
 
                 Spacer(Modifier.height(8.dp))
-                TableGrid(selectedPoints = allPoints)
+                val cellBallNumbers = remember(training.ballList) {
+                    buildCellBallNumbers(
+                        training.ballList.mapIndexed { i, entry -> (i + 1) to entry.points }
+                    )
+                }
+                TableGrid(
+                    selectedPoints = allPoints,
+                    cellBallNumbers = cellBallNumbers,
+                )
 
                 Spacer(Modifier.height(8.dp))
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
