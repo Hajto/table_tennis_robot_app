@@ -4,15 +4,20 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.tablebot.ble.ConnectionState
 import com.tablebot.data.AppPrefs
+import com.tablebot.ui.components.StopOverlay
 import com.tablebot.ui.screens.*
 import com.tablebot.ui.theme.TableBotTheme
 import com.tablebot.viewmodel.RobotViewModel
@@ -30,77 +35,116 @@ class MainActivity : ComponentActivity() {
                 val robotVm: RobotViewModel = viewModel()
                 val trainingVm: TrainingViewModel = viewModel()
 
-                NavHost(navController, startDestination = "home") {
-                    composable("debug") {
-                        DebugScreen(robotVm = robotVm)
+                Box(Modifier.fillMaxSize()) {
+                    NavHost(navController, startDestination = "home") {
+                        composable("home") {
+                            val connectionState by robotVm.connectionState.collectAsState()
+                            val basicTrainings by trainingVm.basicTrainings.collectAsState()
+                            val advancedTrainings by trainingVm.advancedTrainings.collectAsState()
+
+                            QuickPlayScreen(
+                                motorConfig = robotVm.motorConfig,
+                                connected = connectionState == ConnectionState.CONNECTED,
+                                isPlaying = robotVm.isPlaying.collectAsState().value,
+                                onTestBall = { req ->
+                                    robotVm.motorConfig.lookup(req.ball, req.spin, req.power, req.cell)?.let {
+                                        robotVm.sendTestBall(it, req.ballTime)
+                                    }
+                                },
+                                onPlayBasic = { robotVm.playBasicTraining(it) },
+                                onPlayAdvanced = { robotVm.playAdvancedTraining(it) },
+                                onStop = { robotVm.stop() },
+                                connectionState = connectionState,
+                                deviceName = robotVm.deviceName.collectAsState().value,
+                                statusMessage = robotVm.statusMessage.collectAsState().value,
+                                currentTrainingName = robotVm.currentTrainingName.collectAsState().value,
+                                onScan = { robotVm.scan() },
+                                onDisconnect = { robotVm.disconnect() },
+                                basicTrainings = basicTrainings ?: emptyList(),
+                                advancedTrainings = advancedTrainings ?: emptyList(),
+                                onSaveBasic = { trainingVm.saveBasicTraining(it) },
+                                onSaveAdvanced = { trainingVm.saveAdvancedTraining(it) },
+                                onDeleteBasic = { trainingVm.deleteBasicTraining(it) },
+                                onDeleteAdvanced = { trainingVm.deleteAdvancedTraining(it) },
+                                onToggleBasicFavourite = { trainingVm.toggleBasicFavourite(it) },
+                                onToggleAdvancedFavourite = { trainingVm.toggleAdvancedFavourite(it) },
+                                nextBasicId = { trainingVm.nextBasicId() },
+                                nextAdvancedId = { trainingVm.nextAdvancedId() },
+                                onCalibrate = { navController.navigate("calibration") },
+                                onDebug = { navController.navigate("debug") },
+                                onSettings = { navController.navigate("settings") },
+                            )
+                        }
+
+                        composable("debug") {
+                            DebugScreen(robotVm = robotVm)
+                        }
+
+                        composable("calibration") {
+                            CalibrationScreen(
+                                robotVm = robotVm,
+                                onBack = { navController.popBackStack() },
+                            )
+                        }
+
+                        composable("settings") {
+                            SettingsScreen(onBack = { navController.popBackStack() })
+                        }
+
+                        composable(
+                            "editBasic/{id}",
+                            arguments = listOf(navArgument("id") { type = NavType.IntType }),
+                        ) { backStackEntry ->
+                            val id = backStackEntry.arguments?.getInt("id") ?: -1
+                            val trainings by trainingVm.basicTrainings.collectAsState()
+                            val existing = if (id >= 0) trainings?.find { it.id == id } else null
+                            val connectionState by robotVm.connectionState.collectAsState()
+
+                            BasicEditorScreen(
+                                initial = existing,
+                                onSave = { training ->
+                                    trainingVm.saveBasicTraining(training)
+                                    navController.popBackStack()
+                                },
+                                onBack = { navController.popBackStack() },
+                                nextId = existing?.id ?: trainingVm.nextBasicId(),
+                                motorConfig = robotVm.motorConfig,
+                                onTestBall = { req ->
+                                    robotVm.motorConfig.lookup(req.ball, req.spin, req.power, req.cell)?.let {
+                                        robotVm.sendTestBall(it, req.ballTime)
+                                    }
+                                },
+                                connected = connectionState == ConnectionState.CONNECTED,
+                            )
+                        }
+
+                        composable(
+                            "editAdvanced/{id}",
+                            arguments = listOf(navArgument("id") { type = NavType.IntType }),
+                        ) { backStackEntry ->
+                            val id = backStackEntry.arguments?.getInt("id") ?: -1
+                            val trainings by trainingVm.advancedTrainings.collectAsState()
+                            val existing = if (id >= 0) trainings?.find { it.id == id } else null
+
+                            AdvancedEditorScreen(
+                                initial = existing,
+                                onSave = { training ->
+                                    trainingVm.saveAdvancedTraining(training)
+                                    navController.popBackStack()
+                                },
+                                onBack = { navController.popBackStack() },
+                                nextId = { trainingVm.nextAdvancedId() },
+                                motorConfig = robotVm.motorConfig,
+                            )
+                        }
                     }
 
-                    composable("calibration") {
-                        CalibrationScreen(
-                            robotVm = robotVm,
-                            onBack = { navController.popBackStack() },
-                        )
-                    }
-
-                    composable("settings") {
-                        SettingsScreen(onBack = { navController.popBackStack() })
-                    }
-
-                    composable("home") {
-                        HomeScreen(
-                            robotVm = robotVm,
-                            trainingVm = trainingVm,
-                            onEditBasic = { id ->
-                                if (id != null) navController.navigate("editBasic/$id")
-                                else navController.navigate("editBasic/-1")
-                            },
-                            onEditAdvanced = { id ->
-                                if (id != null) navController.navigate("editAdvanced/$id")
-                                else navController.navigate("editAdvanced/-1")
-                            },
-                            onDebug = { navController.navigate("debug") },
-                            onCalibrate = { navController.navigate("calibration") },
-                            onSettings = { navController.navigate("settings") },
-                        )
-                    }
-
-                    composable(
-                        "editBasic/{id}",
-                        arguments = listOf(navArgument("id") { type = NavType.IntType }),
-                    ) { backStackEntry ->
-                        val id = backStackEntry.arguments?.getInt("id") ?: -1
-                        val trainings by trainingVm.basicTrainings.collectAsState()
-                        val existing = if (id >= 0) trainings?.find { it.id == id } else null
-
-                        BasicEditorScreen(
-                            initial = existing,
-                            onSave = { training ->
-                                trainingVm.saveBasicTraining(training)
-                                navController.popBackStack()
-                            },
-                            onBack = { navController.popBackStack() },
-                            nextId = { trainingVm.nextBasicId() },
-                            motorConfig = robotVm.motorConfig,
-                        )
-                    }
-
-                    composable(
-                        "editAdvanced/{id}",
-                        arguments = listOf(navArgument("id") { type = NavType.IntType }),
-                    ) { backStackEntry ->
-                        val id = backStackEntry.arguments?.getInt("id") ?: -1
-                        val trainings by trainingVm.advancedTrainings.collectAsState()
-                        val existing = if (id >= 0) trainings?.find { it.id == id } else null
-
-                        AdvancedEditorScreen(
-                            initial = existing,
-                            onSave = { training ->
-                                trainingVm.saveAdvancedTraining(training)
-                                navController.popBackStack()
-                            },
-                            onBack = { navController.popBackStack() },
-                            nextId = { trainingVm.nextAdvancedId() },
-                            motorConfig = robotVm.motorConfig,
+                    // Global stop overlay — visible on all screens when playing
+                    val isPlaying by robotVm.isPlaying.collectAsState()
+                    if (isPlaying) {
+                        StopOverlay(
+                            trainingName = robotVm.currentTrainingName.collectAsState().value,
+                            onStop = { robotVm.stop() },
                         )
                     }
                 }

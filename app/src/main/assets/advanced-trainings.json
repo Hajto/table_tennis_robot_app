@@ -4,7 +4,7 @@
     "uid": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B8. Beginner BH Push, BH Loop",
+    "name": "BH Push, BH Loop",
     "repeatNum": 10,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -50,7 +50,12 @@
       "skillLevel": "Beginner"
     },
     "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00"
+    "lastPlayDateUTC": "2025-01-01 08:00:00",
+    "tags": [
+      "Backhand",
+      "Push",
+      "Openup"
+    ]
   },
   {
     "id": 122,
@@ -59,7 +64,7 @@
     "lastPlayDateUTC": "2025-01-01 08:00:00",
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B7. Beginner FH Push, FH Loop",
+    "name": "FH Push, FH Loop",
     "repeatNum": 10,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -103,14 +108,19 @@
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
-    }
+    },
+    "tags": [
+      "Forehand",
+      "Push",
+      "Openup"
+    ]
   },
   {
     "id": 121,
     "uid": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B6. Beginner BH Flick, BH Drive",
+    "name": "BH Flick, BH Drive",
     "repeatNum": 14,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -156,7 +166,11 @@
       "skillLevel": "Beginner"
     },
     "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00"
+    "lastPlayDateUTC": "2025-01-01 08:00:00",
+    "tags": [
+      "Backhand",
+      "Flick"
+    ]
   },
   {
     "id": 120,
@@ -165,7 +179,7 @@
     "lastPlayDateUTC": "2025-01-01 08:00:00",
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B5. Beginner FH Flick, FH Drive",
+    "name": "FH Flick, FH Drive",
     "repeatNum": 10,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -209,7 +223,11 @@
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
-    }
+    },
+    "tags": [
+      "Flick",
+      "Forehand"
+    ]
   },
   {
     "id": 119,
@@ -218,7 +236,7 @@
     "lastPlayDateUTC": "2025-01-01 08:00:00",
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B4. Beginner BH Loop, FH Drive",
+    "name": "BH Loop, FH Drive",
     "repeatNum": 14,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -262,7 +280,12 @@
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Transition",
+      "Openup"
+    ]
   },
   {
     "id": 118,
@@ -271,7 +294,7 @@
     "lastPlayDateUTC": "2025-01-01 08:00:00",
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B3. Beginner FH Loop, BH Drive",
+    "name": "FH Loop, BH Drive",
     "repeatNum": 10,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -315,14 +338,19 @@
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Transition",
+      "Openup"
+    ]
   },
   {
     "id": 117,
     "uid": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B2. Beginner BH Loop, BH Drive",
+    "name": "BH Loop, BH Drive",
     "repeatNum": 10,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -368,7 +396,11 @@
       "skillLevel": "Beginner"
     },
     "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00"
+    "lastPlayDateUTC": "2025-01-01 08:00:00",
+    "tags": [
+      "Backhand",
+      "Openup"
+    ]
   },
   {
     "id": 116,
@@ -377,7 +409,7 @@
     "lastPlayDateUTC": "2025-01-01 08:00:00",
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B1. Beginner FH Loop, FH Drive",
+    "name": "FH Loop, FH Drive",
     "repeatNum": 10,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -421,7 +453,11 @@
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
-    }
+    },
+    "tags": [
+      "Forehand",
+      "Openup"
+    ]
   },
   {
     "id": 1,
@@ -490,7 +526,11 @@
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Random"
+    ]
   },
   {
     "id": 139,
@@ -499,7 +539,7 @@
     "lastPlayDateUTC": "2025-01-01 08:00:00",
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I16. Intermediate FH Flick, Random FH 2/3",
+    "name": "FH Flick, Random FH 2/3",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -567,7 +607,13 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Flick",
+      "Footwork",
+      "Forehand",
+      "Random"
+    ]
   },
   {
     "id": 138,
@@ -576,7 +622,7 @@
     "lastPlayDateUTC": "2025-01-01 08:00:00",
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I15. Intermediate BH Flick, BH Drive",
+    "name": "BH Flick, BH Drive",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -620,7 +666,11 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Backhand",
+      "Flick"
+    ]
   },
   {
     "id": 137,
@@ -629,7 +679,7 @@
     "lastPlayDateUTC": "2025-01-01 08:00:00",
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I14. Intermediate BH Triangle Drill",
+    "name": "BH Triangle Drill",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -689,7 +739,11 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Transition"
+    ]
   },
   {
     "id": 136,
@@ -698,7 +752,7 @@
     "lastPlayDateUTC": "2025-01-01 08:00:00",
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I13. Intermediate FH Triangle Drill",
+    "name": "FH Triangle Drill",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -758,14 +812,18 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Transition"
+    ]
   },
   {
     "id": 135,
     "uid": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I12. Intermediate Half Long 2/3 FH Loop",
+    "name": "Half Long 2/3 FH Loop",
     "repeatNum": 15,
     "repeatDelay": 0,
     "intervalTrain": 0,
@@ -883,7 +941,13 @@
       "skillLevel": "Intermediate"
     },
     "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00"
+    "lastPlayDateUTC": "2025-01-01 08:00:00",
+    "tags": [
+      "Footwork",
+      "Forehand",
+      "Random",
+      "Openup"
+    ]
   },
   {
     "id": 134,
@@ -892,7 +956,7 @@
     "lastPlayDateUTC": "2025-01-01 08:00:00",
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I11. Intermediate BH Flick, 2 Random Topspin",
+    "name": "BH Flick, 2 Random Topspin",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -1024,14 +1088,20 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Backhand",
+      "Flick",
+      "Footwork",
+      "Random"
+    ]
   },
   {
     "id": 133,
     "uid": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I10. Intermediate FH Short Push, Random Loop",
+    "name": "FH Short Push, Random Loop",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -1113,14 +1183,21 @@
       "skillLevel": "Intermediate"
     },
     "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00"
+    "lastPlayDateUTC": "2025-01-01 08:00:00",
+    "tags": [
+      "Footwork",
+      "Forehand",
+      "Push",
+      "Random",
+      "Openup"
+    ]
   },
   {
     "id": 132,
     "uid": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I9. Intermediate Middle FH Loop, Random Wide",
+    "name": "Middle FH Loop, Random Wide",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -1170,7 +1247,13 @@
       "skillLevel": "Intermediate"
     },
     "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00"
+    "lastPlayDateUTC": "2025-01-01 08:00:00",
+    "tags": [
+      "Footwork",
+      "Forehand",
+      "Random",
+      "Openup"
+    ]
   },
   {
     "id": 131,
@@ -1179,7 +1262,7 @@
     "lastPlayDateUTC": "2025-01-01 08:00:00",
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I8. Intermediate BH Short Push, BH Loop",
+    "name": "BH Short Push, BH Loop",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -1223,7 +1306,12 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Backhand",
+      "Push",
+      "Openup"
+    ]
   },
   {
     "id": 130,
@@ -1232,7 +1320,7 @@
     "lastPlayDateUTC": "2025-01-01 08:00:00",
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I7. Intermediate FH Short Push, FH Loop",
+    "name": "FH Short Push, FH Loop",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -1276,7 +1364,12 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Forehand",
+      "Push",
+      "Openup"
+    ]
   },
   {
     "id": 129,
@@ -1285,7 +1378,7 @@
     "lastPlayDateUTC": "2025-01-01 08:00:00",
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I6. Intermediate BH Flick, BH Drive",
+    "name": "BH Flick, BH Drive",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -1329,7 +1422,11 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Backhand",
+      "Flick"
+    ]
   },
   {
     "id": 128,
@@ -1338,7 +1435,7 @@
     "lastPlayDateUTC": "2025-01-01 08:00:00",
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I5. Intermediate FH Flick, FH Loop",
+    "name": "FH Flick, FH Loop",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -1382,7 +1479,11 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Flick",
+      "Forehand"
+    ]
   },
   {
     "id": 127,
@@ -1391,7 +1492,7 @@
     "lastPlayDateUTC": "2025-01-01 08:00:00",
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I4. Intermediate BH Loop, FH Drive",
+    "name": "BH Loop, FH Drive",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -1435,7 +1536,12 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Transition",
+      "Openup"
+    ]
   },
   {
     "id": 126,
@@ -1444,7 +1550,7 @@
     "lastPlayDateUTC": "2025-01-01 08:00:00",
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I3. Intermediate FH Loop, BH Drive",
+    "name": "FH Loop, BH Drive",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -1488,14 +1594,19 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Transition",
+      "Openup"
+    ]
   },
   {
     "id": 125,
     "uid": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I2. Intermediate BH Loop, BH Drive",
+    "name": "BH Loop, BH Drive",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -1541,14 +1652,18 @@
       "skillLevel": "Intermediate"
     },
     "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00"
+    "lastPlayDateUTC": "2025-01-01 08:00:00",
+    "tags": [
+      "Backhand",
+      "Openup"
+    ]
   },
   {
     "id": 124,
     "uid": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I1. Intermediate FH Loop, FH Drive",
+    "name": "FH Loop, FH Drive",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -1594,7 +1709,11 @@
       "skillLevel": "Intermediate"
     },
     "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00"
+    "lastPlayDateUTC": "2025-01-01 08:00:00",
+    "tags": [
+      "Forehand",
+      "Openup"
+    ]
   },
   {
     "id": 147,
@@ -1603,7 +1722,7 @@
     "lastPlayDateUTC": "2025-01-01 08:00:00",
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "A8. Advanced BH Flick and Topspin Random (8)",
+    "name": "BH Flick and Topspin Random (8)",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -2047,7 +2166,13 @@
     "skillLevel": {
       "id": 3,
       "skillLevel": "Advanced"
-    }
+    },
+    "tags": [
+      "Backhand",
+      "Flick",
+      "Footwork",
+      "Random"
+    ]
   },
   {
     "id": 146,
@@ -2156,7 +2281,13 @@
     "skillLevel": {
       "id": 3,
       "skillLevel": "Advanced"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Forehand",
+      "Random",
+      "Smash"
+    ]
   },
   {
     "id": 145,
@@ -2165,7 +2296,7 @@
     "lastPlayDateUTC": "2025-01-01 08:00:00",
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "A6. Advanced Random BH Flick, BH Drive",
+    "name": "Random BH Flick, BH Drive",
     "repeatNum": 20,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -2233,7 +2364,13 @@
     "skillLevel": {
       "id": 3,
       "skillLevel": "Advanced"
-    }
+    },
+    "tags": [
+      "Backhand",
+      "Flick",
+      "Footwork",
+      "Random"
+    ]
   },
   {
     "id": 144,
@@ -2322,14 +2459,21 @@
       "skillLevel": "Advanced"
     },
     "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00"
+    "lastPlayDateUTC": "2025-01-01 08:00:00",
+    "tags": [
+      "Footwork",
+      "Forehand",
+      "Push",
+      "Random",
+      "Openup"
+    ]
   },
   {
     "id": 143,
     "uid": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "A4. Advanced FH Flip, FH 2/3 Random (5)",
+    "name": "FH Flip, FH 2/3 Random (5)",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -2559,14 +2703,20 @@
       "skillLevel": "Advanced"
     },
     "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00"
+    "lastPlayDateUTC": "2025-01-01 08:00:00",
+    "tags": [
+      "Flick",
+      "Footwork",
+      "Forehand",
+      "Random"
+    ]
   },
   {
     "id": 142,
     "uid": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "A3. Advanced FH Short Push, FH Step-Around Loop",
+    "name": "FH Short Push, FH Step-Around Loop",
     "repeatNum": 20,
     "repeatDelay": 1,
     "intervalTrain": 0,
@@ -2612,14 +2762,20 @@
       "skillLevel": "Advanced"
     },
     "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00"
+    "lastPlayDateUTC": "2025-01-01 08:00:00",
+    "tags": [
+      "Footwork",
+      "Forehand",
+      "Push",
+      "Openup"
+    ]
   },
   {
     "id": 141,
     "uid": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "A2. Advanced Middle Loop, Random Wide",
+    "name": "Middle Loop, Random Wide",
     "repeatNum": 20,
     "repeatDelay": 2,
     "intervalTrain": 0,
@@ -2669,7 +2825,12 @@
       "skillLevel": "Advanced"
     },
     "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00"
+    "lastPlayDateUTC": "2025-01-01 08:00:00",
+    "tags": [
+      "Footwork",
+      "Random",
+      "Openup"
+    ]
   },
   {
     "id": 140,
@@ -2678,7 +2839,7 @@
     "lastPlayDateUTC": "2025-01-01 08:00:00",
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "A1. Advanced Short FH or Long BH",
+    "name": "Short FH or Long BH",
     "repeatNum": 10,
     "repeatDelay": 0,
     "intervalTrain": 0,
@@ -2722,6 +2883,11 @@
     "skillLevel": {
       "id": 3,
       "skillLevel": "Advanced"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Random",
+      "Transition"
+    ]
   }
 ]

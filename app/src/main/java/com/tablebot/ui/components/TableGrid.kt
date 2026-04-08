@@ -45,6 +45,7 @@ fun TableGrid(
     onCellClick: ((Int) -> Unit)? = null,
     modifier: Modifier = Modifier,
     cellBallNumbers: Map<Int, List<Int>>? = null,
+    cellBallColors: Map<Int, List<Color>>? = null,
     enabledCells: Set<Int>? = null,
 ) {
     val selectedCells = selectedPoints.map { it.x }.toSet()
@@ -83,6 +84,7 @@ fun TableGrid(
                         val isSelected = cellNum in selectedCells
                         val isEnabled = enabledCells == null || cellNum in enabledCells
                         val ballNums = cellBallNumbers?.get(cellNum)?.take(MAX_BALLS_PER_CELL)
+                        val ballColors = cellBallColors?.get(cellNum)?.take(MAX_BALLS_PER_CELL)
 
                         Box(
                             modifier = Modifier
@@ -102,7 +104,21 @@ fun TableGrid(
                                 ),
                             contentAlignment = Alignment.Center,
                         ) {
-                            if (ballNums != null && isSelected) {
+                            if (ballNums != null && isSelected && ballColors != null) {
+                                // Colored ball numbers (for advanced/dynamic previews)
+                                Row(horizontalArrangement = Arrangement.Center) {
+                                    ballNums.forEachIndexed { i, num ->
+                                        if (i > 0) Text(",", fontSize = 8.sp, color = MaterialTheme.colorScheme.onPrimary)
+                                        Text(
+                                            text = "$num",
+                                            fontSize = if (ballNums.size > 2) 9.sp else 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = ballColors.getOrElse(i) { MaterialTheme.colorScheme.onPrimary },
+                                            textAlign = TextAlign.Center,
+                                        )
+                                    }
+                                }
+                            } else if (ballNums != null && isSelected) {
                                 Text(
                                     text = ballNums.joinToString(","),
                                     fontSize = if (ballNums.size > 2) 9.sp else 11.sp,
@@ -147,6 +163,28 @@ fun buildCellBallNumbers(ballEntries: List<Pair<Int, List<Point>>>): Map<Int, Li
     ballEntries.forEach { (ballIndex, points) ->
         points.forEach { point ->
             result.getOrPut(point.x) { mutableListOf() }.add(ballIndex)
+        }
+    }
+    return result
+}
+
+/** Spin type → color for dynamic drill previews. */
+fun spinColor(spin: Int): Color = when (spin) {
+    0 -> Color(0xFF0D47A1)       // Max Topspin — deep blue
+    1 -> Color(0xFF1E88E5)       // Topspin — medium blue
+    2 -> Color(0xFF212121)       // Float — black
+    3 -> Color(0xFFEF9A9A)       // Backspin — light red
+    4 -> Color(0xFFC62828)       // Max Backspin — dark red
+    else -> Color(0xFF212121)
+}
+
+/** Build a cell→colors map from ball entries, colored by each ball's spin. */
+fun buildCellBallColors(ballEntries: List<com.tablebot.data.BallEntry>): Map<Int, List<Color>> {
+    val result = mutableMapOf<Int, MutableList<Color>>()
+    ballEntries.forEach { entry ->
+        val color = spinColor(entry.spin)
+        entry.points.forEach { point ->
+            result.getOrPut(point.x) { mutableListOf() }.add(color)
         }
     }
     return result

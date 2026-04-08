@@ -16,22 +16,57 @@ class TrainingStore(private val context: Context) {
 
     suspend fun loadBasicTrainings(): List<BasicTraining> = withContext(Dispatchers.IO) {
         val file = basicFile
-        val text = if (file.exists()) {
-            file.readText()
+        if (file.exists()) {
+            val local = json.decodeFromString<List<BasicTraining>>(file.readText())
+            // Merge tags from bundled assets for existing drills that are missing tags
+            if (local.any { it.tags.isEmpty() }) {
+                val bundled = json.decodeFromString<List<BasicTraining>>(
+                    context.assets.open("basic-trainings.json").bufferedReader().use { it.readText() }
+                ).associateBy { it.id }
+                val merged = local.map { t ->
+                    if (t.tags.isEmpty()) {
+                        bundled[t.id]?.let { b -> t.copy(tags = b.tags) } ?: t
+                    } else t
+                }
+                if (merged != local) {
+                    file.writeText(json.encodeToString(merged))
+                }
+                merged
+            } else {
+                local
+            }
         } else {
-            context.assets.open("basic-trainings.json").bufferedReader().use { it.readText() }
+            json.decodeFromString<List<BasicTraining>>(
+                context.assets.open("basic-trainings.json").bufferedReader().use { it.readText() }
+            )
         }
-        json.decodeFromString<List<BasicTraining>>(text)
     }
 
     suspend fun loadAdvancedTrainings(): List<AdvancedTraining> = withContext(Dispatchers.IO) {
         val file = advancedFile
-        val text = if (file.exists()) {
-            file.readText()
+        if (file.exists()) {
+            val local = json.decodeFromString<List<AdvancedTraining>>(file.readText())
+            if (local.any { it.tags.isEmpty() }) {
+                val bundled = json.decodeFromString<List<AdvancedTraining>>(
+                    context.assets.open("advanced-trainings.json").bufferedReader().use { it.readText() }
+                ).associateBy { it.id }
+                val merged = local.map { t ->
+                    if (t.tags.isEmpty()) {
+                        bundled[t.id]?.let { b -> t.copy(tags = b.tags) } ?: t
+                    } else t
+                }
+                if (merged != local) {
+                    file.writeText(json.encodeToString(merged))
+                }
+                merged
+            } else {
+                local
+            }
         } else {
-            context.assets.open("advanced-trainings.json").bufferedReader().use { it.readText() }
+            json.decodeFromString<List<AdvancedTraining>>(
+                context.assets.open("advanced-trainings.json").bufferedReader().use { it.readText() }
+            )
         }
-        json.decodeFromString<List<AdvancedTraining>>(text)
     }
 
     suspend fun saveBasicTraining(training: BasicTraining) = withContext(Dispatchers.IO) {
