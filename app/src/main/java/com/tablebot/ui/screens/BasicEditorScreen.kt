@@ -6,20 +6,326 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.automirrored.filled.Undo
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tablebot.data.*
 import com.tablebot.ui.components.BallSettingsDropdowns
-import com.tablebot.ui.components.LabeledDropdown
+import com.tablebot.ui.components.rememberMotorConstraints
 import com.tablebot.ui.components.MAX_BALLS_PER_CELL
 import com.tablebot.ui.components.StepSlider
 import com.tablebot.ui.components.TableGrid
 import com.tablebot.ui.components.buildCellBallNumbers
+
+// ── State holder ────────────────────────────────────────────────────────
+
+class DrillEditorState(
+    initial: BasicTraining?,
+    var id: Int,
+) {
+    var name by mutableStateOf(initial?.name ?: "")
+    var ball by mutableIntStateOf(initial?.ball ?: 1)
+    var spin by mutableIntStateOf(initial?.spin ?: 2)
+    var power by mutableIntStateOf(initial?.power ?: 2)
+    var ballTime by mutableIntStateOf(initial?.ballTime ?: 9)
+    var times by mutableIntStateOf(initial?.times ?: 20)
+    var landType by mutableIntStateOf(initial?.landType ?: 0)
+    var points by mutableStateOf(initial?.points ?: listOf(Point(8, 2)))
+    var adjustSpin by mutableIntStateOf(initial?.adjustSpin ?: 0)
+    var adjustPosition by mutableIntStateOf(initial?.adjustPosition ?: 0)
+    var isFavourite by mutableIntStateOf(initial?.isFavourite ?: 0)
+    var skillLevel: SkillLevel = initial?.skillLevel ?: SkillLevel()
+    var tags by mutableStateOf(initial?.tags ?: emptyList())
+
+    fun loadFrom(training: BasicTraining) {
+        id = training.id
+        name = training.name
+        ball = training.ball
+        spin = training.spin
+        power = training.power
+        ballTime = training.ballTime
+        times = training.times
+        landType = training.landType
+        points = training.points
+        adjustSpin = training.adjustSpin
+        adjustPosition = training.adjustPosition
+        isFavourite = training.isFavourite
+        skillLevel = training.skillLevel
+        tags = training.tags
+    }
+
+    fun toTraining(): BasicTraining = BasicTraining(
+        id = id,
+        name = name.ifBlank { "Quick Play" },
+        ball = ball, spin = spin, power = power,
+        ballTime = ballTime, times = times, landType = landType,
+        points = points, adjustSpin = adjustSpin, adjustPosition = adjustPosition,
+        isFavourite = isFavourite, skillLevel = skillLevel, tags = tags,
+    )
+}
+
+@Composable
+fun rememberDrillEditorState(initial: BasicTraining?, id: Int): DrillEditorState =
+    remember { DrillEditorState(initial, id) }
+
+// ── Shared editor content (stateless – driven by DrillEditorState) ──
+
+@Composable
+fun DrillEditorContent(
+    state: DrillEditorState,
+    motorConfig: MotorConfig?,
+    showName: Boolean = true,
+) {
+    val constraints = rememberMotorConstraints(
+        ball = state.ball, spin = state.spin, power = state.power,
+        points = state.points, motorConfig = motorConfig,
+        onSpinChange = { state.spin = it },
+        onPowerChange = { state.power = it },
+        onPointsChange = { state.points = it },
+    )
+    val availableSpins = constraints.validSpins
+    val availablePowers = constraints.validPowers
+    val enabledCells = constraints.enabledCells
+
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        if (showName) {
+            OutlinedTextField(
+                value = state.name,
+                onValueChange = { state.name = it },
+                label = { Text("Training Name") },
+                modifier = Modifier.fillMaxWidth(),
+                singleLine = true,
+            )
+        }
+
+        // Ball / Spin / Power
+        BallSettingsDropdowns(
+            ball = state.ball,
+            spin = state.spin,
+            power = state.power,
+            onBallChange = { state.ball = it },
+            onSpinChange = { state.spin = it },
+            onPowerChange = { state.power = it },
+            validSpins = availableSpins,
+            validPowers = availablePowers,
+        )
+
+        if (enabledCells != null && enabledCells.isEmpty()) {
+            Text(
+                "This ball/spin/power combination is not available.",
+                color = MaterialTheme.colorScheme.error,
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
+
+        val mode = LandType.fromValue(state.landType)
+
+        // 1. Grid
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                "Target Points (${state.points.size} selected)",
+                style = MaterialTheme.typography.labelLarge,
+                modifier = Modifier.weight(1f),
+            )
+            if (mode != LandType.STATIC) {
+                IconButton(
+                    onClick = { state.points = state.points.dropLast(1) },
+                    enabled = state.points.isNotEmpty(),
+                ) {
+                    Icon(Icons.AutoMirrored.Filled.Undo, "Undo")
+                }
+                IconButton(
+                    onClick = { state.points = emptyList() },
+                    enabled = state.points.isNotEmpty(),
+                ) {
+                    Icon(Icons.Default.Refresh, "Reset")
+                }
+            }
+        }
+        val cellBallNumbers = remember(state.points) {
+            buildCellBallNumbers(
+                state.points.mapIndexed { i, pt -> (i + 1) to listOf(pt) }
+            )
+        }
+        TableGrid(
+            selectedPoints = state.points,
+            onCellClick = { cellNum ->
+                when (mode) {
+                    LandType.STATIC -> {
+                        val existing = state.points.find { it.x == cellNum }
+                        state.points = if (existing != null) emptyList()
+                        else listOf(Point(cellNum, 2))
+                    }
+                    LandType.LOOP -> {
+                        val countOnCell = state.points.count { it.x == cellNum }
+                        if (countOnCell >= MAX_BALLS_PER_CELL) {
+                            state.points = state.points.filter { it.x != cellNum }
+                        } else {
+                            state.points = state.points + Point(cellNum, 2)
+                        }
+                    }
+                    LandType.RANDOM -> {
+                        val existing = state.points.find { it.x == cellNum }
+                        state.points = if (existing != null) {
+                            state.points.filter { it.x != cellNum }
+                        } else {
+                            state.points + Point(cellNum, 2)
+                        }
+                    }
+                }
+            },
+            cellBallNumbers = if (mode == LandType.LOOP) cellBallNumbers else null,
+            enabledCells = enabledCells,
+        )
+
+        // 2. Operation Mode
+        var showOperationModeDialog by remember { mutableStateOf(false) }
+        val currentMode = LandType.fromValue(state.landType)
+
+        Text("Operation Mode", style = MaterialTheme.typography.labelLarge)
+        Card(
+            onClick = { showOperationModeDialog = true },
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        currentMode.label,
+                        style = MaterialTheme.typography.titleSmall,
+                        fontWeight = FontWeight.Bold,
+                    )
+                    Text(
+                        currentMode.description,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Icon(
+                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    contentDescription = "Change",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+
+        if (showOperationModeDialog) {
+            AlertDialog(
+                onDismissRequest = { showOperationModeDialog = false },
+                title = { Text("Operation Mode") },
+                text = {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        LandType.entries.forEach { mode ->
+                            Card(
+                                onClick = {
+                                    state.landType = mode.value
+                                    showOperationModeDialog = false
+                                },
+                                colors = CardDefaults.cardColors(
+                                    containerColor = if (mode == currentMode)
+                                        MaterialTheme.colorScheme.primaryContainer
+                                    else MaterialTheme.colorScheme.surface,
+                                ),
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Text(
+                                        mode.label,
+                                        style = MaterialTheme.typography.titleSmall,
+                                        fontWeight = FontWeight.Bold,
+                                        color = if (mode == currentMode)
+                                            MaterialTheme.colorScheme.onPrimaryContainer
+                                        else MaterialTheme.colorScheme.onSurface,
+                                    )
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(
+                                        mode.description,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = if (mode == currentMode)
+                                            MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.7f)
+                                        else MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                },
+                confirmButton = {},
+            )
+        }
+
+        // 3. Ball Interval
+        StepSlider("Ball Interval", state.ballTime, 2..30) { state.ballTime = it }
+
+        // 4. Play Mode
+        Text("Play Mode", style = MaterialTheme.typography.labelLarge)
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FilterChip(
+                selected = true,
+                onClick = { },
+                label = { Text("Count") },
+            )
+            FilterChip(
+                selected = false,
+                onClick = { },
+                enabled = false,
+                label = { Text("Time (coming soon)") },
+            )
+        }
+
+        // 5. Repetitions
+        StepSlider("Repetitions", state.times, 1..100) { state.times = it }
+
+        // 6. Ball Adjustments (disabled)
+        Text("Ball Adjustments", style = MaterialTheme.typography.labelLarge)
+        Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = state.adjustSpin == 1,
+                    onCheckedChange = null,
+                    enabled = false,
+                )
+                Text(
+                    "Adjust Spin",
+                    modifier = Modifier.padding(start = 4.dp),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                )
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Checkbox(
+                    checked = state.adjustPosition == 1,
+                    onCheckedChange = null,
+                    enabled = false,
+                )
+                Text(
+                    "Adjust Position",
+                    modifier = Modifier.padding(start = 4.dp),
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+                )
+            }
+        }
+        Text(
+            "Coming soon",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
+        )
+    }
+}
+
+// ── Basic Editor Screen (save-focused wrapper) ─────────────────────
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,49 +333,12 @@ fun BasicEditorScreen(
     initial: BasicTraining?,
     onSave: (BasicTraining) -> Unit,
     onBack: () -> Unit,
-    nextId: () -> Int,
+    nextId: Int,
     motorConfig: MotorConfig? = null,
+    onTestBall: ((TestBallRequest) -> Unit)? = null,
+    connected: Boolean = false,
 ) {
-    var name by remember { mutableStateOf(initial?.name ?: "") }
-    var ball by remember { mutableIntStateOf(initial?.ball ?: 1) }
-    var spin by remember { mutableIntStateOf(initial?.spin ?: 2) }
-    var power by remember { mutableIntStateOf(initial?.power ?: 2) }
-    var ballTime by remember { mutableIntStateOf(initial?.ballTime ?: 9) }
-    var times by remember { mutableIntStateOf(initial?.times ?: 20) }
-    var landType by remember { mutableIntStateOf(initial?.landType ?: 0) }
-    var points by remember { mutableStateOf(initial?.points ?: listOf(Point(8, 2))) }
-    var adjustSpin by remember { mutableIntStateOf(initial?.adjustSpin ?: 0) }
-    var adjustPosition by remember { mutableIntStateOf(initial?.adjustPosition ?: 0) }
-
-    // Placement restrictions derived from motor config
-    val availableSpins = remember(ball) { motorConfig?.validSpins(ball) }
-    val availablePowers = remember(ball, spin) { motorConfig?.validPowers(ball, spin) }
-    val enabledCells = remember(ball, spin, power) { motorConfig?.validLandareas(ball, spin, power) }
-
-    // Auto-correct spin when ball type changes and current spin is unavailable
-    LaunchedEffect(ball) {
-        val vs = motorConfig?.validSpins(ball) ?: return@LaunchedEffect
-        if (spin !in vs) {
-            spin = vs.minOrNull() ?: 2
-        }
-    }
-    // Auto-correct power when spin changes and current power is unavailable
-    LaunchedEffect(ball, spin) {
-        val vp = motorConfig?.validPowers(ball, spin) ?: return@LaunchedEffect
-        if (power !in vp) {
-            power = vp.minOrNull() ?: 2
-        }
-    }
-    // Remove points on cells that became invalid
-    LaunchedEffect(enabledCells) {
-        val ec = enabledCells ?: return@LaunchedEffect
-        if (ec.isEmpty()) return@LaunchedEffect
-        val filtered = points.filter { it.x in ec }
-        if (filtered.size != points.size) {
-            points = filtered
-        }
-    }
-
+    val state = rememberDrillEditorState(initial, nextId)
     val isNew = initial == null
 
     Scaffold(
@@ -83,25 +352,8 @@ fun BasicEditorScreen(
                 },
                 actions = {
                     IconButton(
-                        onClick = {
-                            val training = BasicTraining(
-                                id = initial?.id ?: nextId(),
-                                name = name.ifBlank { "Custom Training" },
-                                ball = ball,
-                                spin = spin,
-                                power = power,
-                                ballTime = ballTime,
-                                times = times,
-                                landType = landType,
-                                points = points,
-                                adjustSpin = adjustSpin,
-                                adjustPosition = adjustPosition,
-                                isFavourite = initial?.isFavourite ?: 0,
-                                skillLevel = initial?.skillLevel ?: SkillLevel(),
-                            )
-                            onSave(training)
-                        },
-                        enabled = name.isNotBlank() && points.isNotEmpty(),
+                        onClick = { onSave(state.toTraining()) },
+                        enabled = state.name.isNotBlank() && state.points.isNotEmpty(),
                     ) {
                         Icon(Icons.Default.Check, "Save")
                     }
@@ -114,132 +366,8 @@ fun BasicEditorScreen(
                 .padding(padding)
                 .verticalScroll(rememberScrollState())
                 .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-            OutlinedTextField(
-                value = name,
-                onValueChange = { name = it },
-                label = { Text("Training Name") },
-                modifier = Modifier.fillMaxWidth(),
-                singleLine = true,
-            )
-
-            BallSettingsDropdowns(
-                ball = ball,
-                spin = spin,
-                power = power,
-                onBallChange = { ball = it },
-                onSpinChange = { spin = it },
-                onPowerChange = { power = it },
-                validSpins = availableSpins,
-                validPowers = availablePowers,
-            )
-
-            // Warning when no valid placements exist
-            if (enabledCells != null && enabledCells!!.isEmpty()) {
-                Text(
-                    "This ball/spin/power combination is not available.",
-                    color = MaterialTheme.colorScheme.error,
-                    style = MaterialTheme.typography.bodySmall,
-                )
-            }
-
-            // Ball interval
-            StepSlider("Ball Interval", ballTime, 2..30) { ballTime = it }
-
-            // Repetitions
-            StepSlider("Repetitions", times, 1..100) { times = it }
-
-            // Land type
-            LabeledDropdown(
-                label = "Landing Pattern",
-                entries = LandType.entries.toList(),
-                selected = LandType.fromValue(landType),
-                labelOf = { it.label },
-                onSelect = { landType = it.value },
-            )
-
-            val isLoopMode = landType == LandType.LOOP.value
-
-            // Grid
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    "Target Points (${points.size} selected)",
-                    style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.weight(1f),
-                )
-                if (isLoopMode && points.isNotEmpty()) {
-                    IconButton(onClick = { points = points.dropLast(1) }) {
-                        Icon(Icons.AutoMirrored.Filled.Undo, "Undo")
-                    }
-                    IconButton(onClick = { points = emptyList() }) {
-                        Icon(Icons.Default.Refresh, "Reset")
-                    }
-                }
-            }
-            val cellBallNumbers = remember(points) {
-                buildCellBallNumbers(
-                    points.mapIndexed { i, pt -> (i + 1) to listOf(pt) }
-                )
-            }
-            TableGrid(
-                selectedPoints = points,
-                onCellClick = { cellNum ->
-                    if (isLoopMode) {
-                        val countOnCell = points.count { it.x == cellNum }
-                        if (countOnCell >= MAX_BALLS_PER_CELL) {
-                            points = points.filter { it.x != cellNum }
-                        } else {
-                            points = points + Point(cellNum, 2)
-                        }
-                    } else {
-                        val existing = points.find { it.x == cellNum }
-                        points = if (existing != null) {
-                            points.filter { it.x != cellNum }
-                        } else {
-                            points + Point(cellNum, 2)
-                        }
-                    }
-                },
-                cellBallNumbers = if (isLoopMode) cellBallNumbers else null,
-                enabledCells = enabledCells,
-            )
-
-            // Depth selector for selected points
-            if (points.isNotEmpty()) {
-                Text("Depth", style = MaterialTheme.typography.labelLarge)
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    listOf(1 to "Short", 2 to "Medium", 3 to "Long").forEach { (depth, label) ->
-                        FilterChip(
-                            selected = points.all { it.y == depth },
-                            onClick = { points = points.map { it.copy(y = depth) } },
-                            label = { Text(label) },
-                        )
-                    }
-                }
-            }
-
-            // Adjust flags
-            Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
-                Row {
-                    Checkbox(
-                        checked = adjustSpin == 1,
-                        onCheckedChange = { adjustSpin = if (it) 1 else 0 },
-                    )
-                    Text("Adjust Spin", modifier = Modifier.padding(top = 14.dp))
-                }
-                Row {
-                    Checkbox(
-                        checked = adjustPosition == 1,
-                        onCheckedChange = { adjustPosition = if (it) 1 else 0 },
-                    )
-                    Text("Adjust Position", modifier = Modifier.padding(top = 14.dp))
-                }
-            }
-
+            DrillEditorContent(state, motorConfig)
             Spacer(Modifier.height(48.dp))
         }
     }

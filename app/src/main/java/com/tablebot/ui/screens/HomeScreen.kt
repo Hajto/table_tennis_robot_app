@@ -11,6 +11,8 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.ui.Alignment
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -32,6 +34,7 @@ fun HomeScreen(
     onDebug: () -> Unit = {},
     onCalibrate: () -> Unit = {},
     onSettings: () -> Unit = {},
+    onQuickPlay: () -> Unit = {},
 ) {
     val connectionState by robotVm.connectionState.collectAsState()
     val deviceName by robotVm.deviceName.collectAsState()
@@ -79,7 +82,6 @@ fun HomeScreen(
     val pagerState = rememberPagerState(pageCount = { 2 })
     val coroutineScope = rememberCoroutineScope()
 
-    Box(modifier = Modifier.fillMaxSize()) {
     Scaffold(
         topBar = {
             Column {
@@ -125,13 +127,23 @@ fun HomeScreen(
             }
         },
         floatingActionButton = {
-            FloatingActionButton(
-                onClick = {
-                    if (pagerState.currentPage == 0) onEditBasic(null)
-                    else onEditAdvanced(null)
-                }
+            Column(
+                horizontalAlignment = Alignment.End,
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                Icon(Icons.Default.Add, "New training")
+                SmallFloatingActionButton(
+                    onClick = {
+                        if (pagerState.currentPage == 0) onEditBasic(null)
+                        else onEditAdvanced(null)
+                    },
+                ) {
+                    Icon(Icons.Default.Add, "New training")
+                }
+                ExtendedFloatingActionButton(
+                    onClick = { onQuickPlay() },
+                    icon = { Icon(Icons.Default.PlayArrow, null) },
+                    text = { Text("Quick Play") },
+                )
             }
         },
     ) { padding ->
@@ -211,12 +223,4 @@ fun HomeScreen(
         }
     }
 
-    // Full-screen stop overlay when playing
-    if (isPlaying) {
-        com.tablebot.ui.components.StopOverlay(
-            trainingName = currentTrainingName,
-            onStop = { robotVm.stop() },
-        )
-    }
-    } // end Box
 }

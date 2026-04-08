@@ -8,7 +8,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B11. Beginner Forehand Flick",
+    "name": "Forehand Flick",
     "ball": 1,
     "spin": 3,
     "power": 3,
@@ -29,7 +29,11 @@
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
-    }
+    },
+    "tags": [
+      "Flick",
+      "Forehand"
+    ]
   },
   {
     "id": 1,
@@ -61,7 +65,8 @@
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
-    }
+    },
+    "tags": []
   },
   {
     "id": 143,
@@ -70,7 +75,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "P7. Performance Random",
+    "name": "Random",
     "ball": 1,
     "spin": 1,
     "power": 1,
@@ -129,7 +134,11 @@
       "skillLevel": "Beginner"
     },
     "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00"
+    "lastPlayDateUTC": "2025-01-01 08:00:00",
+    "tags": [
+      "Footwork",
+      "Random"
+    ]
   },
   {
     "id": 123,
@@ -140,7 +149,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B6. Beginner Topspin Serve Return",
+    "name": "Topspin Serve Return",
     "ball": 0,
     "spin": 1,
     "power": 3,
@@ -177,7 +186,11 @@
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Serve Return"
+    ]
   },
   {
     "id": 125,
@@ -188,7 +201,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B12. Beginner Backhand Flick",
+    "name": "Backhand Flick",
     "ball": 1,
     "spin": 3,
     "power": 3,
@@ -209,7 +222,11 @@
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
-    }
+    },
+    "tags": [
+      "Backhand",
+      "Flick"
+    ]
   },
   {
     "id": 118,
@@ -220,7 +237,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B1. Beginner Forehand Drive ",
+    "name": "Forehand Drive",
     "ball": 1,
     "spin": 1,
     "power": 3,
@@ -241,7 +258,10 @@
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
-    }
+    },
+    "tags": [
+      "Forehand"
+    ]
   },
   {
     "id": 135,
@@ -252,7 +272,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B13. Beginner Push and Loop Drill",
+    "name": "Push and Loop Drill",
     "ball": 1,
     "spin": 3,
     "power": 3,
@@ -277,7 +297,12 @@
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Push",
+      "Openup"
+    ]
   },
   {
     "id": 120,
@@ -288,7 +313,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B8. Beginner Forehand Loop vs. Backspin",
+    "name": "Forehand Loop vs. Backspin",
     "ball": 1,
     "spin": 3,
     "power": 3,
@@ -309,7 +334,11 @@
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
-    }
+    },
+    "tags": [
+      "Forehand",
+      "Openup"
+    ]
   },
   {
     "id": 122,
@@ -320,7 +349,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B5. Beginner Backhand - Forehand Transition",
+    "name": "Backhand - Forehand Transition",
     "ball": 1,
     "spin": 1,
     "power": 3,
@@ -345,7 +374,11 @@
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Transition"
+    ]
   },
   {
     "id": 144,
@@ -356,7 +389,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B3. Beginner Backhand Push",
+    "name": "Backhand Push",
     "ball": 1,
     "spin": 3,
     "power": 3,
@@ -377,7 +410,11 @@
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
-    }
+    },
+    "tags": [
+      "Backhand",
+      "Push"
+    ]
   },
   {
     "id": 121,
@@ -388,7 +425,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B9. Beginner Backhand Loop vs. Backspin",
+    "name": "Backhand Loop vs. Backspin",
     "ball": 1,
     "spin": 3,
     "power": 3,
@@ -409,7 +446,11 @@
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
-    }
+    },
+    "tags": [
+      "Backhand",
+      "Openup"
+    ]
   },
   {
     "id": 119,
@@ -420,7 +461,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B2. Beginner Backhand Drive",
+    "name": "Backhand Drive",
     "ball": 1,
     "spin": 1,
     "power": 3,
@@ -441,7 +482,10 @@
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
-    }
+    },
+    "tags": [
+      "Backhand"
+    ]
   },
   {
     "id": 145,
@@ -452,7 +496,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B4. Beginner Forehand Push",
+    "name": "Forehand Push",
     "ball": 1,
     "spin": 3,
     "power": 3,
@@ -473,7 +517,11 @@
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
-    }
+    },
+    "tags": [
+      "Forehand",
+      "Push"
+    ]
   },
   {
     "id": 126,
@@ -482,7 +530,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B10. Beginner Falkenberg",
+    "name": "Falkenberg",
     "ball": 1,
     "spin": 1,
     "power": 3,
@@ -513,7 +561,11 @@
       "skillLevel": "Beginner"
     },
     "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00"
+    "lastPlayDateUTC": "2025-01-01 08:00:00",
+    "tags": [
+      "Footwork",
+      "Transition"
+    ]
   },
   {
     "id": 127,
@@ -522,7 +574,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B7. Beginner 2 Point Topspin",
+    "name": "2 Point Topspin",
     "ball": 1,
     "spin": 1,
     "power": 3,
@@ -549,7 +601,10 @@
       "skillLevel": "Beginner"
     },
     "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00"
+    "lastPlayDateUTC": "2025-01-01 08:00:00",
+    "tags": [
+      "Footwork"
+    ]
   },
   {
     "id": 128,
@@ -558,7 +613,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B14. Beginner Forehand Smash",
+    "name": "Forehand Smash",
     "ball": 2,
     "spin": 2,
     "power": 3,
@@ -581,7 +636,11 @@
       "skillLevel": "Beginner"
     },
     "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00"
+    "lastPlayDateUTC": "2025-01-01 08:00:00",
+    "tags": [
+      "Forehand",
+      "Smash"
+    ]
   },
   {
     "id": 141,
@@ -590,7 +649,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "B15. Beginner Random",
+    "name": "Random",
     "ball": 1,
     "spin": 1,
     "power": 3,
@@ -629,7 +688,11 @@
       "skillLevel": "Beginner"
     },
     "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00"
+    "lastPlayDateUTC": "2025-01-01 08:00:00",
+    "tags": [
+      "Footwork",
+      "Random"
+    ]
   },
   {
     "id": 142,
@@ -640,7 +703,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I9. Intermediate Random",
+    "name": "Random",
     "ball": 1,
     "spin": 1,
     "power": 2,
@@ -697,7 +760,11 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Random"
+    ]
   },
   {
     "id": 154,
@@ -765,7 +832,11 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Forehand"
+    ]
   },
   {
     "id": 153,
@@ -821,7 +892,12 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Forehand",
+      "Random"
+    ]
   },
   {
     "id": 131,
@@ -832,7 +908,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I4. Intermediate Falkenberg",
+    "name": "Falkenberg",
     "ball": 1,
     "spin": 1,
     "power": 2,
@@ -861,7 +937,11 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Transition"
+    ]
   },
   {
     "id": 146,
@@ -872,7 +952,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I10. Intermediate Short Serve Receive",
+    "name": "Short Serve Receive",
     "ball": 0,
     "spin": 3,
     "power": 3,
@@ -909,7 +989,12 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Random",
+      "Serve Return"
+    ]
   },
   {
     "id": 137,
@@ -920,7 +1005,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I6. Intermediate 3-Point Forehand",
+    "name": "3-Point Forehand",
     "ball": 1,
     "spin": 1,
     "power": 2,
@@ -949,7 +1034,11 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Forehand"
+    ]
   },
   {
     "id": 133,
@@ -960,7 +1049,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I7. Intermediate BH, MID, BH, FH",
+    "name": "BH, MID, BH, FH",
     "ball": 1,
     "spin": 1,
     "power": 2,
@@ -993,7 +1082,11 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Transition"
+    ]
   },
   {
     "id": 129,
@@ -1004,7 +1097,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I1. Intermediate Forehand Loop vs. Backspin",
+    "name": "Forehand Loop vs. Backspin",
     "ball": 1,
     "spin": 3,
     "power": 2,
@@ -1025,7 +1118,11 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Forehand",
+      "Openup"
+    ]
   },
   {
     "id": 132,
@@ -1036,7 +1133,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I3. Intermediate 2-Point Topspin",
+    "name": "2-Point Topspin",
     "ball": 1,
     "spin": 1,
     "power": 2,
@@ -1061,7 +1158,10 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Footwork"
+    ]
   },
   {
     "id": 134,
@@ -1072,7 +1172,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I8. Intermediate FH, MID, FH, BH",
+    "name": "FH, MID, FH, BH",
     "ball": 1,
     "spin": 1,
     "power": 2,
@@ -1105,7 +1205,11 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Transition"
+    ]
   },
   {
     "id": 136,
@@ -1116,7 +1220,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I5. Intermediate 5-Point Forehand",
+    "name": "5-Point Forehand",
     "ball": 1,
     "spin": 1,
     "power": 2,
@@ -1149,7 +1253,11 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Forehand"
+    ]
   },
   {
     "id": 130,
@@ -1160,7 +1268,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "I2. Intermediate Backhand Loop vs. Backspin",
+    "name": "Backhand Loop vs. Backspin",
     "ball": 1,
     "spin": 3,
     "power": 2,
@@ -1181,7 +1289,11 @@
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
-    }
+    },
+    "tags": [
+      "Backhand",
+      "Openup"
+    ]
   },
   {
     "id": 155,
@@ -1237,7 +1349,12 @@
     "skillLevel": {
       "id": 3,
       "skillLevel": "Advanced"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Forehand",
+      "Random"
+    ]
   },
   {
     "id": 148,
@@ -1248,7 +1365,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "P2. Performance Falkenberg",
+    "name": "Falkenberg",
     "ball": 1,
     "spin": 1,
     "power": 1,
@@ -1277,7 +1394,11 @@
     "skillLevel": {
       "id": 3,
       "skillLevel": "Advanced"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Transition"
+    ]
   },
   {
     "id": 147,
@@ -1288,7 +1409,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "P1. Performance 2-Point Topspin",
+    "name": "2-Point Topspin",
     "ball": 1,
     "spin": 1,
     "power": 1,
@@ -1313,7 +1434,10 @@
     "skillLevel": {
       "id": 3,
       "skillLevel": "Advanced"
-    }
+    },
+    "tags": [
+      "Footwork"
+    ]
   },
   {
     "id": 151,
@@ -1324,7 +1448,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "P5. Performance BH, MID, BH, FH",
+    "name": "BH, MID, BH, FH",
     "ball": 1,
     "spin": 1,
     "power": 1,
@@ -1357,7 +1481,13 @@
     "skillLevel": {
       "id": 3,
       "skillLevel": "Advanced"
-    }
+    },
+    "tags": [
+      "Backhand",
+      "Footwork",
+      "Forehand",
+      "Transition"
+    ]
   },
   {
     "id": 149,
@@ -1368,7 +1498,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "P3. Performance 5-Point Forehand",
+    "name": "5-Point Forehand",
     "ball": 1,
     "spin": 1,
     "power": 1,
@@ -1401,7 +1531,11 @@
     "skillLevel": {
       "id": 3,
       "skillLevel": "Advanced"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Forehand"
+    ]
   },
   {
     "id": 150,
@@ -1412,7 +1546,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "P4. Performance 3-Point Forehand",
+    "name": "3-Point Forehand",
     "ball": 1,
     "spin": 1,
     "power": 1,
@@ -1441,7 +1575,11 @@
     "skillLevel": {
       "id": 3,
       "skillLevel": "Advanced"
-    }
+    },
+    "tags": [
+      "Footwork",
+      "Forehand"
+    ]
   },
   {
     "id": 152,
@@ -1452,7 +1590,7 @@
     "isFavourite": 0,
     "createDate": "2025-01-01 08:00:00",
     "updateDate": "2025-01-01 08:00:00",
-    "name": "P6. Performance FH, MID, FH, BH",
+    "name": "FH, MID, FH, BH",
     "ball": 1,
     "spin": 1,
     "power": 1,
@@ -1485,6 +1623,12 @@
     "skillLevel": {
       "id": 3,
       "skillLevel": "Advanced"
-    }
+    },
+    "tags": [
+      "Backhand",
+      "Footwork",
+      "Forehand",
+      "Transition"
+    ]
   }
 ]

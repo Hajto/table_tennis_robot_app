@@ -24,6 +24,7 @@ data class BasicTraining(
     val points: List<Point> = emptyList(),
     val isFavourite: Int = 0,
     val skillLevel: SkillLevel = SkillLevel(),
+    val tags: List<String> = emptyList(),
 )
 
 @Serializable
@@ -49,6 +50,7 @@ data class AdvancedTraining(
     val ballList: List<BallEntry> = emptyList(),
     val isFavourite: Int = 0,
     val skillLevel: SkillLevel = SkillLevel(),
+    val tags: List<String> = emptyList(),
 )
 
 @Serializable
@@ -96,20 +98,30 @@ enum class PowerType(val value: Int, val label: String) {
     }
 }
 
-enum class LandType(val value: Int, val label: String) {
-    STATIC(0, "Static"),
-    LOOP(1, "Loop"),
-    RANDOM(2, "Random");
+enum class LandType(val value: Int, val label: String, val description: String) {
+    STATIC(0, "Single Ball", "Shoots a ball to the same position repeatedly."),
+    LOOP(1, "Sequence", "A sequence of balls with the same type, spin, power and timing. For more customization use Advanced mode."),
+    RANDOM(2, "Random", "Select multiple positions and the ball will be shot to a randomly chosen one each time.");
     companion object {
         fun fromValue(v: Int) = entries.firstOrNull { it.value == v } ?: STATIC
     }
 }
 
 enum class SkillLevelType(val value: Int, val label: String) {
+    NEWBIE(0, "Newbie"),
     BEGINNER(1, "Beginner"),
     INTERMEDIATE(2, "Intermediate"),
-    ADVANCED(3, "Advanced");
+    ADVANCED(3, "Advanced"),
+    MASTER(4, "Master");
     companion object {
         fun fromValue(v: Int) = entries.firstOrNull { it.value == v } ?: BEGINNER
     }
 }
+
+data class TestBallRequest(
+    val ball: Int,
+    val spin: Int,
+    val power: Int,
+    val cell: Int,
+    val ballTime: Int,
+)

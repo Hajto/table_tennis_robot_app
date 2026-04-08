@@ -1,6 +1,8 @@
 package com.tablebot.ui.screens
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -16,6 +18,7 @@ import com.tablebot.ui.components.StepSlider
 import com.tablebot.ui.components.TableGrid
 import com.tablebot.ui.components.buildCellBallNumbers
 
+
 @Composable
 fun BasicTrainingList(
     trainings: List<BasicTraining>,
@@ -29,7 +32,11 @@ fun BasicTrainingList(
 ) {
     if (trainings.isEmpty()) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
+            Text(
+                "No trainings found",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
         return
     }
@@ -66,7 +73,11 @@ fun AdvancedTrainingList(
 ) {
     if (trainings.isEmpty()) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            CircularProgressIndicator()
+            Text(
+                "No trainings found",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
         }
         return
     }
@@ -122,12 +133,13 @@ private fun BasicTrainingCard(
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        "${BallType.fromValue(training.ball).label} | " +
-                            "${SpinType.fromValue(training.spin).label} | ${PowerType.fromValue(training.power).label} | " +
-                            "${training.points.size} point(s)",
+                        SkillLevelType.fromValue(training.skillLevel.id).label,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                    if (training.tags.isNotEmpty()) {
+                        TagRow(training.tags)
+                    }
                 }
 
                 IconButton(onClick = onToggleFavourite) {
@@ -257,12 +269,13 @@ private fun AdvancedTrainingCard(
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        "${training.ballList.size} ball(s) | " +
-                            "${training.repeatNum} repeats | " +
-                            "${allPoints.size} point(s)",
+                        "${SkillLevelType.fromValue(training.skillLevel.id).label} · ${training.ballList.size} balls",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                    if (training.tags.isNotEmpty()) {
+                        TagRow(training.tags)
+                    }
                 }
 
                 IconButton(onClick = onToggleFavourite) {
@@ -361,5 +374,23 @@ fun DetailChip(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(value, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
         Text(label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+}
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+private fun TagRow(tags: List<String>) {
+    FlowRow(
+        modifier = Modifier.padding(top = 4.dp),
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
+    ) {
+        tags.forEach { tag ->
+            SuggestionChip(
+                onClick = { },
+                label = { Text(tag, style = MaterialTheme.typography.labelSmall) },
+                modifier = Modifier.height(24.dp),
+            )
+        }
     }
 }
