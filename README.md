@@ -31,12 +31,13 @@ Built because Joola shut down their servers and the official app stopped working
 - [x] Favourites
 - [x] Search/filter trainings
 - [x] Delete trainings
-- [ ] Quick play mode — set up ball params and play immediately, optionally save as drill
-- [ ] Test drill button — fire a single ball to verify settings before committing
+- [x] Quick play mode — play-first home screen with pinned Test/Play buttons, load drills as presets
+- [x] Test drill button — fire a single ball to verify settings before committing
 - [ ] Reorder balls in advanced drill sequences (drag to rearrange)
 - [x] Restrict ball grid placement based on ball type and power (not all positions are valid for all combos)
-- [ ] Training categories / exercise grouping
-- [ ] Skill level filtering (Beginner / Intermediate / Advanced)
+- [x] Training categories / tags (Forehand, Backhand, Push, Openup, Flick, Smash, Serve Return, Footwork, Random, Transition)
+- [x] Skill level filtering (Newbie / Beginner / Intermediate / Advanced / Master range slider)
+- [x] Unified drill library — single searchable list with tag and skill level filters, save as copy vs rename
 - [ ] Import/export drills (file-based JSON)
 
 ### Calibration & Fine-Tuning
@@ -114,14 +115,17 @@ app/src/main/java/com/tablebot/
     components/
       ConnectionBar.kt  # BLE status bar with connect/disconnect
       StopOverlay.kt    # Full-screen stop button during playback
-      TableGrid.kt      # 3x5 interactive table position grid
+      TableGrid.kt      # 3x5 interactive table grid + spin color helpers
+      MotorValidation.kt# Shared motor config validation composable
     screens/
-      HomeScreen.kt     # Main screen with tabs and training lists
-      TrainingListScreen.kt  # Basic and advanced training cards
-      BasicEditorScreen.kt   # Create/edit basic drills
-      AdvancedEditorScreen.kt# Create/edit advanced drills
-      CalibrationScreen.kt   # Per-position motor calibration
-      DebugScreen.kt         # Raw byte control for testing
+      QuickPlayScreen.kt      # Main play-first home screen (Basic/Dynamic tabs)
+      TrainingLibrarySheet.kt  # Unified drill library bottom sheet
+      TrainingDialogs.kt       # Save and filter dialogs
+      TrainingListScreen.kt    # Training card composables (used in library)
+      BasicEditorScreen.kt     # DrillEditorState + DrillEditorContent
+      AdvancedEditorScreen.kt  # AdvancedEditorState + AdvancedEditorContent
+      CalibrationScreen.kt     # Per-position motor calibration
+      DebugScreen.kt           # Raw byte control for testing
 
 app/src/main/assets/
   base-conf.json         # 465 motor config entries (ball/spin/power -> motor speeds)
