@@ -68,6 +68,8 @@ Built because Joola shut down their servers and the official app stopped working
 - [ ] Delayed start — countdown timer (e.g. 10s) before drill begins, so you can place the phone on a tripod
 - [ ] Camera sync — auto-start video recording when drill starts
 - [ ] Remote start button support (e.g. Bluetooth clicker/shutter remote)
+- [ ] Pairing guide (on pairing fail OR first time pairing, show a guide that you might need to press a button)
+- [ ] Custom preset balls that do not fit into any category, i.e. try to set up pendulum serve simulation
 
 ## How it works
 
