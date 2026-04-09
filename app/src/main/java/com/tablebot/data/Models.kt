@@ -25,6 +25,7 @@ data class BasicTraining(
     val isFavourite: Int = 0,
     val skillLevel: SkillLevel = SkillLevel(),
     val tags: List<String> = emptyList(),
+    val isDefault: Boolean = false,
 )
 
 @Serializable
@@ -51,6 +52,7 @@ data class AdvancedTraining(
     val isFavourite: Int = 0,
     val skillLevel: SkillLevel = SkillLevel(),
     val tags: List<String> = emptyList(),
+    val isDefault: Boolean = false,
 )
 
 @Serializable

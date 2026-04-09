@@ -55,7 +55,8 @@
       "Backhand",
       "Push",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 122,
@@ -113,7 +114,8 @@
       "Forehand",
       "Push",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 121,
@@ -170,7 +172,8 @@
     "tags": [
       "Backhand",
       "Flick"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 120,
@@ -227,7 +230,8 @@
     "tags": [
       "Flick",
       "Forehand"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 119,
@@ -285,7 +289,8 @@
       "Footwork",
       "Transition",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 118,
@@ -343,7 +348,8 @@
       "Footwork",
       "Transition",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 117,
@@ -400,7 +406,8 @@
     "tags": [
       "Backhand",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 116,
@@ -457,7 +464,8 @@
     "tags": [
       "Forehand",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 1,
@@ -530,7 +538,8 @@
     "tags": [
       "Footwork",
       "Random"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 139,
@@ -613,7 +622,8 @@
       "Footwork",
       "Forehand",
       "Random"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 138,
@@ -670,7 +680,8 @@
     "tags": [
       "Backhand",
       "Flick"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 137,
@@ -743,7 +754,8 @@
     "tags": [
       "Footwork",
       "Transition"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 136,
@@ -816,7 +828,8 @@
     "tags": [
       "Footwork",
       "Transition"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 135,
@@ -947,7 +960,8 @@
       "Forehand",
       "Random",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 134,
@@ -1094,7 +1108,8 @@
       "Flick",
       "Footwork",
       "Random"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 133,
@@ -1190,7 +1205,8 @@
       "Push",
       "Random",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 132,
@@ -1253,7 +1269,8 @@
       "Forehand",
       "Random",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 131,
@@ -1311,7 +1328,8 @@
       "Backhand",
       "Push",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 130,
@@ -1369,7 +1387,8 @@
       "Forehand",
       "Push",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 129,
@@ -1426,7 +1445,8 @@
     "tags": [
       "Backhand",
       "Flick"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 128,
@@ -1483,7 +1503,8 @@
     "tags": [
       "Flick",
       "Forehand"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 127,
@@ -1541,7 +1562,8 @@
       "Footwork",
       "Transition",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 126,
@@ -1599,7 +1621,8 @@
       "Footwork",
       "Transition",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 125,
@@ -1656,7 +1679,8 @@
     "tags": [
       "Backhand",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 124,
@@ -1713,7 +1737,8 @@
     "tags": [
       "Forehand",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 147,
@@ -2172,7 +2197,8 @@
       "Flick",
       "Footwork",
       "Random"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 146,
@@ -2287,7 +2313,8 @@
       "Forehand",
       "Random",
       "Smash"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 145,
@@ -2370,7 +2397,8 @@
       "Flick",
       "Footwork",
       "Random"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 144,
@@ -2466,7 +2494,8 @@
       "Push",
       "Random",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 143,
@@ -2709,7 +2738,8 @@
       "Footwork",
       "Forehand",
       "Random"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 142,
@@ -2768,7 +2798,8 @@
       "Forehand",
       "Push",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 141,
@@ -2830,7 +2861,8 @@
       "Footwork",
       "Random",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 140,
@@ -2888,6 +2920,7 @@
       "Footwork",
       "Random",
       "Transition"
-    ]
+    ],
+    "isDefault": true
   }
 ]

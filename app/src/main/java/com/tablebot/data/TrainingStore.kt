@@ -14,27 +14,14 @@ class TrainingStore(private val context: Context) {
     private val basicFile get() = File(context.filesDir, "basic-trainings.json")
     private val advancedFile get() = File(context.filesDir, "advanced-trainings.json")
 
+    /**
+     * Run one-shot migration if needed, then load basic trainings from local file or assets.
+     */
     suspend fun loadBasicTrainings(): List<BasicTraining> = withContext(Dispatchers.IO) {
+        runMigrationIfNeeded()
         val file = basicFile
         if (file.exists()) {
-            val local = json.decodeFromString<List<BasicTraining>>(file.readText())
-            // Merge tags from bundled assets for existing drills that are missing tags
-            if (local.any { it.tags.isEmpty() }) {
-                val bundled = json.decodeFromString<List<BasicTraining>>(
-                    context.assets.open("basic-trainings.json").bufferedReader().use { it.readText() }
-                ).associateBy { it.id }
-                val merged = local.map { t ->
-                    if (t.tags.isEmpty()) {
-                        bundled[t.id]?.let { b -> t.copy(tags = b.tags) } ?: t
-                    } else t
-                }
-                if (merged != local) {
-                    file.writeText(json.encodeToString(merged))
-                }
-                merged
-            } else {
-                local
-            }
+            json.decodeFromString<List<BasicTraining>>(file.readText())
         } else {
             json.decodeFromString<List<BasicTraining>>(
                 context.assets.open("basic-trainings.json").bufferedReader().use { it.readText() }
@@ -43,25 +30,10 @@ class TrainingStore(private val context: Context) {
     }
 
     suspend fun loadAdvancedTrainings(): List<AdvancedTraining> = withContext(Dispatchers.IO) {
+        runMigrationIfNeeded()
         val file = advancedFile
         if (file.exists()) {
-            val local = json.decodeFromString<List<AdvancedTraining>>(file.readText())
-            if (local.any { it.tags.isEmpty() }) {
-                val bundled = json.decodeFromString<List<AdvancedTraining>>(
-                    context.assets.open("advanced-trainings.json").bufferedReader().use { it.readText() }
-                ).associateBy { it.id }
-                val merged = local.map { t ->
-                    if (t.tags.isEmpty()) {
-                        bundled[t.id]?.let { b -> t.copy(tags = b.tags) } ?: t
-                    } else t
-                }
-                if (merged != local) {
-                    file.writeText(json.encodeToString(merged))
-                }
-                merged
-            } else {
-                local
-            }
+            json.decodeFromString<List<AdvancedTraining>>(file.readText())
         } else {
             json.decodeFromString<List<AdvancedTraining>>(
                 context.assets.open("advanced-trainings.json").bufferedReader().use { it.readText() }
@@ -69,17 +41,57 @@ class TrainingStore(private val context: Context) {
         }
     }
 
+    private fun runMigrationIfNeeded() {
+        val version = AppPrefs.trainingMigrationVersion()
+        if (version >= AppPrefs.CURRENT_MIGRATION_VERSION) return
+
+        val bundledBasic = json.decodeFromString<List<BasicTraining>>(
+            context.assets.open("basic-trainings.json").bufferedReader().use { it.readText() }
+        ).associateBy { it.id }
+        val bundledAdvanced = json.decodeFromString<List<AdvancedTraining>>(
+            context.assets.open("advanced-trainings.json").bufferedReader().use { it.readText() }
+        ).associateBy { it.id }
+
+        if (basicFile.exists()) {
+            val local = json.decodeFromString<List<BasicTraining>>(basicFile.readText())
+            val migrated = local.map { t ->
+                val b = bundledBasic[t.id]
+                t.copy(
+                    tags = if (t.tags.isEmpty()) b?.tags ?: t.tags else t.tags,
+                    isDefault = if (b != null) b.isDefault else t.isDefault,
+                )
+            }
+            if (migrated != local) basicFile.writeText(json.encodeToString(migrated))
+        }
+
+        if (advancedFile.exists()) {
+            val local = json.decodeFromString<List<AdvancedTraining>>(advancedFile.readText())
+            val migrated = local.map { t ->
+                val b = bundledAdvanced[t.id]
+                t.copy(
+                    tags = if (t.tags.isEmpty()) b?.tags ?: t.tags else t.tags,
+                    isDefault = if (b != null) b.isDefault else t.isDefault,
+                )
+            }
+            if (migrated != local) advancedFile.writeText(json.encodeToString(migrated))
+        }
+
+        AppPrefs.setTrainingMigrationVersion(AppPrefs.CURRENT_MIGRATION_VERSION)
+    }
+
     suspend fun saveBasicTraining(training: BasicTraining) = withContext(Dispatchers.IO) {
         val list = loadBasicTrainings().toMutableList()
-        val idx = list.indexOfFirst { it.id == training.id }
-        if (idx >= 0) list[idx] = training else list.add(0, training)
+        val toSave = training.copy(isDefault = false)
+        val idx = list.indexOfFirst { it.id == toSave.id }
+        if (idx >= 0) list[idx] = toSave else list.add(0, toSave)
         basicFile.writeText(json.encodeToString(list))
     }
 
     suspend fun saveAdvancedTraining(training: AdvancedTraining) = withContext(Dispatchers.IO) {
         val list = loadAdvancedTrainings().toMutableList()
-        val idx = list.indexOfFirst { it.id == training.id }
-        if (idx >= 0) list[idx] = training else list.add(0, training)
+        val toSave = training.copy(isDefault = false)
+        val idx = list.indexOfFirst { it.id == toSave.id }
+        if (idx >= 0) list[idx] = toSave else list.add(0, toSave)
         advancedFile.writeText(json.encodeToString(list))
     }
 
@@ -107,11 +119,85 @@ class TrainingStore(private val context: Context) {
         advancedFile.writeText(json.encodeToString(list))
     }
 
+    @Deprecated("Use TrainingViewModel.nextBasicId() which derives from in-memory state")
     fun nextBasicId(): Int = (basicFile.takeIf { it.exists() }?.let {
         json.decodeFromString<List<BasicTraining>>(it.readText()).maxOfOrNull { t -> t.id }
     } ?: 999) + 1
 
+    @Deprecated("Use TrainingViewModel.nextAdvancedId() which derives from in-memory state")
     fun nextAdvancedId(): Int = (advancedFile.takeIf { it.exists() }?.let {
         json.decodeFromString<List<AdvancedTraining>>(it.readText()).maxOfOrNull { t -> t.id }
     } ?: 999) + 1
+
+    // ── Export / Import ────────────────────────────────────────────────
+
+    @kotlinx.serialization.Serializable
+    data class DrillExportBundle(
+        val basic: List<BasicTraining> = emptyList(),
+        val advanced: List<AdvancedTraining> = emptyList(),
+    )
+
+    /** Export from already-filtered in-memory lists (avoids stale disk reads). */
+    fun exportFromMemory(basic: List<BasicTraining>, advanced: List<AdvancedTraining>): String =
+        json.encodeToString(DrillExportBundle(basic, advanced))
+
+    suspend fun parseImportBundle(jsonText: String): DrillExportBundle = withContext(Dispatchers.IO) {
+        json.decodeFromString<DrillExportBundle>(jsonText)
+    }
+
+    /**
+     * Returns typed collision keys (e.g. "basic:Forehand Flick") for drills in [bundle]
+     * that collide with existing drills by name within the same type.
+     */
+    suspend fun findCollisions(bundle: DrillExportBundle): List<String> = withContext(Dispatchers.IO) {
+        val existingBasic = loadBasicTrainings().associateBy { it.name }
+        val existingAdvanced = loadAdvancedTrainings().associateBy { it.name }
+        val collisions = mutableListOf<String>()
+        bundle.basic.forEach { incoming ->
+            if (existingBasic[incoming.name] != null) collisions += "basic:${incoming.name}"
+        }
+        bundle.advanced.forEach { incoming ->
+            if (existingAdvanced[incoming.name] != null) collisions += "advanced:${incoming.name}"
+        }
+        collisions
+    }
+
+    /**
+     * Import drills from [bundle]. [overwriteKeys] contains typed keys like "basic:Name".
+     * For collisions in [overwriteKeys], replace existing. Non-colliding always added with fresh ID.
+     */
+    suspend fun importBundle(bundle: DrillExportBundle, overwriteKeys: Set<String>) = withContext(Dispatchers.IO) {
+        val existingBasic = loadBasicTrainings().toMutableList()
+        val existingAdvanced = loadAdvancedTrainings().toMutableList()
+
+        var nextBasic = (existingBasic.maxOfOrNull { it.id } ?: 999) + 1
+        var nextAdvanced = (existingAdvanced.maxOfOrNull { it.id } ?: 999) + 1
+        var basicChanged = false
+        var advancedChanged = false
+
+        bundle.basic.forEach { incoming ->
+            val collidingIdx = existingBasic.indexOfFirst { it.name == incoming.name }
+            if (collidingIdx >= 0 && "basic:${incoming.name}" in overwriteKeys) {
+                existingBasic[collidingIdx] = incoming.copy(id = existingBasic[collidingIdx].id, isDefault = false)
+                basicChanged = true
+            } else if (collidingIdx < 0) {
+                existingBasic.add(0, incoming.copy(id = nextBasic++, isDefault = false))
+                basicChanged = true
+            }
+        }
+
+        bundle.advanced.forEach { incoming ->
+            val collidingIdx = existingAdvanced.indexOfFirst { it.name == incoming.name }
+            if (collidingIdx >= 0 && "advanced:${incoming.name}" in overwriteKeys) {
+                existingAdvanced[collidingIdx] = incoming.copy(id = existingAdvanced[collidingIdx].id, isDefault = false)
+                advancedChanged = true
+            } else if (collidingIdx < 0) {
+                existingAdvanced.add(0, incoming.copy(id = nextAdvanced++, isDefault = false))
+                advancedChanged = true
+            }
+        }
+
+        if (basicChanged) basicFile.writeText(json.encodeToString(existingBasic))
+        if (advancedChanged) advancedFile.writeText(json.encodeToString(existingAdvanced))
+    }
 }

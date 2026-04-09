@@ -33,7 +33,8 @@
     "tags": [
       "Flick",
       "Forehand"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 1,
@@ -66,7 +67,8 @@
       "id": 1,
       "skillLevel": "Beginner"
     },
-    "tags": []
+    "tags": [],
+    "isDefault": true
   },
   {
     "id": 143,
@@ -138,7 +140,8 @@
     "tags": [
       "Footwork",
       "Random"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 123,
@@ -190,7 +193,8 @@
     "tags": [
       "Footwork",
       "Serve Return"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 125,
@@ -226,7 +230,8 @@
     "tags": [
       "Backhand",
       "Flick"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 118,
@@ -261,7 +266,8 @@
     },
     "tags": [
       "Forehand"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 135,
@@ -302,7 +308,8 @@
       "Footwork",
       "Push",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 120,
@@ -338,7 +345,8 @@
     "tags": [
       "Forehand",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 122,
@@ -378,7 +386,8 @@
     "tags": [
       "Footwork",
       "Transition"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 144,
@@ -414,7 +423,8 @@
     "tags": [
       "Backhand",
       "Push"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 121,
@@ -450,7 +460,8 @@
     "tags": [
       "Backhand",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 119,
@@ -485,7 +496,8 @@
     },
     "tags": [
       "Backhand"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 145,
@@ -521,7 +533,8 @@
     "tags": [
       "Forehand",
       "Push"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 126,
@@ -565,7 +578,8 @@
     "tags": [
       "Footwork",
       "Transition"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 127,
@@ -604,7 +618,8 @@
     "lastPlayDateUTC": "2025-01-01 08:00:00",
     "tags": [
       "Footwork"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 128,
@@ -640,7 +655,8 @@
     "tags": [
       "Forehand",
       "Smash"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 141,
@@ -692,7 +708,8 @@
     "tags": [
       "Footwork",
       "Random"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 142,
@@ -764,7 +781,8 @@
     "tags": [
       "Footwork",
       "Random"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 154,
@@ -836,7 +854,8 @@
     "tags": [
       "Footwork",
       "Forehand"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 153,
@@ -897,7 +916,8 @@
       "Footwork",
       "Forehand",
       "Random"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 131,
@@ -941,7 +961,8 @@
     "tags": [
       "Footwork",
       "Transition"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 146,
@@ -994,7 +1015,8 @@
       "Footwork",
       "Random",
       "Serve Return"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 137,
@@ -1038,7 +1060,8 @@
     "tags": [
       "Footwork",
       "Forehand"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 133,
@@ -1086,7 +1109,8 @@
     "tags": [
       "Footwork",
       "Transition"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 129,
@@ -1122,7 +1146,8 @@
     "tags": [
       "Forehand",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 132,
@@ -1161,7 +1186,8 @@
     },
     "tags": [
       "Footwork"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 134,
@@ -1209,7 +1235,8 @@
     "tags": [
       "Footwork",
       "Transition"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 136,
@@ -1257,7 +1284,8 @@
     "tags": [
       "Footwork",
       "Forehand"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 130,
@@ -1293,7 +1321,8 @@
     "tags": [
       "Backhand",
       "Openup"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 155,
@@ -1354,7 +1383,8 @@
       "Footwork",
       "Forehand",
       "Random"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 148,
@@ -1398,7 +1428,8 @@
     "tags": [
       "Footwork",
       "Transition"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 147,
@@ -1437,7 +1468,8 @@
     },
     "tags": [
       "Footwork"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 151,
@@ -1487,7 +1519,8 @@
       "Footwork",
       "Forehand",
       "Transition"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 149,
@@ -1535,7 +1568,8 @@
     "tags": [
       "Footwork",
       "Forehand"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 150,
@@ -1579,7 +1613,8 @@
     "tags": [
       "Footwork",
       "Forehand"
-    ]
+    ],
+    "isDefault": true
   },
   {
     "id": 152,
@@ -1629,6 +1664,7 @@
       "Footwork",
       "Forehand",
       "Transition"
-    ]
+    ],
+    "isDefault": true
   }
 ]

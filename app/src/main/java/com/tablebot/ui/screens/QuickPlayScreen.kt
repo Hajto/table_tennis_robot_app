@@ -56,6 +56,8 @@ fun QuickPlayScreen(
     onToggleAdvancedFavourite: (Int) -> Unit,
     nextBasicId: () -> Int,
     nextAdvancedId: () -> Int,
+    onExportDrills: (() -> Unit)? = null,
+    onImportDrills: (() -> Unit)? = null,
     // Navigation
     onCalibrate: () -> Unit,
     onDebug: () -> Unit,
@@ -70,6 +72,7 @@ fun QuickPlayScreen(
     reopenProfileSwitcher: Boolean = false,
     scrollToProfileId: String = "",
     profileErrorFlow: kotlinx.coroutines.flow.Flow<String>? = null,
+    importStatusFlow: kotlinx.coroutines.flow.Flow<String>? = null,
 ) {
     // Mode: 0 = Basic, 1 = Advanced
     var mode by remember { mutableIntStateOf(0) }
@@ -140,15 +143,24 @@ fun QuickPlayScreen(
             .toSortedSet()
     }
 
-    // Original name of loaded drill (for detecting renames)
-    val loadedOriginalName = remember(mode, loadedBasicId, loadedAdvancedId) {
+    // Is the currently loaded drill a default?
+    val isLoadedDefault = remember(mode, loadedBasicId, loadedAdvancedId, basicTrainings, advancedTrainings) {
         when {
             mode == 0 && loadedBasicId != null ->
-                basicTrainings.find { it.id == loadedBasicId }?.name
+                basicTrainings.find { it.id == loadedBasicId }?.isDefault ?: true
             mode == 1 && loadedAdvancedId != null ->
-                advancedTrainings.find { it.id == loadedAdvancedId }?.name
-            else -> null
+                advancedTrainings.find { it.id == loadedAdvancedId }?.isDefault ?: true
+            else -> true
         }
+    }
+
+    // Original name of loaded drill (for detecting renames) — derived directly, not cached
+    val loadedOriginalName = when {
+        mode == 0 && loadedBasicId != null ->
+            basicTrainings.find { it.id == loadedBasicId }?.name
+        mode == 1 && loadedAdvancedId != null ->
+            advancedTrainings.find { it.id == loadedAdvancedId }?.name
+        else -> null
     }
 
     // Save dialog with tag editor
@@ -240,12 +252,17 @@ fun QuickPlayScreen(
             connected = connected,
             isPlaying = isPlaying,
             onStop = onStop,
+            onExport = onExportDrills,
+            onImport = onImportDrills,
         )
     }
 
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(profileErrorFlow) {
         profileErrorFlow?.collect { msg -> snackbarHostState.showSnackbar(msg) }
+    }
+    LaunchedEffect(importStatusFlow) {
+        importStatusFlow?.collect { msg -> snackbarHostState.showSnackbar(msg) }
     }
 
     var showProfileSwitcher by remember { mutableStateOf(false) }
@@ -379,7 +396,16 @@ fun QuickPlayScreen(
                             onToggleAdvancedFavourite(loadedAdvancedId!!)
                         }
                     },
-                    onSaveClick = { showSaveDialog = true },
+                    onSaveClick = {
+                        val isNonDefaultLoaded = loadedId != null && !isLoadedDefault
+                        if (isNonDefaultLoaded) {
+                            // Non-default loaded drill — overwrite directly without dialog
+                            if (mode == 0) onSaveBasic(basicState.toTraining())
+                            else onSaveAdvanced(advancedState.toTraining())
+                        } else {
+                            showSaveDialog = true
+                        }
+                    },
                     showFavourite = loadedId != null,
                 )
 
