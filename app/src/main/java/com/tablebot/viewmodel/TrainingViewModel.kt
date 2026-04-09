@@ -49,16 +49,25 @@ class TrainingViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun saveBasicTraining(training: BasicTraining) {
+        // Optimistic update — immediately reflect in memory so export/UI never sees stale data
+        val saved = training.copy(isDefault = false)
+        val current = _basicTrainings.value?.toMutableList() ?: mutableListOf()
+        val idx = current.indexOfFirst { it.id == saved.id }
+        if (idx >= 0) current[idx] = saved else current.add(0, saved)
+        _basicTrainings.value = current
         viewModelScope.launch {
             store.saveBasicTraining(training)
-            _basicTrainings.value = store.loadBasicTrainings()
         }
     }
 
     fun saveAdvancedTraining(training: AdvancedTraining) {
+        val saved = training.copy(isDefault = false)
+        val current = _advancedTrainings.value?.toMutableList() ?: mutableListOf()
+        val idx = current.indexOfFirst { it.id == saved.id }
+        if (idx >= 0) current[idx] = saved else current.add(0, saved)
+        _advancedTrainings.value = current
         viewModelScope.launch {
             store.saveAdvancedTraining(training)
-            _advancedTrainings.value = store.loadAdvancedTrainings()
         }
     }
 
@@ -90,6 +99,28 @@ class TrainingViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun nextBasicId(): Int = store.nextBasicId()
-    fun nextAdvancedId(): Int = store.nextAdvancedId()
+    fun nextBasicId(): Int =
+        (_basicTrainings.value?.maxOfOrNull { it.id } ?: 999) + 1
+
+    fun nextAdvancedId(): Int =
+        (_advancedTrainings.value?.maxOfOrNull { it.id } ?: 999) + 1
+
+    suspend fun exportToJson(): String {
+        val basic = _basicTrainings.value?.filter { !it.isDefault } ?: emptyList()
+        val advanced = _advancedTrainings.value?.filter { !it.isDefault } ?: emptyList()
+        return store.exportFromMemory(basic, advanced)
+    }
+
+    suspend fun parseImportBundle(jsonText: String) = store.parseImportBundle(jsonText)
+
+    suspend fun findCollisions(bundle: com.tablebot.data.TrainingStore.DrillExportBundle) =
+        store.findCollisions(bundle)
+
+    fun importBundle(bundle: com.tablebot.data.TrainingStore.DrillExportBundle, overwriteNames: Set<String>) {
+        viewModelScope.launch {
+            store.importBundle(bundle, overwriteNames)
+            _basicTrainings.value = store.loadBasicTrainings()
+            _advancedTrainings.value = store.loadAdvancedTrainings()
+        }
+    }
 }

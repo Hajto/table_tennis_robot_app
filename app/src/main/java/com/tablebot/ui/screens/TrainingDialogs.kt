@@ -3,6 +3,8 @@ package com.tablebot.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -138,6 +140,62 @@ internal fun SaveTrainingDialog(
                     ) { Text("Save") }
                 }
             }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        },
+    )
+}
+
+// ── Import collision dialog ──────────────────────────────────────────
+
+/**
+ * Shown when importing a JSON bundle that contains drills with names that already exist.
+ * User selects which colliding names to overwrite; others are skipped.
+ */
+@Composable
+internal fun ImportCollisionDialog(
+    collidingNames: List<String>,
+    onConfirm: (overwriteNames: Set<String>) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var checked by remember { mutableStateOf(emptySet<String>()) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Resolve Conflicts") },
+        text = {
+            Column(
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+            ) {
+                Text(
+                    "These drills already exist. Choose which ones to overwrite:",
+                    style = MaterialTheme.typography.bodyMedium,
+                )
+                Spacer(Modifier.height(8.dp))
+                collidingNames.forEach { key ->
+                    val typePrefix = key.substringBefore(":", "")
+                    val displayName = key.substringAfter(":")
+                    val label = if (typePrefix.isNotEmpty()) "$displayName ($typePrefix)" else key
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Checkbox(
+                            checked = key in checked,
+                            onCheckedChange = { on ->
+                                checked = if (on) checked + key else checked - key
+                            },
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(label, style = MaterialTheme.typography.bodyMedium)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(checked) }) { Text("Import") }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) { Text("Cancel") }

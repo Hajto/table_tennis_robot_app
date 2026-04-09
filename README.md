@@ -58,7 +58,9 @@ Tap the training name card on the main screen to open the drill library. Use the
 - [x] Training categories / tags (Forehand, Backhand, Push, Openup, Flick, Smash, Serve Return, Footwork, Random, Transition)
 - [x] Skill level filtering (Newbie / Beginner / Intermediate / Advanced / Master range slider)
 - [x] Unified drill library — single searchable list with tag and skill level filters, save as copy vs rename
-- [ ] Import/export drills (file-based JSON)
+- [x] Default drill badges — bundled drills marked as Default; saving a default creates a user copy
+- [x] Export drills to JSON (excludes default drills, user drills only)
+- [x] Import drills from JSON with collision resolution (choose which existing drills to overwrite)
 
 ### Calibration & Fine-Tuning
 - [x] Motor config from bundled base-conf (465 entries)
@@ -79,15 +81,15 @@ Tap the training name card on the main screen to open the drill library. Use the
 - [ ] Cooldown timer warning (robot suggests 15min break every 2hrs)
 
 ### Data Management
-- [ ] Create calibration profiles, will give robot option to be repositioned.
-- [ ] Import drills from JSON file
-- [ ] Export drills to JSON file
+- [x] Create calibration profiles, will give robot option to be repositioned.
+- [x] Export drills to JSON file (user drills only)
+- [x] Import drills from JSON file with collision resolution
 - [ ] Import/export motor calibration
 - [ ] Backup & restore all data
 - [ ] Share drills via file/link
 
 ### Stretch Goals
-- [x] Time based trainings instead of ball count based. So you can do 30s instead of 20 reps.
+- [ ] Time based trainings instead of ball count based. So you can do 30s instead of 20 reps.
 - [ ] Delayed start — countdown timer (e.g. 10s) before drill begins, so you can place the phone on a tripod
 - [ ] Camera sync — auto-start video recording when drill starts
 - [ ] Remote start button support (e.g. Bluetooth clicker/shutter remote)

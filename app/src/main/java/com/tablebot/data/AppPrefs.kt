@@ -10,6 +10,8 @@ object AppPrefs {
     private const val KEY_SHOW_FIELD_NUMBERS = "show_field_numbers"
     private const val KEY_DEBUG_MODE = "debug_mode"
     private const val KEY_HAS_SEEN_ONBOARDING = "has_seen_onboarding"
+    private const val KEY_TRAINING_MIGRATION_VERSION = "training_migration_version"
+    const val CURRENT_MIGRATION_VERSION = 2 // 1 = tags, 2 = isDefault
 
     private lateinit var prefs: SharedPreferences
 
@@ -42,5 +44,12 @@ object AppPrefs {
     fun setHasSeenOnboarding(seen: Boolean) {
         _hasSeenOnboarding.value = seen
         prefs.edit().putBoolean(KEY_HAS_SEEN_ONBOARDING, seen).apply()
+    }
+
+    fun trainingMigrationVersion(): Int =
+        prefs.getInt(KEY_TRAINING_MIGRATION_VERSION, 0)
+
+    fun setTrainingMigrationVersion(version: Int) {
+        prefs.edit().putInt(KEY_TRAINING_MIGRATION_VERSION, version).apply()
     }
 }

@@ -2,13 +2,19 @@ package com.tablebot
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavType
@@ -18,11 +24,13 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.tablebot.ble.ConnectionState
 import com.tablebot.data.AppPrefs
+import com.tablebot.data.TrainingStore
 import com.tablebot.ui.components.StopOverlay
 import com.tablebot.ui.screens.*
 import com.tablebot.ui.theme.TableBotTheme
 import com.tablebot.viewmodel.RobotViewModel
 import com.tablebot.viewmodel.TrainingViewModel
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -57,6 +65,67 @@ class MainActivity : ComponentActivity() {
                                 }
                             }
 
+                            // ── Export / Import ────────────────────────────────────────────
+                            val scope = rememberCoroutineScope()
+                            var pendingImportBundle by remember {
+                                mutableStateOf<TrainingStore.DrillExportBundle?>(null)
+                            }
+                            var importCollisions by remember { mutableStateOf<List<String>>(emptyList()) }
+                            val importSnackbarFlow = remember { kotlinx.coroutines.flow.MutableSharedFlow<String>() }
+
+                            val exportLauncher = rememberLauncherForActivityResult(
+                                ActivityResultContracts.CreateDocument("application/json")
+                            ) { uri ->
+                                if (uri != null) {
+                                    scope.launch {
+                                        val jsonText = trainingVm.exportToJson()
+                                        contentResolver.openOutputStream(uri)?.use {
+                                            it.write(jsonText.toByteArray())
+                                        }
+                                    }
+                                }
+                            }
+
+                            val importLauncher = rememberLauncherForActivityResult(
+                                ActivityResultContracts.OpenDocument()
+                            ) { uri ->
+                                if (uri != null) {
+                                    scope.launch {
+                                        val jsonText = contentResolver.openInputStream(uri)
+                                            ?.bufferedReader()?.use { it.readText() } ?: return@launch
+                                        val bundle = runCatching {
+                                            trainingVm.parseImportBundle(jsonText)
+                                        }.getOrElse {
+                                            importSnackbarFlow.emit("Invalid drill file")
+                                            return@launch
+                                        }
+                                        val collisions = trainingVm.findCollisions(bundle)
+                                        if (collisions.isEmpty()) {
+                                            trainingVm.importBundle(bundle, emptySet())
+                                            importSnackbarFlow.emit("Imported ${bundle.basic.size + bundle.advanced.size} drills")
+                                        } else {
+                                            pendingImportBundle = bundle
+                                            importCollisions = collisions
+                                        }
+                                    }
+                                }
+                            }
+
+                            if (pendingImportBundle != null && importCollisions.isNotEmpty()) {
+                                ImportCollisionDialog(
+                                    collidingNames = importCollisions,
+                                    onConfirm = { overwriteNames ->
+                                        trainingVm.importBundle(pendingImportBundle!!, overwriteNames)
+                                        pendingImportBundle = null
+                                        importCollisions = emptyList()
+                                    },
+                                    onDismiss = {
+                                        pendingImportBundle = null
+                                        importCollisions = emptyList()
+                                    },
+                                )
+                            }
+
                             QuickPlayScreen(
                                 reopenProfileSwitcher = reopenSwitcher,
                                 scrollToProfileId = scrollToProfileId,
@@ -87,6 +156,12 @@ class MainActivity : ComponentActivity() {
                                 onToggleAdvancedFavourite = { trainingVm.toggleAdvancedFavourite(it) },
                                 nextBasicId = { trainingVm.nextBasicId() },
                                 nextAdvancedId = { trainingVm.nextAdvancedId() },
+                                onExportDrills = {
+                                    exportLauncher.launch("tablebot-drills.json")
+                                },
+                                onImportDrills = {
+                                    importLauncher.launch(arrayOf("application/json", "text/plain"))
+                                },
                                 onCalibrate = { navController.navigate("calibration") },
                                 onDebug = { navController.navigate("debug") },
                                 onSettings = { navController.navigate("settings") },
@@ -103,6 +178,7 @@ class MainActivity : ComponentActivity() {
                                     }
                                 },
                                 profileErrorFlow = robotVm.profileError,
+                                importStatusFlow = importSnackbarFlow,
                             )
                         }
 

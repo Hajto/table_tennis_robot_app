@@ -27,12 +27,13 @@ internal sealed class TrainingItem(
     val skillLevelId: Int,
     val tags: List<String>,
     val typeLabel: String,
+    val isDefault: Boolean,
 ) {
     class Basic(val training: BasicTraining) : TrainingItem(
-        training.id, training.name, training.isFavourite, training.skillLevel.id, training.tags, "Basic"
+        training.id, training.name, training.isFavourite, training.skillLevel.id, training.tags, "Basic", training.isDefault
     )
     class Dynamic(val training: AdvancedTraining) : TrainingItem(
-        training.id, training.name, training.isFavourite, training.skillLevel.id, training.tags, "Dynamic"
+        training.id, training.name, training.isFavourite, training.skillLevel.id, training.tags, "Dynamic", training.isDefault
     )
 }
 
@@ -53,6 +54,8 @@ internal fun TrainingBottomSheet(
     connected: Boolean,
     isPlaying: Boolean,
     onStop: () -> Unit,
+    onExport: (() -> Unit)? = null,
+    onImport: (() -> Unit)? = null,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     var searchQuery by remember { mutableStateOf("") }
@@ -127,6 +130,16 @@ internal fun TrainingBottomSheet(
                     singleLine = true,
                 )
                 Spacer(Modifier.width(8.dp))
+                if (onImport != null) {
+                    IconButton(onClick = onImport) {
+                        Icon(Icons.Default.FileUpload, "Import drills")
+                    }
+                }
+                if (onExport != null) {
+                    IconButton(onClick = onExport) {
+                        Icon(Icons.Default.FileDownload, "Export drills")
+                    }
+                }
                 IconButton(onClick = { showFilterDialog = true }) {
                     BadgedBox(
                         badge = {
@@ -205,8 +218,14 @@ private fun UnifiedTrainingCard(
                         style = MaterialTheme.typography.titleSmall,
                         fontWeight = FontWeight.Bold,
                     )
+                    val subtitle = buildString {
+                        append(item.typeLabel)
+                        append(" · ")
+                        append(SkillLevelType.fromValue(item.skillLevelId).label)
+                        if (item.isDefault) append(" · Default")
+                    }
                     Text(
-                        "${item.typeLabel} · ${SkillLevelType.fromValue(item.skillLevelId).label}",
+                        subtitle,
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
