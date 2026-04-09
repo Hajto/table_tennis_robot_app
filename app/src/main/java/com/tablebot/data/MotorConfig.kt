@@ -10,8 +10,8 @@ import java.io.File
 
 private val json = Json { ignoreUnknownKeys = true; prettyPrint = true }
 
-class MotorConfig(private val context: Context) {
-    private val file get() = File(context.filesDir, "motor-config.json")
+class MotorConfig(private val context: Context, private val fileName: String = "motor-config.json") {
+    private val file get() = File(context.filesDir, fileName)
     private var configs: MutableList<MotorParams>
 
     init {
@@ -62,11 +62,21 @@ class MotorConfig(private val context: Context) {
 
     fun exportJson(): String = json.encodeToString<List<MotorParams>>(configs)
 
-    suspend fun importJson(uri: Uri) = withContext(Dispatchers.IO) {
-        val text = context.contentResolver.openInputStream(uri)!!.bufferedReader().use { it.readText() }
-        configs = json.decodeFromString<List<MotorParams>>(text).toMutableList()
+    suspend fun importJson(uri: Uri): String? = withContext(Dispatchers.IO) {
+        val stream = context.contentResolver.openInputStream(uri)
+            ?: return@withContext "Could not open file"
+        val text = stream.bufferedReader().use { it.readText() }
+        val parsed = try {
+            json.decodeFromString<List<MotorParams>>(text)
+        } catch (e: Exception) {
+            return@withContext "Invalid file format: ${e.message}"
+        }
+        configs = parsed.toMutableList()
         file.writeText(json.encodeToString<List<MotorParams>>(configs))
+        null // success
     }
 
     fun isCustomized(): Boolean = file.exists()
+
+    fun isEmpty(): Boolean = configs.isEmpty()
 }

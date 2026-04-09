@@ -27,9 +27,9 @@ fun rememberMotorConstraints(
     onPowerChange: (Int) -> Unit,
     onPointsChange: (List<Point>) -> Unit,
 ): MotorConstraints {
-    val validSpins = remember(ball) { motorConfig?.validSpins(ball) }
-    val validPowers = remember(ball, spin) { motorConfig?.validPowers(ball, spin) }
-    val enabledCells = remember(ball, spin, power) { motorConfig?.validLandareas(ball, spin, power) }
+    val validSpins = remember(ball, motorConfig) { motorConfig?.validSpins(ball) }
+    val validPowers = remember(ball, spin, motorConfig) { motorConfig?.validPowers(ball, spin) }
+    val enabledCells = remember(ball, spin, power, motorConfig) { motorConfig?.validLandareas(ball, spin, power) }
 
     LaunchedEffect(ball) {
         val allowed = validSpins ?: return@LaunchedEffect

@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
@@ -36,18 +37,34 @@ class MainActivity : ComponentActivity() {
                 val trainingVm: TrainingViewModel = viewModel()
 
                 Box(Modifier.fillMaxSize()) {
+                    val motorConfig by robotVm.motorConfigFlow.collectAsState()
+                    val activeProfile by robotVm.activeProfile.collectAsState()
+                    val profileIndex by robotVm.profileIndex.collectAsState()
+
                     NavHost(navController, startDestination = "home") {
                         composable("home") {
                             val connectionState by robotVm.connectionState.collectAsState()
                             val basicTrainings by trainingVm.basicTrainings.collectAsState()
                             val advancedTrainings by trainingVm.advancedTrainings.collectAsState()
 
+                            // Reopen profile switcher when returning from profile editor
+                            val savedState = it.savedStateHandle
+                            val reopenSwitcher by savedState.getStateFlow("reopenSwitcher", false).collectAsState()
+                            val scrollToProfileId by savedState.getStateFlow("scrollToProfileId", "").collectAsState()
+                            LaunchedEffect(reopenSwitcher) {
+                                if (reopenSwitcher) {
+                                    savedState["reopenSwitcher"] = false
+                                }
+                            }
+
                             QuickPlayScreen(
-                                motorConfig = robotVm.motorConfig,
+                                reopenProfileSwitcher = reopenSwitcher,
+                                scrollToProfileId = scrollToProfileId,
+                                motorConfig = motorConfig,
                                 connected = connectionState == ConnectionState.CONNECTED,
                                 isPlaying = robotVm.isPlaying.collectAsState().value,
                                 onTestBall = { req ->
-                                    robotVm.motorConfig.lookup(req.ball, req.spin, req.power, req.cell)?.let {
+                                    motorConfig.lookup(req.ball, req.spin, req.power, req.cell)?.let {
                                         robotVm.sendTestBall(it, req.ballTime)
                                     }
                                 },
@@ -74,6 +91,18 @@ class MainActivity : ComponentActivity() {
                                 onDebug = { navController.navigate("debug") },
                                 onSettings = { navController.navigate("settings") },
                                 onManual = { navController.navigate("manual") },
+                                activeProfileName = activeProfile?.name,
+                                profileIndex = profileIndex,
+                                onSwitchProfile = { robotVm.switchProfile(it) },
+                                onEditProfile = {
+                                    navController.navigate("editProfile/$it")
+                                },
+                                onCreateProfile = {
+                                    robotVm.createProfile("New Profile") { profile ->
+                                        navController.navigate("editProfile/${profile.id}")
+                                    }
+                                },
+                                profileErrorFlow = robotVm.profileError,
                             )
                         }
 
@@ -85,6 +114,7 @@ class MainActivity : ComponentActivity() {
                             CalibrationScreen(
                                 robotVm = robotVm,
                                 onBack = { navController.popBackStack() },
+                                activeProfileName = activeProfile?.name,
                             )
                         }
 
@@ -109,9 +139,9 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onBack = { navController.popBackStack() },
                                 nextId = existing?.id ?: trainingVm.nextBasicId(),
-                                motorConfig = robotVm.motorConfig,
+                                motorConfig = motorConfig,
                                 onTestBall = { req ->
-                                    robotVm.motorConfig.lookup(req.ball, req.spin, req.power, req.cell)?.let {
+                                    motorConfig.lookup(req.ball, req.spin, req.power, req.cell)?.let {
                                         robotVm.sendTestBall(it, req.ballTime)
                                     }
                                 },
@@ -135,8 +165,41 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onBack = { navController.popBackStack() },
                                 nextId = { trainingVm.nextAdvancedId() },
-                                motorConfig = robotVm.motorConfig,
+                                motorConfig = motorConfig,
                             )
+                        }
+
+                        composable(
+                            "editProfile/{profileId}",
+                            arguments = listOf(navArgument("profileId") { type = NavType.StringType }),
+                        ) { backStackEntry ->
+                            val profileId = backStackEntry.arguments?.getString("profileId") ?: ""
+                            val index by robotVm.profileIndex.collectAsState()
+                            val profile = index?.profiles?.find { it.id == profileId }
+
+                            if (profile != null) {
+                                ProfileEditorScreen(
+                                    profile = profile,
+                                    onSave = { updated -> robotVm.updateProfile(updated) },
+                                    onBack = {
+                                        navController.previousBackStackEntry
+                                            ?.savedStateHandle?.apply {
+                                                set("reopenSwitcher", true)
+                                                set("scrollToProfileId", profileId)
+                                            }
+                                        navController.popBackStack()
+                                    },
+                                    onDelete = if ((index?.profiles?.size ?: 0) > 1) {
+                                        {
+                                            robotVm.deleteProfile(profileId)
+                                            navController.previousBackStackEntry
+                                                ?.savedStateHandle
+                                                ?.set("reopenSwitcher", true)
+                                            navController.popBackStack()
+                                        }
+                                    } else null,
+                                )
+                            }
                         }
 
                         composable("manual") {

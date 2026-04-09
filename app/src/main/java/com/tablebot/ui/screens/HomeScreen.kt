@@ -35,6 +35,7 @@ fun HomeScreen(
     onCalibrate: () -> Unit = {},
     onSettings: () -> Unit = {},
     onQuickPlay: () -> Unit = {},
+    activeProfileName: String? = null,
 ) {
     val connectionState by robotVm.connectionState.collectAsState()
     val deviceName by robotVm.deviceName.collectAsState()
@@ -86,7 +87,7 @@ fun HomeScreen(
         topBar = {
             Column {
                 CenterAlignedTopAppBar(
-                    title = { Text("TableBot") },
+                    title = { Text(activeProfileName ?: "TableBot") },
                     actions = {
                         var menuExpanded by remember { mutableStateOf(false) }
                         IconButton(onClick = { menuExpanded = true }) {
