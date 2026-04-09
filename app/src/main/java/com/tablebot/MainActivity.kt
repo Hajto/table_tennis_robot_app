@@ -73,6 +73,7 @@ class MainActivity : ComponentActivity() {
                                 onCalibrate = { navController.navigate("calibration") },
                                 onDebug = { navController.navigate("debug") },
                                 onSettings = { navController.navigate("settings") },
+                                onManual = { navController.navigate("manual") },
                             )
                         }
 
@@ -135,6 +136,24 @@ class MainActivity : ComponentActivity() {
                                 onBack = { navController.popBackStack() },
                                 nextId = { trainingVm.nextAdvancedId() },
                                 motorConfig = robotVm.motorConfig,
+                            )
+                        }
+
+                        composable("manual") {
+                            ManualScreen(
+                                onBack = { navController.popBackStack() },
+                                onArticle = { articleId -> navController.navigate("manual/$articleId") },
+                            )
+                        }
+
+                        composable(
+                            "manual/{articleId}",
+                            arguments = listOf(navArgument("articleId") { type = NavType.StringType }),
+                        ) { backStackEntry ->
+                            val articleId = backStackEntry.arguments?.getString("articleId") ?: ""
+                            ManualArticleScreen(
+                                articleId = articleId,
+                                onBack = { navController.popBackStack() },
                             )
                         }
                     }

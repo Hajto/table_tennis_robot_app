@@ -58,6 +58,7 @@ fun QuickPlayScreen(
     onCalibrate: () -> Unit,
     onDebug: () -> Unit,
     onSettings: () -> Unit,
+    onManual: () -> Unit,
 ) {
     // Mode: 0 = Basic, 1 = Advanced
     var mode by remember { mutableIntStateOf(0) }
@@ -180,6 +181,29 @@ fun QuickPlayScreen(
         )
     }
 
+    // Onboarding dialog — shown once on first launch
+    val hasSeenOnboarding by AppPrefs.hasSeenOnboarding.collectAsState()
+    if (!hasSeenOnboarding) {
+        AlertDialog(
+            onDismissRequest = { AppPrefs.setHasSeenOnboarding(true) },
+            title = { Text("Welcome to TableBot") },
+            text = {
+                Text(
+                    "Control your Joola Infinity table tennis robot \u2014 " +
+                    "no internet or account needed.\n\n" +
+                    "Tap the connection bar at the top to pair with your robot, " +
+                    "then customize a drill and tap Play.\n\n" +
+                    "For detailed help, tap the \u22EE menu and select Manual."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { AppPrefs.setHasSeenOnboarding(true) }) {
+                    Text("Got it")
+                }
+            },
+        )
+    }
+
     // Training list bottom sheet — shows only the type matching current tab
     if (showTrainingSheet) {
         TrainingBottomSheet(
@@ -236,6 +260,10 @@ fun QuickPlayScreen(
                             DropdownMenuItem(
                                 text = { Text("Settings") },
                                 onClick = { menuExpanded = false; onSettings() },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Manual") },
+                                onClick = { menuExpanded = false; onManual() },
                             )
                         }
                     },

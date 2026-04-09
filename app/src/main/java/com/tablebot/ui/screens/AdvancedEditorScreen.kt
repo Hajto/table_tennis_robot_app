@@ -1,5 +1,6 @@
 package com.tablebot.ui.screens
 
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -11,8 +12,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.tablebot.data.*
 import com.tablebot.ui.components.BallSettingsDropdowns
 import com.tablebot.ui.components.rememberMotorConstraints
@@ -77,6 +82,13 @@ class AdvancedEditorState(
             ballList = ballList.toMutableList().apply { removeAt(index) }
         }
     }
+
+    fun moveBall(from: Int, to: Int) {
+        if (from !in ballList.indices || to !in ballList.indices || from == to) return
+        ballList = ballList.toMutableList().apply {
+            java.util.Collections.swap(this, from, to)
+        }
+    }
 }
 
 @Composable
@@ -121,20 +133,89 @@ fun AdvancedEditorContent(
 
         HorizontalDivider()
 
-        // Ball entries
+        // Ball entries with drag-to-reorder
         Text("Ball Sequence", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
+        Text(
+            "Long press and drag to reorder",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+
+        // Drag-to-reorder state: live swap during drag
+        var draggingIndex by remember { mutableStateOf(-1) }
+        var dragOffsetY by remember { mutableFloatStateOf(0f) }
+        val itemHeights = remember { mutableStateMapOf<Int, Int>() }
+        val isDraggingAny = draggingIndex >= 0
 
         state.ballList.forEachIndexed { index, entry ->
-            BallEntryEditor(
-                index = index,
-                entry = entry,
-                ballNumber = index + 1,
-                onUpdate = { state.updateBall(index, it) },
-                onRemove = if (state.ballList.size > 1) {
-                    { state.removeBall(index) }
-                } else null,
-                motorConfig = motorConfig,
-            )
+            val isDragging = draggingIndex == index
+
+            Box(
+                modifier = Modifier
+                    .zIndex(if (isDragging) 1f else 0f)
+                    .onGloballyPositioned { coords ->
+                        itemHeights[index] = coords.size.height
+                    }
+                    .graphicsLayer {
+                        translationY = if (isDragging) dragOffsetY else 0f
+                        scaleX = if (isDragging) 1.03f else 1f
+                        scaleY = if (isDragging) 1.03f else 1f
+                        shadowElevation = if (isDragging) 12f else 0f
+                        alpha = if (isDraggingAny && !isDragging) 0.5f else 1f
+                    }
+                    .pointerInput(state.ballList.size) {
+                        detectDragGesturesAfterLongPress(
+                            onDragStart = {
+                                draggingIndex = index
+                                dragOffsetY = 0f
+                            },
+                            onDrag = { change, dragAmount ->
+                                change.consume()
+                                dragOffsetY += dragAmount.y
+
+                                // Live swap: when dragged past half an item height, swap immediately
+                                val avgHeight = itemHeights.values
+                                    .takeIf { it.isNotEmpty() }
+                                    ?.average()?.toFloat() ?: return@detectDragGesturesAfterLongPress
+                                val threshold = avgHeight * 0.5f
+                                if (dragOffsetY > threshold && draggingIndex < state.ballList.lastIndex) {
+                                    state.moveBall(draggingIndex, draggingIndex + 1)
+                                    draggingIndex++
+                                    dragOffsetY -= avgHeight
+                                } else if (dragOffsetY < -threshold && draggingIndex > 0) {
+                                    state.moveBall(draggingIndex, draggingIndex - 1)
+                                    draggingIndex--
+                                    dragOffsetY += avgHeight
+                                }
+                            },
+                            onDragEnd = {
+                                draggingIndex = -1
+                                dragOffsetY = 0f
+                            },
+                            onDragCancel = {
+                                draggingIndex = -1
+                                dragOffsetY = 0f
+                            },
+                        )
+                    },
+            ) {
+                BallEntryEditor(
+                    index = index,
+                    entry = entry,
+                    ballNumber = index + 1,
+                    onUpdate = { state.updateBall(index, it) },
+                    onRemove = if (state.ballList.size > 1) {
+                        { state.removeBall(index) }
+                    } else null,
+                    onMoveUp = if (index > 0) {
+                        { state.moveBall(index, index - 1) }
+                    } else null,
+                    onMoveDown = if (index < state.ballList.lastIndex) {
+                        { state.moveBall(index, index + 1) }
+                    } else null,
+                    motorConfig = motorConfig,
+                )
+            }
         }
 
         OutlinedButton(
@@ -209,6 +290,8 @@ private fun BallEntryEditor(
     ballNumber: Int,
     onUpdate: (BallEntry) -> Unit,
     onRemove: (() -> Unit)?,
+    onMoveUp: (() -> Unit)?,
+    onMoveDown: (() -> Unit)?,
     motorConfig: MotorConfig? = null,
 ) {
     var expanded by remember { mutableStateOf(false) }
@@ -227,6 +310,32 @@ private fun BallEntryEditor(
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
+                // Drag handle + up/down arrows
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier.padding(end = 4.dp),
+                ) {
+                    IconButton(
+                        onClick = { onMoveUp?.invoke() },
+                        enabled = onMoveUp != null,
+                        modifier = Modifier.size(36.dp),
+                    ) {
+                        Icon(Icons.Default.KeyboardArrowUp, "Move up", modifier = Modifier.size(20.dp))
+                    }
+                    Icon(
+                        Icons.Default.DragHandle,
+                        contentDescription = "Drag to reorder",
+                        modifier = Modifier.size(20.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    IconButton(
+                        onClick = { onMoveDown?.invoke() },
+                        enabled = onMoveDown != null,
+                        modifier = Modifier.size(36.dp),
+                    ) {
+                        Icon(Icons.Default.KeyboardArrowDown, "Move down", modifier = Modifier.size(20.dp))
+                    }
+                }
                 Text(
                     "Ball ${index + 1}",
                     style = MaterialTheme.typography.titleSmall,
