@@ -37,6 +37,7 @@ import kotlinx.coroutines.launch
 fun CalibrationScreen(
     robotVm: RobotViewModel,
     onBack: () -> Unit,
+    activeProfileName: String? = null,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -64,8 +65,8 @@ fun CalibrationScreen(
     var zaxis by remember { mutableIntStateOf(0) }
     var dirty by remember { mutableStateOf(false) }
 
-    // Track which cells have been calibrated in this session
-    var calibratedCells by remember { mutableStateOf(setOf<String>()) }
+    // Observe the motorConfig to reactively derive calibrated cells
+    val motorConfig = robotVm.motorConfigFlow.collectAsState().value
 
     // Load params when selection changes
     fun loadParams() {
@@ -95,15 +96,32 @@ fun CalibrationScreen(
         }
     }
 
+    var importError by remember { mutableStateOf<String?>(null) }
     val importLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         if (uri != null) {
             scope.launch {
-                robotVm.motorConfig.importJson(uri)
-                loadParams()
+                val error = robotVm.motorConfig.importJson(uri)
+                if (error != null) {
+                    importError = error
+                } else {
+                    robotVm.reloadMotorConfig()
+                    loadParams()
+                }
             }
         }
+    }
+
+    if (importError != null) {
+        AlertDialog(
+            onDismissRequest = { importError = null },
+            title = { Text("Import Failed") },
+            text = { Text(importError!!) },
+            confirmButton = {
+                TextButton(onClick = { importError = null }) { Text("OK") }
+            },
+        )
     }
 
     // Reset confirmation
@@ -118,8 +136,8 @@ fun CalibrationScreen(
                 TextButton(onClick = {
                     scope.launch {
                         robotVm.motorConfig.resetToDefaults()
+                        robotVm.reloadMotorConfig()
                         loadParams()
-                        calibratedCells = emptySet()
                     }
                     showResetDialog = false
                 }) { Text("Reset") }
@@ -134,7 +152,7 @@ fun CalibrationScreen(
         topBar = {
             Column {
                 TopAppBar(
-                    title = { Text("Calibration") },
+                    title = { Text(if (activeProfileName != null) "Calibration — $activeProfileName" else "Calibration") },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, "Back")
@@ -178,10 +196,12 @@ fun CalibrationScreen(
                     style = MaterialTheme.typography.labelLarge,
                 )
 
+                val calibratedCells = remember(ball, spin, power, motorConfig) {
+                    motorConfig.validLandareas(ball, spin, power)
+                }
                 CalibrationGrid(
                     selectedCell = selectedCell,
                     calibratedCells = calibratedCells,
-                    ball = ball, spin = spin, power = power,
                     onCellClick = { selectedCell = it },
                 )
 
@@ -259,10 +279,9 @@ fun CalibrationScreen(
                             onClick = {
                                 val params = buildParams()
                                 robotVm.saveMotorParams(params)
+                                robotVm.reloadMotorConfig()
                                 dirty = false
                                 currentParams = params
-                                val key = "$ball-$spin-$power-$selectedCell"
-                                calibratedCells = calibratedCells + key
                             },
                             enabled = dirty || currentParams == null,
                             colors = ButtonDefaults.buttonColors(
@@ -298,7 +317,7 @@ fun CalibrationScreen(
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     OutlinedButton(
-                        onClick = { exportLauncher.launch("motor-config.json") },
+                        onClick = { exportLauncher.launch("motor-config-${activeProfileName ?: "tablebot"}.json") },
                         modifier = Modifier.weight(1f),
                     ) {
                         Text("Export to File")
@@ -337,10 +356,7 @@ fun CalibrationScreen(
 @Composable
 private fun CalibrationGrid(
     selectedCell: Int?,
-    calibratedCells: Set<String>,
-    ball: Int,
-    spin: Int,
-    power: Int,
+    calibratedCells: Set<Int>,
     onCellClick: (Int) -> Unit,
 ) {
     Column(
@@ -373,8 +389,7 @@ private fun CalibrationGrid(
                     for (col in 0..4) {
                         val cellNum = row * 5 + col + 1
                         val isSelected = cellNum == selectedCell
-                        val key = "$ball-$spin-$power-$cellNum"
-                        val isCalibrated = key in calibratedCells
+                        val isCalibrated = cellNum in calibratedCells
 
                         val bgColor = when {
                             isSelected -> MaterialTheme.colorScheme.primary

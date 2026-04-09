@@ -22,8 +22,10 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.tablebot.ble.ConnectionState
+import androidx.compose.material.icons.filled.SwapHoriz
 import com.tablebot.data.*
 import com.tablebot.ui.components.ConnectionBar
+import com.tablebot.ui.components.ProfileSwitcherDialog
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,6 +61,15 @@ fun QuickPlayScreen(
     onDebug: () -> Unit,
     onSettings: () -> Unit,
     onManual: () -> Unit,
+    // Profiles
+    activeProfileName: String? = null,
+    profileIndex: ProfileIndex? = null,
+    onSwitchProfile: (String) -> Unit = {},
+    onEditProfile: (String) -> Unit = {},
+    onCreateProfile: () -> Unit = {},
+    reopenProfileSwitcher: Boolean = false,
+    scrollToProfileId: String = "",
+    profileErrorFlow: kotlinx.coroutines.flow.Flow<String>? = null,
 ) {
     // Mode: 0 = Basic, 1 = Advanced
     var mode by remember { mutableIntStateOf(0) }
@@ -232,11 +243,58 @@ fun QuickPlayScreen(
         )
     }
 
+    val snackbarHostState = remember { SnackbarHostState() }
+    LaunchedEffect(profileErrorFlow) {
+        profileErrorFlow?.collect { msg -> snackbarHostState.showSnackbar(msg) }
+    }
+
+    var showProfileSwitcher by remember { mutableStateOf(false) }
+
+    LaunchedEffect(reopenProfileSwitcher) {
+        if (reopenProfileSwitcher) {
+            showProfileSwitcher = true
+        }
+    }
+
+    if (showProfileSwitcher && profileIndex != null) {
+        ProfileSwitcherDialog(
+            profileIndex = profileIndex,
+            initialProfileId = scrollToProfileId,
+            onSelectProfile = { id ->
+                onSwitchProfile(id)
+                showProfileSwitcher = false
+            },
+            onEditProfile = { id ->
+                showProfileSwitcher = false
+                onEditProfile(id)
+            },
+            onAddProfile = {
+                showProfileSwitcher = false
+                onCreateProfile()
+            },
+            onDismiss = { showProfileSwitcher = false },
+        )
+    }
+
     Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             Column {
                 CenterAlignedTopAppBar(
-                    title = { Text("TableBot") },
+                    title = {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable { showProfileSwitcher = true },
+                        ) {
+                            Text(activeProfileName ?: "TableBot")
+                            Spacer(Modifier.width(4.dp))
+                            Icon(
+                                Icons.Default.SwapHoriz,
+                                contentDescription = "Switch profile",
+                                modifier = Modifier.size(20.dp),
+                            )
+                        }
+                    },
                     actions = {
                         var menuExpanded by remember { mutableStateOf(false) }
                         IconButton(onClick = { menuExpanded = true }) {
@@ -355,8 +413,9 @@ fun QuickPlayScreen(
                         .navigationBarsPadding(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp),
                 ) {
+                    val profileCalibrated = motorConfig?.isEmpty() != true
                     // Test button (basic mode only — fires single ball)
-                    val testEnabled = mode == 0 && connected && basicState.points.isNotEmpty() &&
+                    val testEnabled = mode == 0 && connected && profileCalibrated && basicState.points.isNotEmpty() &&
                         enabledCells?.let { basicState.points.first().x in it } != false
                     OutlinedButton(
                         onClick = {
@@ -378,8 +437,8 @@ fun QuickPlayScreen(
 
                     // Play button
                     val playEnabled = when (mode) {
-                        0 -> connected && basicState.points.isNotEmpty() && !isPlaying
-                        1 -> connected && advancedState.ballList.isNotEmpty() && !isPlaying
+                        0 -> connected && profileCalibrated && basicState.points.isNotEmpty() && !isPlaying
+                        1 -> connected && profileCalibrated && advancedState.ballList.isNotEmpty() && !isPlaying
                         else -> false
                     }
                     Button(

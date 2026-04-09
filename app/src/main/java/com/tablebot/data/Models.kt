@@ -125,3 +125,22 @@ data class TestBallRequest(
     val cell: Int,
     val ballTime: Int,
 )
+
+@Serializable
+data class RobotPosition(val x: Float = 0.5f, val y: Float = 0.5f)
+
+@Serializable
+data class Profile(
+    val id: String,
+    val name: String,
+    val robotPosition: RobotPosition = RobotPosition(),
+    val robotPlacement: String = "behind",
+    val motorConfigFileName: String,
+    val createdAt: Long = System.currentTimeMillis(),
+)
+
+@Serializable
+data class ProfileIndex(
+    val activeProfileId: String,
+    val profiles: List<Profile>,
+)
