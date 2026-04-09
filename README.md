@@ -10,6 +10,26 @@ Built because Joola shut down their servers and the official app stopped working
 
 *Tap the screenshot to watch the demo video*
 
+## FAQ
+
+### How do I customize a drill?
+
+**Basic mode** lets you configure a single ball type with consistent spin, power, and target positions. Choose between Single Ball (same position each time), Sequence (fixed order through selected positions), or Random (random position each time). Adjust ball interval and repetitions to control pacing.
+
+**Advanced (Dynamic) mode** lets you build multi-ball sequences where each ball can have different type, spin, power, and landing positions. Use the up/down arrows on each ball card to reorder the sequence. Set repeat count and delay to control how many times the full sequence plays.
+
+### How do I reorder balls in Advanced mode?
+
+Each ball card in the Advanced editor has up and down arrow buttons on the left side, with a drag handle between them. Tap the arrows for precise single-step moves, or long press and drag a card to reorder freely. The arrows are disabled at the boundaries (first ball can't move up, last ball can't move down).
+
+### How do I calibrate the robot?
+
+Calibration is being remade and improved. The current Calibration screen (accessible from the 3-dot menu) lets you fine-tune motor parameters for each combination of ball type, spin, power, and landing position. You can export and import calibration files, and reset to factory defaults. A detailed guide will be available here soon.
+
+### How do I search and filter drills?
+
+Tap the training name card on the main screen to open the drill library. Use the search bar to filter by name. Tap the filter icon to filter by tags (Forehand, Backhand, Push, Openup, Flick, Smash, Serve Return, Footwork, Random, Transition) and by skill level using a range slider (Newbie through Master).
+
 ## Status
 
 ### Core Robot Control
@@ -33,7 +53,7 @@ Built because Joola shut down their servers and the official app stopped working
 - [x] Delete trainings
 - [x] Quick play mode — play-first home screen with pinned Test/Play buttons, load drills as presets
 - [x] Test drill button — fire a single ball to verify settings before committing
-- [ ] Reorder balls in advanced drill sequences (drag to rearrange)
+- [x] Reorder balls in advanced drill sequences
 - [x] Restrict ball grid placement based on ball type and power (not all positions are valid for all combos)
 - [x] Training categories / tags (Forehand, Backhand, Push, Openup, Flick, Smash, Serve Return, Footwork, Random, Transition)
 - [x] Skill level filtering (Newbie / Beginner / Intermediate / Advanced / Master range slider)
@@ -54,11 +74,12 @@ Built because Joola shut down their servers and the official app stopped working
 - [x] Connection status bar
 - [x] Dark/light theme support
 - [ ] Proper app icon (currently placeholder green square)
-- [ ] Onboarding / first-use guide
+- [x] Onboarding / first-use guide
 - [ ] Training history / session logging
 - [ ] Cooldown timer warning (robot suggests 15min break every 2hrs)
 
 ### Data Management
+- [ ] Create calibration profiles, will give robot option to be repositioned.
 - [ ] Import drills from JSON file
 - [ ] Export drills to JSON file
 - [ ] Import/export motor calibration
