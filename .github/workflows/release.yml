@@ -1,0 +1,28 @@
+name: Release APK
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - run: ./gradlew assembleRelease
+
+      - name: Upload APK to release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          apk_path=$(find app/build/outputs/apk/release -name '*.apk' | head -1)
+          gh release upload "${{ github.event.release.tag_name }}" "$apk_path" --clobber
