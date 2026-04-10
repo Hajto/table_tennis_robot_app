@@ -24,7 +24,21 @@ jobs:
         with:
           cache-read-only: ${{ github.event_name == 'release' }}
 
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > keystore.jks
+
       - run: ./gradlew assembleRelease
+
+      - name: Sign APK
+        run: |
+          apk_path=$(find app/build/outputs/apk/release -name '*.apk' | head -1)
+          $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
+            --ks keystore.jks \
+            --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
+            --key-alias tablebot \
+            --key-pass pass:${{ secrets.KEY_PASSWORD }} \
+            "$apk_path"
 
       - name: Rename APK
         run: |
