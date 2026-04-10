@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.tablebot.ble.ConnectionState
 import com.tablebot.ble.RobotManager
 import com.tablebot.data.*
+import com.tablebot.data.HistoryStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +22,7 @@ import kotlinx.coroutines.withContext
 class RobotViewModel(app: Application) : AndroidViewModel(app) {
 
     val robotManager = RobotManager(app.applicationContext)
+    val historyStore = HistoryStore(app.applicationContext)
 
     private val _motorConfig = MutableStateFlow(MotorConfig(app.applicationContext))
     val motorConfigFlow: StateFlow<MotorConfig> = _motorConfig
@@ -49,6 +51,9 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
 
     private val _profileError = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val profileError: SharedFlow<String> = _profileError.asSharedFlow()
+
+    private val _breakReminder = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val breakReminder: SharedFlow<Unit> = _breakReminder.asSharedFlow()
 
     init {
         robotManager.onPatternDone = {
@@ -81,6 +86,9 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
         robotManager.drillJob = viewModelScope.launch {
             _isPlaying.value = true
             _currentTrainingName.value = training.name
+            if (historyStore.logEntry(training.name, "basic", training.id)) {
+                _breakReminder.tryEmit(Unit)
+            }
             val payload = RobotProtocol.encodeBasicPattern(
                 training, motorConfig,
                 timesOverride = timesOverride,
@@ -99,6 +107,9 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
         robotManager.drillJob = viewModelScope.launch {
             _isPlaying.value = true
             _currentTrainingName.value = training.name
+            if (historyStore.logEntry(training.name, "advanced", training.id)) {
+                _breakReminder.tryEmit(Unit)
+            }
             val payload = RobotProtocol.encodeAdvancedPattern(
                 training, motorConfig,
                 repeatNumOverride = repeatNumOverride,

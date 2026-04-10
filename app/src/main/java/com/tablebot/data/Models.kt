@@ -146,3 +146,20 @@ data class ProfileIndex(
     val activeProfileId: String,
     val profiles: List<Profile>,
 )
+
+// ── Training History ──────────────────────────────────────────────────
+
+@Serializable
+data class HistoryEntry(
+    val trainingName: String,
+    val trainingType: String,       // "basic" or "advanced"
+    val trainingId: Int,
+    val timestamp: Long,            // epoch millis
+)
+
+@Serializable
+data class TrainingSession(
+    val id: String,                 // UUID
+    val startedAt: Long,            // epoch millis of first entry
+    val entries: List<HistoryEntry> = emptyList(),
+)

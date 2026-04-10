@@ -8,10 +8,14 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -166,6 +170,7 @@ class MainActivity : ComponentActivity() {
                                 onDebug = { navController.navigate("debug") },
                                 onSettings = { navController.navigate("settings") },
                                 onManual = { navController.navigate("manual") },
+                                onHistory = { navController.navigate("history") },
                                 activeProfileName = activeProfile?.name,
                                 profileIndex = profileIndex,
                                 onSwitchProfile = { robotVm.switchProfile(it) },
@@ -196,6 +201,23 @@ class MainActivity : ComponentActivity() {
 
                         composable("settings") {
                             SettingsScreen(onBack = { navController.popBackStack() })
+                        }
+
+                        composable("history") {
+                            val historyScope = rememberCoroutineScope()
+                            val sessions by produceState(emptyList<com.tablebot.data.TrainingSession>()) {
+                                value = robotVm.historyStore.loadSessions()
+                            }
+                            HistoryScreen(
+                                sessions = sessions,
+                                onClearHistory = {
+                                    historyScope.launch {
+                                        robotVm.historyStore.clearHistory()
+                                        navController.popBackStack()
+                                    }
+                                },
+                                onBack = { navController.popBackStack() },
+                            )
                         }
 
                         composable(
@@ -303,6 +325,29 @@ class MainActivity : ComponentActivity() {
                         StopOverlay(
                             trainingName = robotVm.currentTrainingName.collectAsState().value,
                             onStop = { robotVm.stop() },
+                        )
+                    }
+
+                    // Break reminder dialog
+                    var showBreakReminder by remember { mutableStateOf(false) }
+                    LaunchedEffect(Unit) {
+                        robotVm.breakReminder.collect { showBreakReminder = true }
+                    }
+                    if (showBreakReminder) {
+                        AlertDialog(
+                            onDismissRequest = { showBreakReminder = false },
+                            title = { Text("Time for a break!") },
+                            text = {
+                                Text(
+                                    "You've been training for 30+ minutes. " +
+                                    "Consider taking a 5 minute break to stay fresh and avoid injury."
+                                )
+                            },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = { showBreakReminder = false }
+                                ) { Text("OK, got it") }
+                            },
                         )
                     }
                 }
