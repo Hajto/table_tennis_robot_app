@@ -75,7 +75,7 @@ Tap the training name card on the main screen to open the drill library. Use the
 - [x] Interactive 3x5 table grid with ball number display
 - [x] Connection status bar
 - [x] Dark/light theme support
-- [ ] Proper app icon (currently placeholder green square)
+- [x] Proper app icon
 - [x] Onboarding / first-use guide
 - [ ] Training history / session logging
 - [ ] Cooldown timer warning (robot suggests 15min break every 2hrs)
