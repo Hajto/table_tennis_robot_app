@@ -36,7 +36,7 @@ jobs:
           $ANDROID_HOME/build-tools/34.0.0/apksigner sign \
             --ks keystore.jks \
             --ks-pass pass:${{ secrets.KEYSTORE_PASSWORD }} \
-            --key-alias tablebot \
+            --ks-key-alias tablebot \
             --key-pass pass:${{ secrets.KEY_PASSWORD }} \
             "$apk_path"
 
