@@ -18,8 +18,20 @@ jobs:
           java-version: 17
 
       - uses: gradle/actions/setup-gradle@v4
+        with:
+          cache-read-only: ${{ github.event_name == 'release' }}
 
       - run: ./gradlew assembleRelease
+
+      - name: Rename APK
+        run: |
+          apk_path=$(find app/build/outputs/apk/release -name '*.apk' | head -1)
+          if [ "${{ github.event_name }}" = "release" ]; then
+            name="TableBot ${{ github.event.release.tag_name }}.apk"
+          else
+            name="TableBot $(git rev-parse --short HEAD).apk"
+          fi
+          mv "$apk_path" "app/build/outputs/apk/release/$name"
 
       - name: Upload APK to release
         if: github.event_name == 'release'
