@@ -174,7 +174,7 @@ object RobotProtocol {
         }
 
         val trailerOff = points.size * 12
-        buf[trailerOff + 0] = (effectiveTimes and 0xFF).toByte()  // repeatNum
+        buf[trailerOff + 0] = (effectiveTimes.coerceIn(1, 255) and 0xFF).toByte()  // repeatNum
         buf[trailerOff + 1] = 1
         buf[trailerOff + 2] = 0
         buf[trailerOff + 3] = 0
