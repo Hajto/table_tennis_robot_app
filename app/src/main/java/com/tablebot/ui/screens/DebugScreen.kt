@@ -1,5 +1,9 @@
 package com.tablebot.ui.screens
 
+import android.Manifest
+import android.os.Build
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -39,6 +43,25 @@ fun DebugScreen(robotVm: RobotViewModel) {
 
     val connected = connectionState == ConnectionState.CONNECTED
 
+    // Permission handling
+    var permissionsGranted by remember { mutableStateOf(false) }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        permissionsGranted = results.values.all { it }
+        if (permissionsGranted) robotVm.scan()
+    }
+    val requiredPermissions = remember {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT)
+        } else {
+            arrayOf(Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN)
+        }
+    }
+    fun handleScan() {
+        if (permissionsGranted) robotVm.scan() else permissionLauncher.launch(requiredPermissions)
+    }
+
     Scaffold(
         topBar = {
             Column {
@@ -49,7 +72,7 @@ fun DebugScreen(robotVm: RobotViewModel) {
                     statusMessage = statusMessage,
                     isPlaying = isPlaying,
                     currentTrainingName = currentTrainingName,
-                    onScanClick = { robotVm.scan() },
+                    onScanClick = ::handleScan,
                     onDisconnectClick = { robotVm.disconnect() },
                     onStopClick = { robotVm.stop() },
                 )
