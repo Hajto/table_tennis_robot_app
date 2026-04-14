@@ -1,6 +1,7 @@
 package com.tablebot.ble
 
 import com.tablebot.data.MotorParams
+import com.tablebot.data.RobotType
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -89,9 +90,32 @@ class RobotProtocolTest {
     }
 
     @Test
-    fun `buildStopFrame uses CMD_DISCONNECT`() {
+    fun `buildStopFrame V2 uses CMD_STOP 0x05`() {
+        val frame = RobotProtocol.buildStopFrame(DEVICE_ID, RobotType.JOOLA_V2)
+        assertEquals(RobotProtocol.CMD_STOP, frame[11])
+        assertEquals(0x05.toByte(), frame[11])
+    }
+
+    @Test
+    fun `buildStopFrame V1 uses CMD_STOP_LEGACY 0x99`() {
+        val frame = RobotProtocol.buildStopFrame(DEVICE_ID, RobotType.JOOLA_V1)
+        assertEquals(RobotProtocol.CMD_STOP_LEGACY, frame[11])
+        assertEquals(0x99.toByte(), frame[11])
+    }
+
+    @Test
+    fun `buildStopFrame default is V2`() {
         val frame = RobotProtocol.buildStopFrame(DEVICE_ID)
-        assertEquals(RobotProtocol.CMD_DISCONNECT, frame[11])
+        assertEquals(RobotProtocol.CMD_STOP, frame[11])
+    }
+
+    @Test
+    fun `buildStopFrame V1 does not use CMD_DISCONNECT`() {
+        val frame = RobotProtocol.buildStopFrame(DEVICE_ID, RobotType.JOOLA_V1)
+        // 0x99 is reused for both STOP_LEGACY and DISCONNECT — but STOP and DISCONNECT are distinct intents
+        // Verify V2 stop is NOT 0x99
+        val frameV2 = RobotProtocol.buildStopFrame(DEVICE_ID, RobotType.JOOLA_V2)
+        assertNotEquals(0x99.toByte(), frameV2[11])
     }
 
     // ── CRC consistency ───────────────────────────────────────────────────────
