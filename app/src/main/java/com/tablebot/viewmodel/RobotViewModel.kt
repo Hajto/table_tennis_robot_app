@@ -115,8 +115,8 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
-    fun saveMotorParams(params: MotorParams) {
-        viewModelScope.launch { motorConfig.save(params) }
+    suspend fun saveMotorParams(params: MotorParams) {
+        motorConfig.save(params)
     }
 
     fun reloadMotorConfig() {

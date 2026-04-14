@@ -1,0 +1,284 @@
+package com.tablebot.ble
+
+import com.tablebot.data.MotorParams
+import org.junit.Assert.*
+import org.junit.Test
+
+class RobotProtocolTest {
+
+    // ── Helpers ──────────────────────────────────────────────────────────────
+
+    private fun motorParams(
+        id: Int = 1,
+        ball: Int = 1, spin: Int = 2, power: Int = 2, landarea: Int = 8,
+        m1speed: Int = 100, m2speed: Int = 110,
+        xaxis: Int = 50, yaxis: Int = 60, zaxis: Int = 70,
+    ) = MotorParams(id, ball, spin, power, landarea, m1speed, m2speed, xaxis, yaxis, zaxis)
+
+    private val DEVICE_ID = "aabbccdd11223344"
+
+    // ── Frame structure ───────────────────────────────────────────────────────
+
+    @Test
+    fun `buildFrame starts with 0x68`() {
+        val frame = RobotProtocol.buildFrame(DEVICE_ID, RobotProtocol.CMD_CONNECT, byteArrayOf(0))
+        assertEquals(0x68.toByte(), frame[0])
+    }
+
+    @Test
+    fun `buildFrame ends with 0x16`() {
+        val frame = RobotProtocol.buildFrame(DEVICE_ID, RobotProtocol.CMD_CONNECT, byteArrayOf(0))
+        assertEquals(0x16.toByte(), frame.last())
+    }
+
+    @Test
+    fun `buildFrame second byte is fixed 0x01`() {
+        val frame = RobotProtocol.buildFrame(DEVICE_ID, RobotProtocol.CMD_CONNECT, byteArrayOf(0))
+        assertEquals(0x01.toByte(), frame[1])
+    }
+
+    @Test
+    fun `buildFrame total length is 14 + payload + 3`() {
+        val payload = byteArrayOf(1, 2, 3, 4, 5)
+        val frame = RobotProtocol.buildFrame(DEVICE_ID, RobotProtocol.CMD_PATTERN, payload)
+        assertEquals(14 + payload.size + 3, frame.size)
+    }
+
+    @Test
+    fun `buildFrame encodes payload length correctly`() {
+        val payload = ByteArray(256) { it.toByte() }
+        val frame = RobotProtocol.buildFrame(DEVICE_ID, RobotProtocol.CMD_PATTERN, payload)
+        val lenHigh = frame[12].toInt() and 0xFF
+        val lenLow = frame[13].toInt() and 0xFF
+        assertEquals(256, (lenHigh shl 8) or lenLow)
+    }
+
+    @Test
+    fun `buildFrame embeds device id bytes at position 2`() {
+        val frame = RobotProtocol.buildFrame("aabbccdd11223344", RobotProtocol.CMD_CONNECT, byteArrayOf(0))
+        assertEquals(0xAA.toByte(), frame[2])
+        assertEquals(0xBB.toByte(), frame[3])
+        assertEquals(0xCC.toByte(), frame[4])
+        assertEquals(0xDD.toByte(), frame[5])
+        assertEquals(0x11.toByte(), frame[6])
+        assertEquals(0x22.toByte(), frame[7])
+        assertEquals(0x33.toByte(), frame[8])
+        assertEquals(0x44.toByte(), frame[9])
+    }
+
+    @Test
+    fun `buildFrame with empty device id pads with zeros`() {
+        val frame = RobotProtocol.buildFrame("", RobotProtocol.CMD_CONNECT, byteArrayOf(0))
+        for (i in 2..9) assertEquals(0.toByte(), frame[i])
+    }
+
+    @Test
+    fun `buildFrame with short device id pads remainder with zeros`() {
+        val frame = RobotProtocol.buildFrame("aabb", RobotProtocol.CMD_CONNECT, byteArrayOf(0))
+        assertEquals(0xAA.toByte(), frame[2])
+        assertEquals(0xBB.toByte(), frame[3])
+        assertEquals(0.toByte(), frame[4])
+    }
+
+    // ── Connect / Stop frames ──────────────────────────────────────────────────
+
+    @Test
+    fun `buildConnectFrame uses CMD_CONNECT`() {
+        val frame = RobotProtocol.buildConnectFrame(DEVICE_ID)
+        assertEquals(RobotProtocol.CMD_CONNECT, frame[11])
+    }
+
+    @Test
+    fun `buildStopFrame uses CMD_DISCONNECT`() {
+        val frame = RobotProtocol.buildStopFrame(DEVICE_ID)
+        assertEquals(RobotProtocol.CMD_DISCONNECT, frame[11])
+    }
+
+    // ── CRC consistency ───────────────────────────────────────────────────────
+
+    @Test
+    fun `same input produces same CRC`() {
+        val payload = byteArrayOf(1, 2, 3)
+        val frame1 = RobotProtocol.buildFrame(DEVICE_ID, RobotProtocol.CMD_PATTERN, payload)
+        val frame2 = RobotProtocol.buildFrame(DEVICE_ID, RobotProtocol.CMD_PATTERN, payload)
+        // CRC is at last 3 bytes: [crcHigh, crcLow, END]
+        assertEquals(frame1[frame1.size - 3], frame2[frame2.size - 3])
+        assertEquals(frame1[frame1.size - 2], frame2[frame2.size - 2])
+    }
+
+    @Test
+    fun `different payload produces different CRC`() {
+        val frame1 = RobotProtocol.buildFrame(DEVICE_ID, RobotProtocol.CMD_PATTERN, byteArrayOf(1))
+        val frame2 = RobotProtocol.buildFrame(DEVICE_ID, RobotProtocol.CMD_PATTERN, byteArrayOf(2))
+        val crc1 = ((frame1[frame1.size - 3].toInt() and 0xFF) shl 8) or (frame1[frame1.size - 2].toInt() and 0xFF)
+        val crc2 = ((frame2[frame2.size - 3].toInt() and 0xFF) shl 8) or (frame2[frame2.size - 2].toInt() and 0xFF)
+        assertNotEquals(crc1, crc2)
+    }
+
+    // ── encodeSingleBall ──────────────────────────────────────────────────────
+
+    @Test
+    fun `encodeSingleBall is 16 bytes`() {
+        assertEquals(16, RobotProtocol.encodeSingleBall(motorParams()).size)
+    }
+
+    @Test
+    fun `encodeSingleBall encodes motor params at expected offsets`() {
+        val p = motorParams(m1speed = 100, m2speed = 110, xaxis = 50, yaxis = 60, zaxis = 70)
+        val buf = RobotProtocol.encodeSingleBall(p)
+        assertEquals(100.toByte(), buf[0])
+        assertEquals(110.toByte(), buf[1])
+        assertEquals(50.toByte(), buf[2])
+        assertEquals(60.toByte(), buf[3])
+        assertEquals(70.toByte(), buf[4])
+    }
+
+    @Test
+    fun `encodeSingleBall encodes ballTime at offset 8`() {
+        val buf = RobotProtocol.encodeSingleBall(motorParams(), ballTime = 25)
+        assertEquals(25.toByte(), buf[8])
+    }
+
+    @Test
+    fun `encodeSingleBall default ballTime is 15`() {
+        val buf = RobotProtocol.encodeSingleBall(motorParams())
+        assertEquals(15.toByte(), buf[8])
+    }
+
+    @Test
+    fun `encodeSingleBall trailer encodes 1 repetition`() {
+        val buf = RobotProtocol.encodeSingleBall(motorParams())
+        assertEquals(1.toByte(), buf[12])
+        assertEquals(1.toByte(), buf[13])
+        assertEquals(0.toByte(), buf[14])
+        assertEquals(0.toByte(), buf[15])
+    }
+
+    @Test
+    fun `encodeSingleBall handles zero motor values`() {
+        val p = motorParams(m1speed = 0, m2speed = 0, xaxis = 0, yaxis = 0, zaxis = 0)
+        val buf = RobotProtocol.encodeSingleBall(p)
+        assertEquals(0.toByte(), buf[0])
+        assertEquals(0.toByte(), buf[1])
+    }
+
+    @Test
+    fun `encodeSingleBall handles max motor values`() {
+        val p = motorParams(m1speed = 255, m2speed = 255, xaxis = 255, yaxis = 255, zaxis = 255)
+        val buf = RobotProtocol.encodeSingleBall(p)
+        assertEquals(0xFF.toByte(), buf[0])
+        assertEquals(0xFF.toByte(), buf[1])
+    }
+
+    // ── splitIntoChunks ───────────────────────────────────────────────────────
+
+    @Test
+    fun `splitIntoChunks splits at BLE_MTU boundary`() {
+        val data = ByteArray(45) { it.toByte() }
+        val chunks = RobotProtocol.splitIntoChunks(data, mtu = 20)
+        assertEquals(3, chunks.size)
+        assertEquals(20, chunks[0].size)
+        assertEquals(20, chunks[1].size)
+        assertEquals(5, chunks[2].size)
+    }
+
+    @Test
+    fun `splitIntoChunks with data smaller than mtu returns one chunk`() {
+        val data = ByteArray(10) { it.toByte() }
+        val chunks = RobotProtocol.splitIntoChunks(data, mtu = 20)
+        assertEquals(1, chunks.size)
+        assertEquals(10, chunks[0].size)
+    }
+
+    @Test
+    fun `splitIntoChunks reassembles to original`() {
+        val data = ByteArray(100) { it.toByte() }
+        val chunks = RobotProtocol.splitIntoChunks(data, mtu = 20)
+        val reassembled = chunks.fold(ByteArray(0)) { acc, chunk -> acc + chunk }
+        assertArrayEquals(data, reassembled)
+    }
+
+    @Test
+    fun `splitIntoChunks exact multiple of mtu`() {
+        val data = ByteArray(40) { it.toByte() }
+        val chunks = RobotProtocol.splitIntoChunks(data, mtu = 20)
+        assertEquals(2, chunks.size)
+        assertEquals(20, chunks[0].size)
+        assertEquals(20, chunks[1].size)
+    }
+
+    @Test
+    fun `splitIntoChunks empty array returns one empty chunk`() {
+        val chunks = RobotProtocol.splitIntoChunks(ByteArray(0), mtu = 20)
+        assertEquals(0, chunks.size)
+    }
+
+    // ── parseFrame ────────────────────────────────────────────────────────────
+
+    @Test
+    fun `parseFrame returns null for too-short frame`() {
+        assertNull(RobotProtocol.parseFrame(ByteArray(16)))
+    }
+
+    @Test
+    fun `parseFrame round-trips a built frame`() {
+        // Build a valid response-shaped frame manually: 14 header + 2 payload + 3 tail = 19 bytes
+        // Response frame layout (from parseFrame): bytes 2..9=deviceId, 10=status, 11=cmd, 12-13=len, 14..=payload
+        val deviceIdHex = "aabbccdd11223344"
+        val payload = byteArrayOf(0x01, 0x02)
+        val frame = ByteArray(19)
+        frame[0] = 0x68
+        frame[1] = 0x01
+        // device id
+        val devBytes = byteArrayOf(0xAA.toByte(), 0xBB.toByte(), 0xCC.toByte(), 0xDD.toByte(),
+                                    0x11, 0x22, 0x33, 0x44)
+        devBytes.copyInto(frame, 2)
+        frame[10] = 0x00  // status
+        frame[11] = 0x81.toByte()  // RESP_PATTERN_ACK
+        frame[12] = 0x00  // len high
+        frame[13] = 0x02  // len low
+        payload.copyInto(frame, 14)
+        frame[16] = 0x00  // crc high (ignored in parseFrame)
+        frame[17] = 0x00  // crc low
+        frame[18] = 0x16  // FRAME_END
+
+        val response = RobotProtocol.parseFrame(frame)
+        assertNotNull(response)
+        assertEquals(RobotProtocol.RESP_PATTERN_ACK, response!!.cmd)
+        assertEquals(deviceIdHex, response.deviceId)
+        assertArrayEquals(payload, response.payload)
+    }
+
+    @Test
+    fun `parseFrame parses firmware version from 0x85 response`() {
+        val frame = ByteArray(18)
+        frame[0] = 0x68; frame[1] = 0x01
+        byteArrayOf(0,0,0,0,0,0,0,0).copyInto(frame, 2)
+        frame[10] = 0x00
+        frame[11] = 0x85.toByte()
+        frame[12] = 0x00; frame[13] = 0x04
+        frame[14] = 1; frame[15] = 2; frame[16] = 3; frame[17] = 4
+        // need 3 more bytes: crcH crcL END
+        val full = frame + byteArrayOf(0, 0, 0x16)
+        // Repack correctly: 14 header + 4 payload + 3 = 21 bytes
+        val f2 = ByteArray(21)
+        f2[0] = 0x68; f2[1] = 0x01
+        byteArrayOf(0,0,0,0,0,0,0,0).copyInto(f2, 2)
+        f2[10] = 0x00; f2[11] = 0x85.toByte()
+        f2[12] = 0x00; f2[13] = 0x04
+        byteArrayOf(1, 2, 3, 4).copyInto(f2, 14)
+        f2[18] = 0; f2[19] = 0; f2[20] = 0x16
+
+        val response = RobotProtocol.parseFrame(f2)
+        assertNotNull(response)
+        assertEquals("12.34", response!!.firmwareVersion)
+    }
+
+    @Test
+    fun `parseFrame returns null for wrong size relative to declared length`() {
+        val frame = ByteArray(20)
+        frame[0] = 0x68; frame[1] = 0x01
+        frame[12] = 0x00; frame[13] = 0x10  // declares 16 bytes payload, but frame is only 20
+        assertNull(RobotProtocol.parseFrame(frame))
+    }
+}

@@ -13,11 +13,12 @@ fun StepSlider(
     value: Int,
     range: IntRange,
     modifier: Modifier = Modifier,
+    displayValue: ((Int) -> String)? = null,
     onValueChange: (Int) -> Unit,
 ) {
     Column(modifier = modifier) {
         Text(
-            "$label: $value",
+            if (displayValue != null) "$label: ${displayValue(value)}" else "$label: $value",
             style = MaterialTheme.typography.bodyMedium,
         )
         Row(

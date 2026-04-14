@@ -1,6 +1,8 @@
 package com.tablebot.ui.screens
 
+import android.Manifest
 import android.net.Uri
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -41,6 +43,26 @@ fun CalibrationScreen(
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+
+    // Permission handling
+    var permissionsGranted by remember { mutableStateOf(false) }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        permissionsGranted = results.values.all { it }
+        if (permissionsGranted) robotVm.scan()
+    }
+    val requiredPermissions = remember {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT)
+        } else {
+            arrayOf(Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN)
+        }
+    }
+    fun handleScan() {
+        if (permissionsGranted) robotVm.scan() else permissionLauncher.launch(requiredPermissions)
+    }
+
     val connectionState by robotVm.connectionState.collectAsState()
     val deviceName by robotVm.deviceName.collectAsState()
     val statusMessage by robotVm.statusMessage.collectAsState()
@@ -165,7 +187,7 @@ fun CalibrationScreen(
                     statusMessage = statusMessage,
                     isPlaying = isPlaying,
                     currentTrainingName = currentTrainingName,
-                    onScanClick = { robotVm.scan() },
+                    onScanClick = ::handleScan,
                     onDisconnectClick = { robotVm.disconnect() },
                     onStopClick = { robotVm.stop() },
                 )
@@ -229,15 +251,29 @@ fun CalibrationScreen(
                     }
 
                     // Motor sliders
-                    StepSlider("M1 Speed", m1speed, 0..255) { m1speed = it; dirty = true }
-                    StepSlider("M2 Speed", m2speed, 0..255) { m2speed = it; dirty = true }
-                    StepSlider("X Axis", xaxis, 0..255) { xaxis = it; dirty = true }
-                    StepSlider("Y Axis", yaxis, 0..255) { yaxis = it; dirty = true }
-                    StepSlider("Z Axis", zaxis, 0..255) { zaxis = it; dirty = true }
+                    // M1/M2: byte 0..36 = app units 0..8100 (scale ×225)
+                    // X:     byte 0..40 = −20° to +20° (offset −20, 1°/step)
+                    // Y:     byte 0..32 = −30° to +50° (offset −30, 2.5°/step)
+                    // Z:     byte 0..20 = −45° to +45° (offset −45, 4.5°/step)
+                    StepSlider("M1 Speed (top)", m1speed, 0..36,
+                        displayValue = { "${it * 225}" }
+                    ) { m1speed = it; dirty = true }
+                    StepSlider("M2 Speed (bottom)", m2speed, 0..36,
+                        displayValue = { "${it * 225}" }
+                    ) { m2speed = it; dirty = true }
+                    StepSlider("X Axis", xaxis, 0..40,
+                        displayValue = { "${it - 20}°" }
+                    ) { xaxis = it; dirty = true }
+                    StepSlider("Y Axis", yaxis, 0..32,
+                        displayValue = { "${"%.1f".format((it * 2.5) - 30)}°" }
+                    ) { yaxis = it; dirty = true }
+                    StepSlider("Z Axis", zaxis, 0..20,
+                        displayValue = { "${"%.1f".format((it * 4.5) - 45)}°" }
+                    ) { zaxis = it; dirty = true }
 
-                    // Current values summary
+                    // Raw byte values summary (for debugging)
                     Text(
-                        "m1=$m1speed  m2=$m2speed  x=$xaxis  y=$yaxis  z=$zaxis",
+                        "raw: m1=$m1speed  m2=$m2speed  x=$xaxis  y=$yaxis  z=$zaxis",
                         style = MaterialTheme.typography.bodySmall,
                         fontFamily = FontFamily.Monospace,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -278,8 +314,10 @@ fun CalibrationScreen(
                         Button(
                             onClick = {
                                 val params = buildParams()
-                                robotVm.saveMotorParams(params)
-                                robotVm.reloadMotorConfig()
+                                scope.launch {
+                                    robotVm.saveMotorParams(params)
+                                    robotVm.reloadMotorConfig()
+                                }
                                 dirty = false
                                 currentParams = params
                             },
