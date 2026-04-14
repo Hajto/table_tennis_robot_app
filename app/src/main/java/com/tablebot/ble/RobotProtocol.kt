@@ -10,8 +10,8 @@ object RobotProtocol {
     const val SERVICE_UUID = "0000ffe0-0000-1000-8000-00805f9b34fb"
     const val CHAR_UUID = "0000ffe1-0000-1000-8000-00805f9b34fb"
     const val ALT_SERVICE_UUID = "0000fee7-0000-1000-8000-00805f9b34fb"
-    const val ALT_CHAR_WRITE = "0000fec8-0000-1000-8000-00805f9b34fb"
-    const val ALT_CHAR_NOTIFY = "0000fec7-0000-1000-8000-00805f9b34fb"
+    const val ALT_CHAR_WRITE = "0000fec7-0000-1000-8000-00805f9b34fb"
+    const val ALT_CHAR_NOTIFY = "0000fec8-0000-1000-8000-00805f9b34fb"
 
     private const val FRAME_START: Byte = 0x68
     private const val FRAME_END: Byte = 0x16
@@ -21,10 +21,12 @@ object RobotProtocol {
     const val CMD_DISCONNECT: Byte = 0x99.toByte()
     const val CMD_PATTERN: Byte = 0x01
     const val CMD_PATTERN_ADV: Byte = 0x98.toByte()  // advanced pattern / upload
-    const val CMD_STOP: Byte = 0x05
+    const val CMD_VERSION_QUERY: Byte = 0x05
+    const val CMD_STOP: Byte = 0x99.toByte()
+    const val CMD_PAUSE: Byte = 0x25.toByte()
     const val CMD_CALIBRATION: Byte = 0x03
 
-    const val BLE_MTU = 20
+    const val BLE_MTU = 10
 
     // Response command IDs
     const val RESP_PATTERN_ACK = 0x81
@@ -98,7 +100,10 @@ object RobotProtocol {
         buildFrame(deviceId, CMD_DISCONNECT, byteArrayOf(0))
 
     fun buildStopFrame(deviceId: String): ByteArray =
-        buildFrame(deviceId, CMD_DISCONNECT, byteArrayOf(0))  // 0x99 with payload 0x00 = STOP
+        buildFrame(deviceId, CMD_STOP, byteArrayOf(0))
+
+    fun buildPauseFrame(deviceId: String): ByteArray =
+        buildFrame(deviceId, CMD_PAUSE, byteArrayOf(0))
 
     // Pre-pattern setup: cmd 0x04 with payload 0x02
     fun buildPrePatternFrame(deviceId: String): ByteArray =
@@ -169,7 +174,7 @@ object RobotProtocol {
         }
 
         val trailerOff = points.size * 12
-        buf[trailerOff + 0] = (effectiveTimes and 0xFF).toByte()  // repeatNum
+        buf[trailerOff + 0] = (effectiveTimes.coerceIn(1, 255) and 0xFF).toByte()  // repeatNum
         buf[trailerOff + 1] = 1
         buf[trailerOff + 2] = 0
         buf[trailerOff + 3] = 0
