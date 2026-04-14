@@ -278,8 +278,10 @@ fun CalibrationScreen(
                         Button(
                             onClick = {
                                 val params = buildParams()
-                                robotVm.saveMotorParams(params)
-                                robotVm.reloadMotorConfig()
+                                scope.launch {
+                                    robotVm.saveMotorParams(params)
+                                    robotVm.reloadMotorConfig()
+                                }
                                 dirty = false
                                 currentParams = params
                             },
