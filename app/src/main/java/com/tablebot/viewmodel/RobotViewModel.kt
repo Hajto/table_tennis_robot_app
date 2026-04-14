@@ -40,6 +40,7 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
     val connectionState: StateFlow<ConnectionState> = robotManager.state
     val deviceName: StateFlow<String?> = robotManager.deviceName
     val statusMessage: StateFlow<String?> = robotManager.statusMessage
+    val firmwareVersion: StateFlow<String?> = robotManager.firmwareVersion
 
     private val _isPlaying = MutableStateFlow(false)
     val isPlaying: StateFlow<Boolean> = _isPlaying
@@ -64,6 +65,7 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
                 motorConfig = withContext(Dispatchers.IO) {
                     MotorConfig(getApplication(), active.motorConfigFileName)
                 }
+                robotManager.activeRobotType = active.robotType
             }
         }
     }
@@ -139,16 +141,17 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
                 motorConfig = withContext(Dispatchers.IO) {
                     MotorConfig(getApplication(), profile.motorConfigFileName)
                 }
+                robotManager.activeRobotType = profile.robotType
             } catch (e: Exception) {
                 _profileError.tryEmit(e.message ?: "Failed to switch profile")
             }
         }
     }
 
-    fun createProfile(name: String, onCreated: (Profile) -> Unit = {}) {
+    fun createProfile(name: String, robotType: com.tablebot.data.RobotType = com.tablebot.data.RobotType.JOOLA_V2, onCreated: (Profile) -> Unit = {}) {
         viewModelScope.launch {
             try {
-                val profile = profileStore.createProfile(name)
+                val profile = profileStore.createProfile(name, robotType)
                 _profileIndex.value = profileStore.loadIndex()
                 onCreated(profile)
             } catch (e: Exception) {

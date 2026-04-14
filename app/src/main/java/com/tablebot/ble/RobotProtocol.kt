@@ -4,6 +4,7 @@ import com.tablebot.data.BasicTraining
 import com.tablebot.data.AdvancedTraining
 import com.tablebot.data.MotorConfig
 import com.tablebot.data.MotorParams
+import com.tablebot.data.RobotType
 
 object RobotProtocol {
 
@@ -21,8 +22,8 @@ object RobotProtocol {
     const val CMD_DISCONNECT: Byte = 0x99.toByte()
     const val CMD_PATTERN: Byte = 0x01
     const val CMD_PATTERN_ADV: Byte = 0x98.toByte()  // advanced pattern / upload
-    const val CMD_VERSION_QUERY: Byte = 0x05
-    const val CMD_STOP: Byte = 0x99.toByte()
+    const val CMD_STOP: Byte = 0x05
+    const val CMD_STOP_LEGACY: Byte = 0x99.toByte()
     const val CMD_PAUSE: Byte = 0x25.toByte()
     const val CMD_CALIBRATION: Byte = 0x03
 
@@ -96,11 +97,16 @@ object RobotProtocol {
     fun buildConnectFrame(deviceId: String): ByteArray =
         buildFrame(deviceId, CMD_CONNECT, byteArrayOf(0))
 
+    fun buildVersionQueryFrame(deviceId: String): ByteArray =
+        buildFrame(deviceId, CMD_STOP, byteArrayOf())  // 0x05 — may trigger 0x85 firmware response
+
     fun buildDisconnectFrame(deviceId: String): ByteArray =
         buildFrame(deviceId, CMD_DISCONNECT, byteArrayOf(0))
 
-    fun buildStopFrame(deviceId: String): ByteArray =
-        buildFrame(deviceId, CMD_STOP, byteArrayOf(0))
+    fun buildStopFrame(deviceId: String, robotType: RobotType = RobotType.JOOLA_V2): ByteArray {
+        val cmd = if (robotType == RobotType.JOOLA_V1) CMD_STOP_LEGACY else CMD_STOP
+        return buildFrame(deviceId, cmd, byteArrayOf(0))
+    }
 
     fun buildPauseFrame(deviceId: String): ByteArray =
         buildFrame(deviceId, CMD_PAUSE, byteArrayOf(0))

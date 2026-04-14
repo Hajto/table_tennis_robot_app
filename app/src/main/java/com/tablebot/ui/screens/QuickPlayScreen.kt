@@ -42,6 +42,7 @@ fun QuickPlayScreen(
     connectionState: ConnectionState,
     deviceName: String?,
     statusMessage: String?,
+    firmwareVersion: String?,
     currentTrainingName: String?,
     onScan: () -> Unit,
     onDisconnect: () -> Unit,
@@ -68,7 +69,7 @@ fun QuickPlayScreen(
     profileIndex: ProfileIndex? = null,
     onSwitchProfile: (String) -> Unit = {},
     onEditProfile: (String) -> Unit = {},
-    onCreateProfile: () -> Unit = {},
+    onCreateProfile: (name: String, robotType: com.tablebot.data.RobotType) -> Unit = { _, _ -> },
     reopenProfileSwitcher: Boolean = false,
     scrollToProfileId: String = "",
     profileErrorFlow: kotlinx.coroutines.flow.Flow<String>? = null,
@@ -285,9 +286,9 @@ fun QuickPlayScreen(
                 showProfileSwitcher = false
                 onEditProfile(id)
             },
-            onAddProfile = {
+            onAddProfile = { name, robotType ->
                 showProfileSwitcher = false
-                onCreateProfile()
+                onCreateProfile(name, robotType)
             },
             onDismiss = { showProfileSwitcher = false },
         )
@@ -347,6 +348,7 @@ fun QuickPlayScreen(
                     state = connectionState,
                     deviceName = deviceName,
                     statusMessage = statusMessage,
+                    firmwareVersion = firmwareVersion,
                     isPlaying = isPlaying,
                     currentTrainingName = currentTrainingName,
                     onScanClick = ::handleScan,

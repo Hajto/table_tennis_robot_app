@@ -29,6 +29,7 @@ import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.tablebot.data.Profile
 import com.tablebot.data.RobotPosition
+import com.tablebot.data.RobotType
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,6 +42,7 @@ fun ProfileEditorScreen(
     var name by remember(profile.id) { mutableStateOf(profile.name) }
     var placement by remember(profile.id) { mutableStateOf(profile.robotPlacement) }
     var robotPosition by remember(profile.id) { mutableStateOf(profile.robotPosition) }
+    var robotType by remember(profile.id) { mutableStateOf(profile.robotType) }
 
     var showDeleteDialog by remember { mutableStateOf(false) }
     var showDiscardDialog by remember { mutableStateOf(false) }
@@ -48,7 +50,8 @@ fun ProfileEditorScreen(
 
     val nameChanged = name.trim() != profile.name
     val positionChanged = placement != profile.robotPlacement || robotPosition != profile.robotPosition
-    val isDirty = nameChanged || positionChanged
+    val robotTypeChanged = robotType != profile.robotType
+    val isDirty = nameChanged || positionChanged || robotTypeChanged
 
     fun handleBack() {
         if (isDirty) showDiscardDialog = true else onBack()
@@ -65,6 +68,7 @@ fun ProfileEditorScreen(
                 name = name.trim(),
                 robotPlacement = placement,
                 robotPosition = robotPosition,
+                robotType = robotType,
             )
         )
         onBack()
@@ -188,6 +192,34 @@ fun ProfileEditorScreen(
                 singleLine = true,
                 modifier = Modifier.fillMaxWidth(),
             )
+
+            HorizontalDivider()
+
+            Text(
+                "Robot Type",
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.Bold,
+            )
+
+            Text(
+                "Select your robot model. Infinity V1 robots use a different stop command.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                RobotType.entries.forEach { type ->
+                    FilterChip(
+                        selected = robotType == type,
+                        onClick = { robotType = type },
+                        label = { Text(type.label) },
+                        modifier = Modifier.weight(1f),
+                    )
+                }
+            }
 
             HorizontalDivider()
 

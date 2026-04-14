@@ -132,6 +132,12 @@ data class TestBallRequest(
 data class RobotPosition(val x: Float = 0.5f, val y: Float = 0.5f)
 
 @Serializable
+enum class RobotType(val label: String) {
+    JOOLA_V1("Infinity V1"),
+    JOOLA_V2("Infinity V2"),
+}
+
+@Serializable
 data class Profile(
     val id: String,
     val name: String,
@@ -139,6 +145,7 @@ data class Profile(
     val robotPlacement: String = "behind",
     val motorConfigFileName: String,
     val createdAt: Long = System.currentTimeMillis(),
+    val robotType: RobotType = RobotType.JOOLA_V2,
 )
 
 @Serializable

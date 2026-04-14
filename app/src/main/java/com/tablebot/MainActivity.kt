@@ -143,6 +143,7 @@ class MainActivity : ComponentActivity() {
                                 connectionState = connectionState,
                                 deviceName = robotVm.deviceName.collectAsState().value,
                                 statusMessage = robotVm.statusMessage.collectAsState().value,
+                                firmwareVersion = robotVm.firmwareVersion.collectAsState().value,
                                 currentTrainingName = robotVm.currentTrainingName.collectAsState().value,
                                 onScan = { robotVm.scan() },
                                 onDisconnect = { robotVm.disconnect() },
@@ -172,8 +173,8 @@ class MainActivity : ComponentActivity() {
                                 onEditProfile = {
                                     navController.navigate("editProfile/$it")
                                 },
-                                onCreateProfile = {
-                                    robotVm.createProfile("New Profile") { profile ->
+                                onCreateProfile = { name, robotType ->
+                                    robotVm.createProfile(name, robotType) { profile ->
                                         navController.navigate("editProfile/${profile.id}")
                                     }
                                 },

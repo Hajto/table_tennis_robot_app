@@ -30,6 +30,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.tablebot.data.Profile
 import com.tablebot.data.ProfileIndex
+import com.tablebot.data.RobotType
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -38,7 +39,7 @@ fun ProfileSwitcherDialog(
     initialProfileId: String = "",
     onSelectProfile: (String) -> Unit,
     onEditProfile: (String) -> Unit,
-    onAddProfile: () -> Unit,
+    onAddProfile: (name: String, robotType: RobotType) -> Unit,
     onDismiss: () -> Unit,
 ) {
     val profiles = profileIndex.profiles
@@ -87,7 +88,17 @@ fun ProfileSwitcherDialog(
                             onEdit = { onEditProfile(profile.id) },
                         )
                     } else {
-                        AddProfileCard(onClick = onAddProfile)
+                        var showNewProfileDialog by remember { mutableStateOf(false) }
+                        if (showNewProfileDialog) {
+                            NewProfileDialog(
+                                onConfirm = { name, robotType ->
+                                    showNewProfileDialog = false
+                                    onAddProfile(name, robotType)
+                                },
+                                onDismiss = { showNewProfileDialog = false },
+                            )
+                        }
+                        AddProfileCard(onClick = { showNewProfileDialog = true })
                     }
                 }
 
@@ -163,13 +174,12 @@ private fun ProfileCarouselCard(
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
                     )
-                    if (isActive) {
-                        Text(
-                            "Active",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                    }
+                    Text(
+                        profile.robotType.label,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (isActive) MaterialTheme.colorScheme.primary
+                                else MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
                 IconButton(onClick = onEdit, modifier = Modifier.size(32.dp)) {
                     Icon(
@@ -367,6 +377,57 @@ private fun MiniGrid(
             }
         }
     }
+}
+
+@Composable
+private fun NewProfileDialog(
+    onConfirm: (name: String, robotType: RobotType) -> Unit,
+    onDismiss: () -> Unit,
+) {
+    var name by remember { mutableStateOf("") }
+    var robotType by remember { mutableStateOf(RobotType.JOOLA_V2) }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("New Profile") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Profile Name") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    "Robot Type",
+                    style = MaterialTheme.typography.labelMedium,
+                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    RobotType.entries.forEach { type ->
+                        FilterChip(
+                            selected = robotType == type,
+                            onClick = { robotType = type },
+                            label = { Text(type.label) },
+                            modifier = Modifier.weight(1f),
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                onClick = { onConfirm(name.trim(), robotType) },
+                enabled = name.isNotBlank(),
+            ) { Text("Create") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        },
+    )
 }
 
 @Composable

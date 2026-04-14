@@ -8,6 +8,7 @@ import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
 import android.util.Log
+import com.tablebot.data.RobotType
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -50,6 +51,7 @@ class RobotManager(private val context: Context) {
     var deviceId: String = "0000000000000000"
         private set
     private var useAltService = false
+    var activeRobotType: RobotType = RobotType.JOOLA_V2
 
     private val _state = MutableStateFlow(ConnectionState.DISCONNECTED)
     val state: StateFlow<ConnectionState> = _state
@@ -58,6 +60,9 @@ class RobotManager(private val context: Context) {
     val deviceName: StateFlow<String?> = _deviceName
 
     private val _statusMessage = MutableStateFlow<String?>(null)
+
+    private val _firmwareVersion = MutableStateFlow<String?>(null)
+    val firmwareVersion: StateFlow<String?> = _firmwareVersion
     val statusMessage: StateFlow<String?> = _statusMessage
 
     // Sequential response processing
@@ -163,6 +168,7 @@ class RobotManager(private val context: Context) {
                     _state.value = ConnectionState.DISCONNECTED
                     _statusMessage.value = "Disconnected"
                     _deviceName.value = null
+                    _firmwareVersion.value = null
                     writeChar = null
                     gatt = null
                 }
@@ -296,6 +302,12 @@ class RobotManager(private val context: Context) {
 
                     _state.value = ConnectionState.CONNECTED
                     _statusMessage.value = "Connected to ${_deviceName.value}"
+
+                    // Query firmware version — sends 0x05 which triggers 0x85 response on new firmware.
+                    // Skip for V1: 0x05 is STOP on old firmware.
+                    if (activeRobotType != RobotType.JOOLA_V1) {
+                        sendFrame(RobotProtocol.buildVersionQueryFrame(deviceId))
+                    }
                     Log.i(TAG, "Connection complete!")
                 } catch (e: Exception) {
                     Log.e(TAG, "Setup failed: ${e.message}", e)
@@ -410,7 +422,12 @@ class RobotManager(private val context: Context) {
                 }
             }
             0x85 -> { // FIRMWARE
-                Log.i(TAG, "Robot Firmware: ${response.firmwareVersion}")
+                val version = response.firmwareVersion
+                Log.i(TAG, "Robot Firmware: $version")
+                _firmwareVersion.value = version
+                if (version != null && isLegacyFirmware(version)) {
+                    Log.w(TAG, "Legacy firmware detected ($version) but profile is set to ${activeRobotType}. Consider switching to V1.")
+                }
             }
             0x83 -> { // POST_ACK
                 Log.d(TAG, "Post-pattern acknowledged")
@@ -541,7 +558,7 @@ class RobotManager(private val context: Context) {
 
         // Sequence for firmware compatibility:
         Log.i(TAG, "sendBasicDrill: stop existing")
-        sendFrame(RobotProtocol.buildStopFrame(deviceId))
+        sendFrame(RobotProtocol.buildStopFrame(deviceId, activeRobotType))
         delay(500)
 
         Log.i(TAG, "sendBasicDrill: pre-pattern 0x04")
@@ -567,7 +584,7 @@ class RobotManager(private val context: Context) {
         patternActive = true
 
         Log.i(TAG, "sendAdvancedDrill: stop existing")
-        sendFrame(RobotProtocol.buildStopFrame(deviceId))
+        sendFrame(RobotProtocol.buildStopFrame(deviceId, activeRobotType))
         delay(500)
 
         Log.i(TAG, "sendAdvancedDrill: pre-pattern 0x04")
@@ -613,7 +630,7 @@ class RobotManager(private val context: Context) {
             delay(100)
             
             // 2. Send Stop (0x99)
-            sendFrame(RobotProtocol.buildStopFrame(deviceId))
+            sendFrame(RobotProtocol.buildStopFrame(deviceId, activeRobotType))
             delay(100)
             
             // 3. Perform standard finish cleanup
@@ -646,6 +663,15 @@ class RobotManager(private val context: Context) {
     fun destroy() {
         disconnect()
         scope.cancel()
+    }
+
+    private fun isLegacyFirmware(version: String): Boolean {
+        // Firmware format is "MM.mm" e.g. "01.13"
+        val parts = version.split(".")
+        if (parts.size != 2) return false
+        val major = parts[0].toIntOrNull() ?: return false
+        val minor = parts[1].toIntOrNull() ?: return false
+        return major < 1 || (major == 1 && minor <= 13)
     }
 }
 

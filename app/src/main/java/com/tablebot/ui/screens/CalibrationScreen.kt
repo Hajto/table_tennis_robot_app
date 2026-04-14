@@ -66,6 +66,7 @@ fun CalibrationScreen(
     val connectionState by robotVm.connectionState.collectAsState()
     val deviceName by robotVm.deviceName.collectAsState()
     val statusMessage by robotVm.statusMessage.collectAsState()
+    val firmwareVersion by robotVm.firmwareVersion.collectAsState()
     val isPlaying by robotVm.isPlaying.collectAsState()
     val currentTrainingName by robotVm.currentTrainingName.collectAsState()
     val connected = connectionState == ConnectionState.CONNECTED
@@ -185,6 +186,7 @@ fun CalibrationScreen(
                     state = connectionState,
                     deviceName = deviceName,
                     statusMessage = statusMessage,
+                    firmwareVersion = firmwareVersion,
                     isPlaying = isPlaying,
                     currentTrainingName = currentTrainingName,
                     onScanClick = ::handleScan,

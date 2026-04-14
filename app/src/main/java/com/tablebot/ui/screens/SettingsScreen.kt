@@ -52,6 +52,7 @@ fun SettingsScreen(onBack: () -> Unit) {
                 checked = debugMode,
                 onCheckedChange = { AppPrefs.setDebugMode(it) },
             )
+
         }
     }
 }
