@@ -51,7 +51,7 @@ class RobotManager(private val context: Context) {
     var deviceId: String = "0000000000000000"
         private set
     private var useAltService = false
-    var activeRobotType: RobotType = RobotType.JOOLA_V2
+    @Volatile var activeRobotType: RobotType = RobotType.JOOLA_V2
 
     private val _state = MutableStateFlow(ConnectionState.DISCONNECTED)
     val state: StateFlow<ConnectionState> = _state

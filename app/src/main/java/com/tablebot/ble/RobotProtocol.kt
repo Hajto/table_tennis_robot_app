@@ -22,8 +22,8 @@ object RobotProtocol {
     const val CMD_DISCONNECT: Byte = 0x99.toByte()
     const val CMD_PATTERN: Byte = 0x01
     const val CMD_PATTERN_ADV: Byte = 0x98.toByte()  // advanced pattern / upload
-    const val CMD_STOP: Byte = 0x05
-    const val CMD_STOP_LEGACY: Byte = 0x99.toByte()
+    const val CMD_STOP: Byte = 0x05                    // V2 firmware stop
+    const val CMD_STOP_LEGACY: Byte = 0x99.toByte()    // V1 firmware stop — same opcode as DISCONNECT, intentional
     const val CMD_PAUSE: Byte = 0x25.toByte()
     const val CMD_CALIBRATION: Byte = 0x03
 

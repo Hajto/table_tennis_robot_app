@@ -51,6 +51,8 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
     private val _profileError = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val profileError: SharedFlow<String> = _profileError.asSharedFlow()
 
+    private var profilesLoaded = false
+
     init {
         robotManager.onPatternDone = {
             _isPlaying.value = false
@@ -59,18 +61,23 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             profileStore.migrateIfNeeded()
             val index = profileStore.loadIndex()
-            _profileIndex.value = index
             val active = index.profiles.find { it.id == index.activeProfileId }
             if (active != null) {
+                // Set activeRobotType before publishing index so scan() sees the correct type
+                robotManager.activeRobotType = active.robotType
                 motorConfig = withContext(Dispatchers.IO) {
                     MotorConfig(getApplication(), active.motorConfigFileName)
                 }
-                robotManager.activeRobotType = active.robotType
             }
+            _profileIndex.value = index
+            profilesLoaded = true
         }
     }
 
-    fun scan() = robotManager.scan()
+    fun scan() {
+        if (!profilesLoaded) return
+        robotManager.scan()
+    }
 
     fun disconnect() = robotManager.disconnect()
 
@@ -136,12 +143,13 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
             try {
                 profileStore.setActiveProfile(profileId)
                 val index = profileStore.loadIndex()
-                _profileIndex.value = index
                 val profile = index.profiles.find { it.id == profileId } ?: return@launch
+                // Update activeRobotType before publishing index so any observer sees a consistent state
+                robotManager.activeRobotType = profile.robotType
+                _profileIndex.value = index
                 motorConfig = withContext(Dispatchers.IO) {
                     MotorConfig(getApplication(), profile.motorConfigFileName)
                 }
-                robotManager.activeRobotType = profile.robotType
             } catch (e: Exception) {
                 _profileError.tryEmit(e.message ?: "Failed to switch profile")
             }
@@ -165,13 +173,14 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
             try {
                 profileStore.deleteProfile(id)
                 val index = profileStore.loadIndex()
-                _profileIndex.value = index
                 val active = index.profiles.find { it.id == index.activeProfileId }
                 if (active != null) {
+                    robotManager.activeRobotType = active.robotType
                     motorConfig = withContext(Dispatchers.IO) {
                         MotorConfig(getApplication(), active.motorConfigFileName)
                     }
                 }
+                _profileIndex.value = index
             } catch (e: Exception) {
                 _profileError.tryEmit(e.message ?: "Failed to delete profile")
             }
@@ -182,7 +191,12 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
         viewModelScope.launch {
             try {
                 profileStore.updateProfile(profile)
-                _profileIndex.value = profileStore.loadIndex()
+                val index = profileStore.loadIndex()
+                // If the active profile was edited, sync robotType immediately
+                if (profile.id == index.activeProfileId) {
+                    robotManager.activeRobotType = profile.robotType
+                }
+                _profileIndex.value = index
             } catch (e: Exception) {
                 _profileError.tryEmit(e.message ?: "Failed to update profile")
             }
