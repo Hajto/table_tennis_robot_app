@@ -169,14 +169,23 @@ landing position based on two per-point control bytes:
 - **byte 10 == 2** → sets the firmware's random mode-flag (governs bag reset between cycles).
 - **byte 7 == 0x80** → observed on random drills in the original app's traffic.
 
+**Basic vs advanced random (confirmed by capture).** The two encodings differ:
+
+- **Basic** full-random drill (whole drill is one random ball type): every point has
+  `b7=0x80, b10=2, b11=1`.
+- **Advanced** per-ball random (a `BallEntry` marked random inside a multi-ball drill): the random
+  ball's points use `b7=0x80, b11=1` **with `b10=0`** — `b10=2` is not set on the advanced path.
+  Non-random balls (e.g. a serve) keep all three at 0. `b11=1` is the operative trigger in both
+  cases; `b7=0x80` travels with it.
+
 With bytes 10/11 left at 0 the firmware walks the positions **in stored order**, which is why a
 "random" drill built with those bytes zeroed plays as a fixed sequence. A single random point
-looks like this on the wire (motor bytes vary):
+(basic mode) looks like this on the wire (motor bytes vary):
 
 ```
-14 14 22 11 00 01 80 09 01 02 01
-             │rDly│ 80 09 01 02 01
-                   b7 b8 b9 b10 b11
+14 14 22 11 0a 00 01 80 09 01 02 01
+m1 m2  x  y  z │rDly│ b7 b8 b9 b10 b11
+              (00 01) 80 09 01 02 01
 ```
 
 Source: HCI capture of the original app playing a random drill, cross-checked against the robot

@@ -26,7 +26,7 @@ object RobotProtocol {
     const val CMD_STOP: Byte = 0x05                    // V2 firmware stop
     const val CMD_STOP_LEGACY: Byte = 0x99.toByte()    // V1 firmware stop — same opcode as DISCONNECT, intentional
     const val CMD_PAUSE: Byte = 0x25.toByte()
-    const val CMD_CALIBRATION: Byte = 0x03
+    const val CMD_POST_PATTERN: Byte = 0x03  // ends a pattern; also the mid-drill stop (firmware -> done state)
 
     const val BLE_MTU = 10
 
@@ -119,9 +119,10 @@ object RobotProtocol {
     fun buildPrePatternFrame(deviceId: String): ByteArray =
         buildFrame(deviceId, 0x04, byteArrayOf(0x02))
 
-    // Post-pattern: cmd 0x03 with payload 0x00
+    // Post-pattern / stop: cmd 0x03 with payload 0x00. Drives the firmware shot loop to its
+    // "done" state, so this is also the command that stops a drill while it is firing.
     fun buildPostPatternFrame(deviceId: String): ByteArray =
-        buildFrame(deviceId, 0x03, byteArrayOf(0x00))
+        buildFrame(deviceId, CMD_POST_PATTERN, byteArrayOf(0x00))
 
     fun encodeSingleBall(params: MotorParams, ballTime: Int = 15): ByteArray {
         val buf = ByteArray(16) // 12 per point + 4 trailer
