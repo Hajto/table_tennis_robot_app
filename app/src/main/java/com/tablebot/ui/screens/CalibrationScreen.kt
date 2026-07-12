@@ -39,6 +39,7 @@ fun CalibrationScreen(
     robotVm: RobotViewModel,
     onBack: () -> Unit,
     activeProfileName: String? = null,
+    seed: com.tablebot.viewmodel.CalibrationSeed? = null,
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -98,6 +99,16 @@ fun CalibrationScreen(
     }
 
     LaunchedEffect(ball, spin, power, selectedCell) { loadParams() }
+
+    // Seed the selection from the ball being edited (only when navigated in with context).
+    LaunchedEffect(Unit) {
+        seed?.let {
+            ball = it.ball
+            spin = it.spin
+            power = it.power
+            selectedCell = it.cell
+        }
+    }
 
     // File import/export
     val exportLauncher = rememberLauncherForActivityResult(
