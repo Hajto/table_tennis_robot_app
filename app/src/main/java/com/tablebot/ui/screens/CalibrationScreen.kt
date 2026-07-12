@@ -1,8 +1,6 @@
 package com.tablebot.ui.screens
 
-import android.Manifest
 import android.net.Uri
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -26,6 +24,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tablebot.ble.BlePermissions
 import com.tablebot.ble.ConnectionState
 import com.tablebot.data.*
 import com.tablebot.ui.components.BallSettingsDropdowns
@@ -52,13 +51,7 @@ fun CalibrationScreen(
         permissionsGranted = results.values.all { it }
         if (permissionsGranted) robotVm.scan()
     }
-    val requiredPermissions = remember {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            arrayOf(Manifest.permission.BLUETOOTH_SCAN, Manifest.permission.BLUETOOTH_CONNECT)
-        } else {
-            arrayOf(Manifest.permission.BLUETOOTH, Manifest.permission.BLUETOOTH_ADMIN)
-        }
-    }
+    val requiredPermissions = remember { BlePermissions.required() }
     fun handleScan() {
         if (permissionsGranted) robotVm.scan() else permissionLauncher.launch(requiredPermissions)
     }

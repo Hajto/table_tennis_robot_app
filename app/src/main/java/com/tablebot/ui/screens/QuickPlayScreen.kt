@@ -1,7 +1,5 @@
 package com.tablebot.ui.screens
 
-import android.Manifest
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -21,6 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.tablebot.ble.BlePermissions
 import com.tablebot.ble.ConnectionState
 import androidx.compose.material.icons.filled.SwapHoriz
 import com.tablebot.data.*
@@ -107,21 +106,7 @@ fun QuickPlayScreen(
         permissionsGranted = results.values.all { it }
         if (permissionsGranted) onScan()
     }
-    val requiredPermissions = remember {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            arrayOf(
-                Manifest.permission.BLUETOOTH_SCAN,
-                Manifest.permission.BLUETOOTH_CONNECT,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-            )
-        } else {
-            arrayOf(
-                Manifest.permission.BLUETOOTH,
-                Manifest.permission.BLUETOOTH_ADMIN,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-            )
-        }
-    }
+    val requiredPermissions = remember { BlePermissions.required() }
     fun handleScan() {
         if (permissionsGranted) onScan()
         else permissionLauncher.launch(requiredPermissions)
