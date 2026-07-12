@@ -62,6 +62,7 @@ class AdvancedEditorState(
         repeatNum = training.repeatNum
         repeatDelay = training.repeatDelay
         ballList = training.ballList
+        _expandedIndices.clear()
         isFavourite = training.isFavourite
         skillLevel = training.skillLevel
         tags = training.tags

@@ -45,4 +45,11 @@ class CalibrationSeedTest {
         val seed = calibrationSeed(1, basic(1, 2, 2, 8), adv)
         assertEquals(CalibrationSeed(2, 4, 2, 14), seed)
     }
+
+    @Test fun `dynamic tab with out-of-range expanded index falls back to last ball`() {
+        val adv = advanced(ball(2, 4, 2, 14))
+        adv.toggleExpanded(5) // stale index left over from a previously loaded, longer drill
+        val seed = calibrationSeed(1, basic(1, 2, 2, 8), adv)
+        assertEquals(CalibrationSeed(2, 4, 2, 14), seed)
+    }
 }

@@ -1,5 +1,6 @@
 package com.tablebot.ui.screens
 
+import com.tablebot.data.AdvancedTraining
 import com.tablebot.data.BallEntry
 import com.tablebot.data.Point
 import org.junit.Assert.*
@@ -57,5 +58,23 @@ class AdvancedEditorStateTest {
         s.moveBall(0, 2)          // swap 0<->2; expanded ball now at index 2
         assertTrue(s.isExpanded(2))
         assertFalse(s.isExpanded(0))
+    }
+
+    @Test fun `loadFrom clears expanded indices`() {
+        val s = state(3)
+        s.toggleExpanded(2)
+        assertEquals(2, s.lastExpandedIndex())
+
+        val training = AdvancedTraining(
+            id = 2,
+            name = "Fresh Drill",
+            ballList = listOf(
+                BallEntry(ball = 1, spin = 2, power = 2, points = listOf(Point(1, 2)), ballTime = 9)
+            ),
+        )
+        s.loadFrom(training)
+
+        assertNull(s.lastExpandedIndex())
+        assertFalse(s.isExpanded(2))
     }
 }

@@ -19,7 +19,7 @@ fun calibrationSeed(mode: Int, basic: DrillEditorState, advanced: AdvancedEditor
     if (list.isEmpty()) {
         return CalibrationSeed(basic.ball, basic.spin, basic.power, basic.points.firstOrNull()?.x)
     }
-    val index = advanced.lastExpandedIndex() ?: list.lastIndex
+    val index = advanced.lastExpandedIndex()?.takeIf { it in list.indices } ?: list.lastIndex
     val entry = list[index]
     return CalibrationSeed(entry.ball, entry.spin, entry.power, entry.points.firstOrNull()?.x)
 }
