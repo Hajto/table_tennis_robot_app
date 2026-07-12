@@ -7,7 +7,9 @@ import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
+import android.location.LocationManager
 import android.util.Log
+import androidx.core.location.LocationManagerCompat
 import com.tablebot.data.RobotType
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -108,6 +110,15 @@ class RobotManager(private val context: Context) {
             return
         }
 
+        // Below Android 12 the OS silently withholds all BLE scan results
+        // while Location Services are off — fail loudly instead.
+        if (BlePermissions.locationRequiredForScan() && !isLocationEnabled()) {
+            _state.value = ConnectionState.DISCONNECTED
+            _statusMessage.value =
+                "Location is off. Android requires Location Services for Bluetooth scanning — enable it in Settings and try again."
+            return
+        }
+
         _state.value = ConnectionState.SCANNING
         _statusMessage.value = "Scanning for robot..."
 
@@ -131,6 +142,12 @@ class RobotManager(private val context: Context) {
 
     private fun stopScan() {
         try { adapter?.bluetoothLeScanner?.stopScan(scanCallback) } catch (_: Exception) {}
+    }
+
+    private fun isLocationEnabled(): Boolean {
+        val lm = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
+            ?: return true // no LocationManager — don't block scanning on exotic devices
+        return LocationManagerCompat.isLocationEnabled(lm)
     }
 
     private fun connectToDevice(device: BluetoothDevice, name: String) {
