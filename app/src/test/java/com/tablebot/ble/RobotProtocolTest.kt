@@ -131,6 +131,22 @@ class RobotProtocolTest {
         assertEquals(0x16.toByte(), frame.last())
     }
 
+    @Test
+    fun `buildPauseFrame uses CMD_PAUSE 0x25`() {
+        val frame = RobotProtocol.buildPauseFrame(DEVICE_ID)
+        assertEquals(RobotProtocol.CMD_PAUSE, frame[11])
+        assertEquals(0x25.toByte(), frame[11])
+    }
+
+    @Test
+    fun `buildPrePatternFrame uses cmd 0x04 with payload 0x02`() {
+        val frame = RobotProtocol.buildPrePatternFrame(DEVICE_ID)
+        assertEquals(0x04.toByte(), frame[11])
+        assertEquals(0x02.toByte(), frame[14]) // pre-pattern setup payload
+        assertEquals(0x68.toByte(), frame[0])
+        assertEquals(0x16.toByte(), frame.last())
+    }
+
     // ── Random-mode pattern encoding ────────────────────────────────────────────
 
     private fun basicTraining(landType: Int) = BasicTraining(
@@ -173,6 +189,185 @@ class RobotProtocolTest {
         val buf = RobotProtocol.encodeBasicPattern(drill, lookup = nullLookup)
         assertEquals(0.toByte(), buf[10])
         assertEquals(0.toByte(), buf[11])
+    }
+
+    @Test
+    fun `encodeBasicPattern static clears byte7 and keeps groupSize on every point`() {
+        val drill = basicTraining(LandType.STATIC.value)
+        val buf = RobotProtocol.encodeBasicPattern(drill, lookup = nullLookup)
+        for (i in drill.points.indices) {
+            val off = i * 12
+            assertEquals("point $i byte7", 0.toByte(), buf[off + 7])
+            assertEquals("point $i byte9 groupSize", 1.toByte(), buf[off + 9])
+        }
+    }
+
+    @Test
+    fun `encodeBasicPattern sequence keeps groupSize byte9 at 1 on every point`() {
+        val drill = basicTraining(LandType.LOOP.value)
+        val buf = RobotProtocol.encodeBasicPattern(drill, lookup = nullLookup)
+        for (i in drill.points.indices) {
+            assertEquals("point $i byte9 groupSize", 1.toByte(), buf[i * 12 + 9])
+        }
+    }
+
+    // ── encodeBasicPattern general structure ────────────────────────────────────
+
+    // Returns a fixed MotorParams regardless of the drill/point, so motor bytes are deterministic.
+    private fun fixedLookup(params: MotorParams): (Int, Int, Int, Int) -> MotorParams? =
+        { _, _, _, _ -> params }
+
+    @Test
+    fun `encodeBasicPattern payload length is points times 12 plus 4`() {
+        val drill = basicTraining(LandType.LOOP.value) // 2 points
+        val buf = RobotProtocol.encodeBasicPattern(drill, lookup = nullLookup)
+        assertEquals(drill.points.size * 12 + 4, buf.size)
+    }
+
+    @Test
+    fun `encodeBasicPattern writes looked-up motor bytes at offsets 0 to 4 on every point`() {
+        val drill = basicTraining(LandType.LOOP.value)
+        val params = motorParams(m1speed = 11, m2speed = 22, xaxis = 33, yaxis = 44, zaxis = 55)
+        val buf = RobotProtocol.encodeBasicPattern(drill, lookup = fixedLookup(params))
+        for (i in drill.points.indices) {
+            val off = i * 12
+            assertEquals("point $i m1speed", 11.toByte(), buf[off + 0])
+            assertEquals("point $i m2speed", 22.toByte(), buf[off + 1])
+            assertEquals("point $i xaxis", 33.toByte(), buf[off + 2])
+            assertEquals("point $i yaxis", 44.toByte(), buf[off + 3])
+            assertEquals("point $i zaxis", 55.toByte(), buf[off + 4])
+        }
+    }
+
+    @Test
+    fun `encodeBasicPattern masks motor bytes for 0 and 255`() {
+        val drill = basicTraining(LandType.LOOP.value)
+        val params = motorParams(m1speed = 0, m2speed = 255, xaxis = 0, yaxis = 255, zaxis = 128)
+        val buf = RobotProtocol.encodeBasicPattern(drill, lookup = fixedLookup(params))
+        assertEquals(0.toByte(), buf[0])
+        assertEquals(0xFF.toByte(), buf[1])
+        assertEquals(0.toByte(), buf[2])
+        assertEquals(0xFF.toByte(), buf[3])
+        assertEquals(0x80.toByte(), buf[4])
+    }
+
+    @Test
+    fun `encodeBasicPattern sets repeatDelay bytes to 0 and 1 on every point`() {
+        val drill = basicTraining(LandType.LOOP.value)
+        val buf = RobotProtocol.encodeBasicPattern(drill, lookup = nullLookup)
+        for (i in drill.points.indices) {
+            val off = i * 12
+            assertEquals("point $i repeatDelay high", 0.toByte(), buf[off + 5])
+            assertEquals("point $i repeatDelay low", 1.toByte(), buf[off + 6])
+        }
+    }
+
+    @Test
+    fun `encodeBasicPattern writes ballTime at byte 8 on every point`() {
+        val drill = basicTraining(LandType.LOOP.value) // ballTime = 9
+        val buf = RobotProtocol.encodeBasicPattern(drill, lookup = nullLookup)
+        for (i in drill.points.indices) {
+            assertEquals("point $i ballTime", 9.toByte(), buf[i * 12 + 8])
+        }
+    }
+
+    @Test
+    fun `encodeBasicPattern ballTimeOverride replaces ballTime`() {
+        val drill = basicTraining(LandType.LOOP.value) // ballTime = 9
+        val buf = RobotProtocol.encodeBasicPattern(drill, ballTimeOverride = 42, lookup = nullLookup)
+        for (i in drill.points.indices) {
+            assertEquals("point $i ballTime", 42.toByte(), buf[i * 12 + 8])
+        }
+    }
+
+    @Test
+    fun `encodeBasicPattern trailer encodes repeat count and constants`() {
+        val drill = basicTraining(LandType.LOOP.value) // times = 20
+        val buf = RobotProtocol.encodeBasicPattern(drill, lookup = nullLookup)
+        val t = drill.points.size * 12
+        assertEquals(20.toByte(), buf[t + 0]) // repeatNum
+        assertEquals(1.toByte(), buf[t + 1])
+        assertEquals(0.toByte(), buf[t + 2])
+        assertEquals(0.toByte(), buf[t + 3])
+    }
+
+    @Test
+    fun `encodeBasicPattern clamps times above 255 to 255`() {
+        val drill = basicTraining(LandType.LOOP.value).copy(times = 300)
+        val buf = RobotProtocol.encodeBasicPattern(drill, lookup = nullLookup)
+        val t = drill.points.size * 12
+        assertEquals(255.toByte(), buf[t + 0])
+    }
+
+    @Test
+    fun `encodeBasicPattern clamps times below 1 to 1`() {
+        val drill = basicTraining(LandType.LOOP.value).copy(times = 0)
+        val buf = RobotProtocol.encodeBasicPattern(drill, lookup = nullLookup)
+        val t = drill.points.size * 12
+        assertEquals(1.toByte(), buf[t + 0])
+    }
+
+    @Test
+    fun `encodeBasicPattern timesOverride replaces repeat count`() {
+        val drill = basicTraining(LandType.LOOP.value) // times = 20
+        val buf = RobotProtocol.encodeBasicPattern(drill, timesOverride = 7, lookup = nullLookup)
+        val t = drill.points.size * 12
+        assertEquals(7.toByte(), buf[t + 0])
+    }
+
+    @Test
+    fun `encodeBasicPattern clamps timesOverride above 255 to 255`() {
+        val drill = basicTraining(LandType.LOOP.value)
+        val buf = RobotProtocol.encodeBasicPattern(drill, timesOverride = 400, lookup = nullLookup)
+        val t = drill.points.size * 12
+        assertEquals(255.toByte(), buf[t + 0])
+    }
+
+    @Test
+    fun `encodeBasicPattern calls lookup with drill ball spin power and point x as cell`() {
+        val drill = basicTraining(LandType.LOOP.value) // ball=1, spin=2, power=2, points x=3,8
+        val calls = mutableListOf<List<Int>>()
+        RobotProtocol.encodeBasicPattern(drill, lookup = { ball, spin, power, cell ->
+            calls.add(listOf(ball, spin, power, cell))
+            null
+        })
+        assertEquals(2, calls.size)
+        assertEquals(listOf(drill.ball, drill.spin, drill.power, 3), calls[0])
+        assertEquals(listOf(drill.ball, drill.spin, drill.power, 8), calls[1])
+    }
+
+    @Test
+    fun `encodeBasicPattern null lookup yields zero motor bytes but keeps flag bytes`() {
+        // Mixed lookup: the first point resolves, the second returns null. The null point must
+        // still receive the correct random flag bytes (flags are independent of motor lookup).
+        val drill = basicTraining(LandType.RANDOM.value) // points x=3, x=8
+        val params = motorParams(m1speed = 77, m2speed = 88, xaxis = 99, yaxis = 11, zaxis = 22)
+        val buf = RobotProtocol.encodeBasicPattern(drill, lookup = { _, _, _, cell ->
+            if (cell == 3) params else null
+        })
+
+        // point 0 (x=3) -> resolved motor bytes
+        assertEquals(77.toByte(), buf[0])
+        assertEquals(88.toByte(), buf[1])
+        assertEquals(99.toByte(), buf[2])
+        assertEquals(11.toByte(), buf[3])
+        assertEquals(22.toByte(), buf[4])
+
+        // point 1 (x=8) -> null lookup => zeroed motor bytes
+        val off = 12
+        assertEquals(0.toByte(), buf[off + 0])
+        assertEquals(0.toByte(), buf[off + 1])
+        assertEquals(0.toByte(), buf[off + 2])
+        assertEquals(0.toByte(), buf[off + 3])
+        assertEquals(0.toByte(), buf[off + 4])
+
+        // both points keep the random flag bytes regardless of the lookup result
+        for (i in drill.points.indices) {
+            val p = i * 12
+            assertEquals("point $i byte7", 0x80.toByte(), buf[p + 7])
+            assertEquals("point $i byte10", 2.toByte(), buf[p + 10])
+            assertEquals("point $i byte11", 1.toByte(), buf[p + 11])
+        }
     }
 
     // ── CRC consistency ───────────────────────────────────────────────────────
