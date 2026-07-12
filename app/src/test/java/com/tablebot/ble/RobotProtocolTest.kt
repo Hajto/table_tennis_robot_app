@@ -1,6 +1,9 @@
 package com.tablebot.ble
 
+import com.tablebot.data.BasicTraining
+import com.tablebot.data.LandType
 import com.tablebot.data.MotorParams
+import com.tablebot.data.Point
 import com.tablebot.data.RobotType
 import org.junit.Assert.*
 import org.junit.Test
@@ -116,6 +119,60 @@ class RobotProtocolTest {
         // Verify V2 stop is NOT 0x99
         val frameV2 = RobotProtocol.buildStopFrame(DEVICE_ID, RobotType.JOOLA_V2)
         assertNotEquals(0x99.toByte(), frameV2[11])
+    }
+
+    @Test
+    fun `buildAbortFrame uses 0x99 so a firing drill actually stops`() {
+        // During execution the firmware ignores 0x05 and only honours 0x99 as a hard stop,
+        // so the mid-drill abort must be 0x99 for both robot types.
+        val frame = RobotProtocol.buildAbortFrame(DEVICE_ID)
+        assertEquals(0x99.toByte(), frame[11])
+        assertEquals(0x68.toByte(), frame[0])
+        assertEquals(0x16.toByte(), frame.last())
+    }
+
+    // ── Random-mode pattern encoding ────────────────────────────────────────────
+
+    private fun basicTraining(landType: Int) = BasicTraining(
+        id = 1, name = "t", ball = 1, spin = 2, power = 2,
+        landType = landType, ballTime = 9, times = 20,
+        points = listOf(Point(3, 2), Point(8, 2)),
+    )
+
+    // The flag-byte encoding is independent of motor values, so a null lookup is fine here.
+    private val nullLookup: (Int, Int, Int, Int) -> MotorParams? = { _, _, _, _ -> null }
+
+    @Test
+    fun `encodeBasicPattern random sets per-point random flags`() {
+        val drill = basicTraining(LandType.RANDOM.value)
+        val buf = RobotProtocol.encodeBasicPattern(drill, lookup = nullLookup)
+        for (i in drill.points.indices) {
+            val off = i * 12
+            assertEquals("point $i byte7", 0x80.toByte(), buf[off + 7])
+            assertEquals("point $i byte9 groupSize", 1.toByte(), buf[off + 9])
+            assertEquals("point $i byte10 mode-flag", 2.toByte(), buf[off + 10])
+            assertEquals("point $i byte11 random-trigger", 1.toByte(), buf[off + 11])
+        }
+    }
+
+    @Test
+    fun `encodeBasicPattern sequence leaves random flags clear`() {
+        val drill = basicTraining(LandType.LOOP.value)
+        val buf = RobotProtocol.encodeBasicPattern(drill, lookup = nullLookup)
+        for (i in drill.points.indices) {
+            val off = i * 12
+            assertEquals("point $i byte7", 0.toByte(), buf[off + 7])
+            assertEquals("point $i byte10", 0.toByte(), buf[off + 10])
+            assertEquals("point $i byte11", 0.toByte(), buf[off + 11])
+        }
+    }
+
+    @Test
+    fun `encodeBasicPattern static leaves random flags clear`() {
+        val drill = basicTraining(LandType.STATIC.value)
+        val buf = RobotProtocol.encodeBasicPattern(drill, lookup = nullLookup)
+        assertEquals(0.toByte(), buf[10])
+        assertEquals(0.toByte(), buf[11])
     }
 
     // ── CRC consistency ───────────────────────────────────────────────────────

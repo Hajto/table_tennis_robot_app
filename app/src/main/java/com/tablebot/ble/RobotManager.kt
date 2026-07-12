@@ -625,14 +625,16 @@ class RobotManager(private val context: Context) {
         keepaliveJob?.cancel()
         
         scope.launch {
-            // 1. Send Pause (0x25)
+            // 1. Send Pause (0x25) — accepted by the firmware mid-drill
             sendFrame(RobotProtocol.buildPauseFrame(deviceId))
             delay(100)
-            
-            // 2. Send Stop (0x99)
-            sendFrame(RobotProtocol.buildStopFrame(deviceId, activeRobotType))
+
+            // 2. Send Abort (0x99) — the only hard-stop the firmware honours while a drill is
+            //    actively firing. The previous code sent buildStopFrame, which is 0x05 on V2, and
+            //    the firmware silently ignores 0x05 mid-drill — hence the flaky V2 stop.
+            sendFrame(RobotProtocol.buildAbortFrame(deviceId))
             delay(100)
-            
+
             // 3. Perform standard finish cleanup
             finishDrill()
         }

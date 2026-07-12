@@ -2,6 +2,7 @@ package com.tablebot.ble
 
 import com.tablebot.data.BasicTraining
 import com.tablebot.data.AdvancedTraining
+import com.tablebot.data.LandType
 import com.tablebot.data.MotorConfig
 import com.tablebot.data.MotorParams
 import com.tablebot.data.RobotType
@@ -108,6 +109,14 @@ object RobotProtocol {
         return buildFrame(deviceId, cmd, byteArrayOf(0))
     }
 
+    // Abort a drill that is CURRENTLY FIRING. The firmware's command parser only accepts
+    // 0x99 (abort), 0x25 (pause) and 0x03 while a pattern is executing — it silently ignores
+    // 0x05. So a running drill must be stopped with 0x99 regardless of robot type; 0x05 (the
+    // V2 stop used at idle) never lands mid-drill, which is what made the stop button unreliable.
+    // 0x99 also doubles as DISCONNECT when idle, so only send this while a pattern is active.
+    fun buildAbortFrame(deviceId: String): ByteArray =
+        buildFrame(deviceId, CMD_STOP_LEGACY, byteArrayOf(0))
+
     fun buildPauseFrame(deviceId: String): ByteArray =
         buildFrame(deviceId, CMD_PAUSE, byteArrayOf(0))
 
@@ -146,16 +155,31 @@ object RobotProtocol {
         motorConfig: MotorConfig,
         timesOverride: Int? = null,
         ballTimeOverride: Int? = null,
+    ): ByteArray = encodeBasicPattern(drill, timesOverride, ballTimeOverride) { ball, spin, power, cell ->
+        motorConfig.lookup(ball, spin, power, cell)
+    }
+
+    // Per-point layout (12 bytes), verified against the robot firmware (Ghidra) and an HCI
+    // capture of the original Joola app:
+    //   [0] m1speed    [1] m2speed    [2] xaxis    [3] yaxis    [4] zaxis
+    //   [5-6] repeatDelay (big-endian, 1 = 0.2s)
+    //   [7]  0x80 on random drills, else 0
+    //   [8]  ballTime
+    //   [9]  group size (we emit 1 point per group)
+    //   [10] 2 on random drills (sets the firmware's random mode-flag), else 0
+    //   [11] 1 on random drills (fire at a randomly chosen selected position each shot), else 0
+    // Trailer: [repeatNum] [1] [0] [0]
+    // With [10]/[11] left at 0 the firmware walks the positions in order — that is why RANDOM
+    // drills used to play as a fixed sequence. Setting them makes the firmware draw each shot
+    // from a shuffle-bag of the selected positions. The lookup overload keeps this unit-testable
+    // without an Android Context (MotorConfig needs one).
+    fun encodeBasicPattern(
+        drill: BasicTraining,
+        timesOverride: Int? = null,
+        ballTimeOverride: Int? = null,
+        lookup: (ball: Int, spin: Int, power: Int, cell: Int) -> MotorParams?,
     ): ByteArray {
-        // Encoding from HCI capture of working Joola app (private pinfinity server)
-        // Per-point layout (12 bytes):
-        //   [0] m1speed    [1] m2speed    [2] xaxis    [3] yaxis    [4] zaxis
-        //   [5-6] repeatDelay (big-endian, 1 = 0.2s)
-        //   [7] 0
-        //   [8] ballTime
-        //   [9] 1
-        //   [10] 0    [11] 0
-        // Trailer: [repeatNum] [1] [0] [0]
+        val isRandom = drill.landType == LandType.RANDOM.value
         val effectiveBallTime = ballTimeOverride ?: drill.ballTime
         val effectiveTimes = timesOverride ?: drill.times
         val points = drill.points
@@ -163,7 +187,7 @@ object RobotProtocol {
 
         for ((idx, p) in points.withIndex()) {
             val off = idx * 12
-            val params = motorConfig.lookup(drill.ball, drill.spin, drill.power, p.x)
+            val params = lookup(drill.ball, drill.spin, drill.power, p.x)
 
             buf[off + 0] = (params?.m1speed ?: 0).toByte()
             buf[off + 1] = (params?.m2speed ?: 0).toByte()
@@ -172,11 +196,11 @@ object RobotProtocol {
             buf[off + 4] = (params?.zaxis ?: 0).toByte()
             buf[off + 5] = 0  // repeatDelay high byte
             buf[off + 6] = 1  // repeatDelay low byte (1 = 0.2s default)
-            buf[off + 7] = 0
+            buf[off + 7] = if (isRandom) 0x80.toByte() else 0
             buf[off + 8] = (effectiveBallTime and 0xFF).toByte()
             buf[off + 9] = 1
-            buf[off + 10] = 0
-            buf[off + 11] = 0
+            buf[off + 10] = if (isRandom) 2 else 0
+            buf[off + 11] = if (isRandom) 1 else 0
         }
 
         val trailerOff = points.size * 12
