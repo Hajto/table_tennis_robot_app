@@ -43,6 +43,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val robotVm: RobotViewModel = viewModel()
                 val trainingVm: TrainingViewModel = viewModel()
+                val quickPlayVm: com.tablebot.viewmodel.QuickPlayDraftViewModel = viewModel()
 
                 Box(Modifier.fillMaxSize()) {
                     val motorConfig by robotVm.motorConfigFlow.collectAsState()
@@ -127,6 +128,7 @@ class MainActivity : ComponentActivity() {
                             }
 
                             QuickPlayScreen(
+                                draft = quickPlayVm,
                                 reopenProfileSwitcher = reopenSwitcher,
                                 scrollToProfileId = scrollToProfileId,
                                 motorConfig = motorConfig,
@@ -192,6 +194,7 @@ class MainActivity : ComponentActivity() {
                                 robotVm = robotVm,
                                 onBack = { navController.popBackStack() },
                                 activeProfileName = activeProfile?.name,
+                                seed = quickPlayVm.calibrationSeed,
                             )
                         }
 

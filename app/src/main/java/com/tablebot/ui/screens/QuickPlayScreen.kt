@@ -30,6 +30,7 @@ import com.tablebot.ui.components.ProfileSwitcherDialog
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuickPlayScreen(
+    draft: com.tablebot.viewmodel.QuickPlayDraftViewModel,
     // Robot control
     motorConfig: MotorConfig?,
     connected: Boolean,
@@ -75,16 +76,21 @@ fun QuickPlayScreen(
     profileErrorFlow: kotlinx.coroutines.flow.Flow<String>? = null,
     importStatusFlow: kotlinx.coroutines.flow.Flow<String>? = null,
 ) {
-    // Mode: 0 = Basic, 1 = Advanced
-    var mode by remember { mutableIntStateOf(0) }
+    // Editing state lives in the activity-scoped draft VM so it survives navigation + rotation.
+    var mode by draft::mode
+    val basicState = draft.basicState
+    val advancedState = draft.advancedState
+    var loadedBasicId by draft::loadedBasicId
+    var loadedAdvancedId by draft::loadedAdvancedId
 
-    // Basic state
-    val basicState = rememberDrillEditorState(initial = null, id = nextBasicId())
-    var loadedBasicId by remember { mutableStateOf<Int?>(null) }
-
-    // Advanced state
-    val advancedState = rememberAdvancedEditorState(initial = null, id = nextAdvancedId())
-    var loadedAdvancedId by remember { mutableStateOf<Int?>(null) }
+    // Assign real next ids once (VM constructed the states with a placeholder id).
+    LaunchedEffect(Unit) {
+        if (!draft.idsInitialized) {
+            if (loadedBasicId == null) basicState.id = nextBasicId()
+            if (loadedAdvancedId == null) advancedState.id = nextAdvancedId()
+            draft.idsInitialized = true
+        }
+    }
 
     var showTrainingSheet by remember { mutableStateOf(false) }
     var showSaveDialog by remember { mutableStateOf(false) }
@@ -325,7 +331,11 @@ fun QuickPlayScreen(
                         ) {
                             DropdownMenuItem(
                                 text = { Text("Calibration") },
-                                onClick = { menuExpanded = false; onCalibrate() },
+                                onClick = {
+                                    menuExpanded = false
+                                    draft.calibrationSeed = com.tablebot.viewmodel.calibrationSeed(mode, basicState, advancedState)
+                                    onCalibrate()
+                                },
                             )
                             if (debugMode) {
                                 DropdownMenuItem(
