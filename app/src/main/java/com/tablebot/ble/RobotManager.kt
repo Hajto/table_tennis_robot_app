@@ -615,28 +615,24 @@ class RobotManager(private val context: Context) {
     }
 
     suspend fun stop() {
-        Log.i(TAG, "Sending UNIVERSAL STOP sequence to ID: $deviceId")
-        
+        Log.i(TAG, "Stopping drill for ID: $deviceId")
+
         // Immediate UI/State update
         patternActive = false
         currentPatternPayload = null
         drillJob?.cancel()
         drillJob = null
         keepaliveJob?.cancel()
-        
+
         scope.launch {
-            // 1. Send Pause (0x25) — accepted by the firmware mid-drill
-            sendFrame(RobotProtocol.buildPauseFrame(deviceId))
-            delay(100)
-
-            // 2. Send Abort (0x99) — the only hard-stop the firmware honours while a drill is
-            //    actively firing. The previous code sent buildStopFrame, which is 0x05 on V2, and
-            //    the firmware silently ignores 0x05 mid-drill — hence the flaky V2 stop.
-            sendFrame(RobotProtocol.buildAbortFrame(deviceId))
-            delay(100)
-
-            // 3. Perform standard finish cleanup
-            finishDrill()
+            // POST_PATTERN (0x03) is the only command that halts a drill while it is firing: the
+            // firmware drives its shot loop to the "done" state (state == 3) only on 0x03, which is
+            // exactly what the original app sends to stop. 0x05 (old V2 stop) and 0x99 (abort flag)
+            // are both ignored by the running shot loop, and the re-handshake that finishDrill()
+            // does (CONNECT 0x89) can re-arm the pattern — so stop sends 0x03 alone, no reconnect.
+            sendFrame(RobotProtocol.buildPostPatternFrame(deviceId))
+            _statusMessage.value = "Connected to ${_deviceName.value}"
+            onPatternDone?.invoke()
         }
     }
 

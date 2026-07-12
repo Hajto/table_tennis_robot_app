@@ -104,18 +104,13 @@ object RobotProtocol {
     fun buildDisconnectFrame(deviceId: String): ByteArray =
         buildFrame(deviceId, CMD_DISCONNECT, byteArrayOf(0))
 
+    // Stops a pattern only when the robot is IDLE (e.g. before starting a new drill). The firmware
+    // ignores this while a drill is actively firing — use buildPostPatternFrame (0x03) to stop a
+    // running drill. See "Stopping a running drill" in PROTOCOL.md.
     fun buildStopFrame(deviceId: String, robotType: RobotType = RobotType.JOOLA_V2): ByteArray {
         val cmd = if (robotType == RobotType.JOOLA_V1) CMD_STOP_LEGACY else CMD_STOP
         return buildFrame(deviceId, cmd, byteArrayOf(0))
     }
-
-    // Abort a drill that is CURRENTLY FIRING. The firmware's command parser only accepts
-    // 0x99 (abort), 0x25 (pause) and 0x03 while a pattern is executing — it silently ignores
-    // 0x05. So a running drill must be stopped with 0x99 regardless of robot type; 0x05 (the
-    // V2 stop used at idle) never lands mid-drill, which is what made the stop button unreliable.
-    // 0x99 also doubles as DISCONNECT when idle, so only send this while a pattern is active.
-    fun buildAbortFrame(deviceId: String): ByteArray =
-        buildFrame(deviceId, CMD_STOP_LEGACY, byteArrayOf(0))
 
     fun buildPauseFrame(deviceId: String): ByteArray =
         buildFrame(deviceId, CMD_PAUSE, byteArrayOf(0))

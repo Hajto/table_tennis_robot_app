@@ -67,12 +67,12 @@ From BLE device name `J-XXXXXXXXXXXXXXXX`:
 
 | CMD | Name | Payload | Description |
 |-----|------|---------|-------------|
-| 0x89 | CONNECT | `00` (1 byte) | Handshake after GATT connection |
-| 0x99 | STOP/ABORT | `00` (1 byte) | Abort a running drill. **The only hard-stop the firmware accepts while a drill is actively firing** (along with 0x25 pause and 0x03). Also serves as disconnect when idle. |
+| 0x89 | CONNECT | `00` (1 byte) | Handshake after GATT connection. Do not send right after a stop — it can re-arm the pattern. |
+| 0x99 | DISCONNECT / abort-flag | `00` (1 byte) | Sets an internal abort flag and serves as disconnect when idle. **Does not stop a firing drill** — the shot loop never reads the flag (verified on hardware). Use 0x03 to stop. |
 | 0x05 | STOP (idle) / VERSION_QUERY | `00` or empty | Stops a pattern **only when idle** (e.g. before starting a new one) and/or queries firmware version. **Silently ignored while a drill is executing** — do not use it as the stop button. See "Stopping a running drill". |
+| 0x03 | POST_PATTERN / STOP | `00` (1 byte) | Ends the current pattern: parser returns `3`, driving the shot loop to its done state. **This is the command that stops a running drill.** |
 | 0x04 | PRE_PATTERN | `02` (1 byte) | Sent before pattern command |
 | 0x01 | PATTERN | see below | Play a drill pattern |
-| 0x03 | POST_PATTERN | `00` (1 byte) | Sent after pattern completes |
 | 0x98 | PATTERN_ALT | same as 0x01 | Alternative pattern command (used when robot version != "average") |
 
 ### Command Sequence for Playing a Drill
@@ -185,14 +185,25 @@ random-source function.
 
 ## Stopping a running drill
 
-The firmware's frame parser gates *which* commands it will act on by execution state. **While a
-drill is actively firing it accepts only 0x99 (abort), 0x25 (pause) and 0x03** — every other
-command, **including 0x05, is silently skipped**. Only 0x99 sets the internal abort flag that
-halts the drill.
+The firmware runs the shot loop until a state byte becomes `3`, and its command parser sets that
+state to the value it returns for each command. **Only `0x03` (POST_PATTERN, payload `00`) makes
+the parser return `3`**, so `0x03` is the command that actually halts a firing drill — confirmed
+on the wire (the original app stops with a single `0x03`, which the robot acks with `0x83`) and in
+the firmware (dispatcher `case 3` → `return 3`; the shot loop breaks on `state == 3`).
 
-Practical consequence: use **0x99** for the stop button regardless of robot type. `0x05` works to
-clear a pattern only when the robot is idle (e.g. right before starting a new drill). Because 0x99
-also means DISCONNECT at idle, only send it while a pattern is active.
+The parser also gates *which* commands it acts on while a drill is firing — it accepts only `0x99`,
+`0x25` and `0x03` and skips everything else (including `0x05`) — **but that gate is a red herring
+for stopping**:
+
+- `0x05` — silently ignored mid-drill. (This is why the old V2 stop, which sent `0x05`, was flaky.)
+- `0x99` — sets an internal abort flag, **but the shot loop never reads it**, and the parser
+  returns `0` (state unchanged), so the drill keeps firing. `0x99` does **not** stop a running
+  drill (verified on hardware). It doubles as DISCONNECT when idle.
+- `0x25` — pause; clears some counters, returns `0`, does not drive the loop to `state == 3`.
+- `0x03` — returns `3` → shot loop exits. **Use this for the stop button.**
+
+Practical consequence: to stop a running drill send **`0x03`** (POST_PATTERN, payload `00`) and do
+**not** immediately re-handshake with `0x89` (CONNECT), which can re-arm the pattern.
 
 ## Grid Layout
 

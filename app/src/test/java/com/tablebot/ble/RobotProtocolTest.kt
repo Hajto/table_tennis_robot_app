@@ -122,11 +122,11 @@ class RobotProtocolTest {
     }
 
     @Test
-    fun `buildAbortFrame uses 0x99 so a firing drill actually stops`() {
-        // During execution the firmware ignores 0x05 and only honours 0x99 as a hard stop,
-        // so the mid-drill abort must be 0x99 for both robot types.
-        val frame = RobotProtocol.buildAbortFrame(DEVICE_ID)
-        assertEquals(0x99.toByte(), frame[11])
+    fun `buildPostPatternFrame uses 0x03 (the mid-drill stop)`() {
+        // 0x03 is the only command that halts a firing drill (firmware shot loop -> done state).
+        val frame = RobotProtocol.buildPostPatternFrame(DEVICE_ID)
+        assertEquals(0x03.toByte(), frame[11])
+        assertEquals(0x00.toByte(), frame[14]) // payload byte 0 must be 0 for the firmware to act
         assertEquals(0x68.toByte(), frame[0])
         assertEquals(0x16.toByte(), frame.last())
     }
