@@ -2,6 +2,7 @@ package com.tablebot.ble
 
 import com.tablebot.data.BasicTraining
 import com.tablebot.data.AdvancedTraining
+import com.tablebot.data.LandType
 import com.tablebot.data.MotorConfig
 import com.tablebot.data.MotorParams
 import com.tablebot.data.RobotType
@@ -25,7 +26,7 @@ object RobotProtocol {
     const val CMD_STOP: Byte = 0x05                    // V2 firmware stop
     const val CMD_STOP_LEGACY: Byte = 0x99.toByte()    // V1 firmware stop — same opcode as DISCONNECT, intentional
     const val CMD_PAUSE: Byte = 0x25.toByte()
-    const val CMD_CALIBRATION: Byte = 0x03
+    const val CMD_POST_PATTERN: Byte = 0x03  // ends a pattern; also the mid-drill stop (firmware -> done state)
 
     const val BLE_MTU = 10
 
@@ -103,6 +104,9 @@ object RobotProtocol {
     fun buildDisconnectFrame(deviceId: String): ByteArray =
         buildFrame(deviceId, CMD_DISCONNECT, byteArrayOf(0))
 
+    // Stops a pattern only when the robot is IDLE (e.g. before starting a new drill). The firmware
+    // ignores this while a drill is actively firing — use buildPostPatternFrame (0x03) to stop a
+    // running drill. See "Stopping a running drill" in PROTOCOL.md.
     fun buildStopFrame(deviceId: String, robotType: RobotType = RobotType.JOOLA_V2): ByteArray {
         val cmd = if (robotType == RobotType.JOOLA_V1) CMD_STOP_LEGACY else CMD_STOP
         return buildFrame(deviceId, cmd, byteArrayOf(0))
@@ -115,9 +119,10 @@ object RobotProtocol {
     fun buildPrePatternFrame(deviceId: String): ByteArray =
         buildFrame(deviceId, 0x04, byteArrayOf(0x02))
 
-    // Post-pattern: cmd 0x03 with payload 0x00
+    // Post-pattern / stop: cmd 0x03 with payload 0x00. Drives the firmware shot loop to its
+    // "done" state, so this is also the command that stops a drill while it is firing.
     fun buildPostPatternFrame(deviceId: String): ByteArray =
-        buildFrame(deviceId, 0x03, byteArrayOf(0x00))
+        buildFrame(deviceId, CMD_POST_PATTERN, byteArrayOf(0x00))
 
     fun encodeSingleBall(params: MotorParams, ballTime: Int = 15): ByteArray {
         val buf = ByteArray(16) // 12 per point + 4 trailer
@@ -146,16 +151,31 @@ object RobotProtocol {
         motorConfig: MotorConfig,
         timesOverride: Int? = null,
         ballTimeOverride: Int? = null,
+    ): ByteArray = encodeBasicPattern(drill, timesOverride, ballTimeOverride) { ball, spin, power, cell ->
+        motorConfig.lookup(ball, spin, power, cell)
+    }
+
+    // Per-point layout (12 bytes), verified against the robot firmware (Ghidra) and an HCI
+    // capture of the original Joola app:
+    //   [0] m1speed    [1] m2speed    [2] xaxis    [3] yaxis    [4] zaxis
+    //   [5-6] repeatDelay (big-endian, 1 = 0.2s)
+    //   [7]  0x80 on random drills, else 0
+    //   [8]  ballTime
+    //   [9]  group size (we emit 1 point per group)
+    //   [10] 2 on random drills (sets the firmware's random mode-flag), else 0
+    //   [11] 1 on random drills (fire at a randomly chosen selected position each shot), else 0
+    // Trailer: [repeatNum] [1] [0] [0]
+    // With [10]/[11] left at 0 the firmware walks the positions in order — that is why RANDOM
+    // drills used to play as a fixed sequence. Setting them makes the firmware draw each shot
+    // from a shuffle-bag of the selected positions. The lookup overload keeps this unit-testable
+    // without an Android Context (MotorConfig needs one).
+    fun encodeBasicPattern(
+        drill: BasicTraining,
+        timesOverride: Int? = null,
+        ballTimeOverride: Int? = null,
+        lookup: (ball: Int, spin: Int, power: Int, cell: Int) -> MotorParams?,
     ): ByteArray {
-        // Encoding from HCI capture of working Joola app (private pinfinity server)
-        // Per-point layout (12 bytes):
-        //   [0] m1speed    [1] m2speed    [2] xaxis    [3] yaxis    [4] zaxis
-        //   [5-6] repeatDelay (big-endian, 1 = 0.2s)
-        //   [7] 0
-        //   [8] ballTime
-        //   [9] 1
-        //   [10] 0    [11] 0
-        // Trailer: [repeatNum] [1] [0] [0]
+        val isRandom = drill.landType == LandType.RANDOM.value
         val effectiveBallTime = ballTimeOverride ?: drill.ballTime
         val effectiveTimes = timesOverride ?: drill.times
         val points = drill.points
@@ -163,7 +183,7 @@ object RobotProtocol {
 
         for ((idx, p) in points.withIndex()) {
             val off = idx * 12
-            val params = motorConfig.lookup(drill.ball, drill.spin, drill.power, p.x)
+            val params = lookup(drill.ball, drill.spin, drill.power, p.x)
 
             buf[off + 0] = (params?.m1speed ?: 0).toByte()
             buf[off + 1] = (params?.m2speed ?: 0).toByte()
@@ -172,11 +192,11 @@ object RobotProtocol {
             buf[off + 4] = (params?.zaxis ?: 0).toByte()
             buf[off + 5] = 0  // repeatDelay high byte
             buf[off + 6] = 1  // repeatDelay low byte (1 = 0.2s default)
-            buf[off + 7] = 0
+            buf[off + 7] = if (isRandom) 0x80.toByte() else 0
             buf[off + 8] = (effectiveBallTime and 0xFF).toByte()
             buf[off + 9] = 1
-            buf[off + 10] = 0
-            buf[off + 11] = 0
+            buf[off + 10] = if (isRandom) 2 else 0
+            buf[off + 11] = if (isRandom) 1 else 0
         }
 
         val trailerOff = points.size * 12

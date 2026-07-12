@@ -67,12 +67,12 @@ From BLE device name `J-XXXXXXXXXXXXXXXX`:
 
 | CMD | Name | Payload | Description |
 |-----|------|---------|-------------|
-| 0x89 | CONNECT | `00` (1 byte) | Handshake after GATT connection |
-| 0x99 | STOP/ABORT | `00` (1 byte) | Stop robot immediately. Only command (along with 0x03 and 0x25) accepted during shot execution. Also serves as disconnect. |
-| 0x05 | VERSION_QUERY | empty (0 bytes) | Query firmware version (response: 0x85) |
+| 0x89 | CONNECT | `00` (1 byte) | Handshake after GATT connection. Do not send right after a stop — it can re-arm the pattern. |
+| 0x99 | DISCONNECT / abort-flag | `00` (1 byte) | Sets an internal abort flag and serves as disconnect when idle. **Does not stop a firing drill** — the shot loop never reads the flag (verified on hardware). Use 0x03 to stop. |
+| 0x05 | STOP (idle) / VERSION_QUERY | `00` or empty | Stops a pattern **only when idle** (e.g. before starting a new one) and/or queries firmware version. **Silently ignored while a drill is executing** — do not use it as the stop button. See "Stopping a running drill". |
+| 0x03 | POST_PATTERN / STOP | `00` (1 byte) | Ends the current pattern: parser returns `3`, driving the shot loop to its done state. **This is the command that stops a running drill.** |
 | 0x04 | PRE_PATTERN | `02` (1 byte) | Sent before pattern command |
 | 0x01 | PATTERN | see below | Play a drill pattern |
-| 0x03 | POST_PATTERN | `00` (1 byte) | Sent after pattern completes |
 | 0x98 | PATTERN_ALT | same as 0x01 | Alternative pattern command (used when robot version != "average") |
 
 ### Command Sequence for Playing a Drill
@@ -103,7 +103,8 @@ Responses arrive on both `fec8` (notification) and `fed6` (indication) simultane
 
 ### Per-Point Layout (12 bytes)
 
-Confirmed via HCI snoop capture of the working original app:
+Confirmed via HCI snoop capture of the working original app **and** Ghidra analysis of the
+robot firmware (see "Random Mode" below):
 
 ```
 Offset  Size  Field           Source
@@ -113,12 +114,16 @@ Offset  Size  Field           Source
   3     1     yaxis           Y servo position index (from base-conf lookup, 0-32)
   4     1     zaxis           Z servo position index (from base-conf lookup, 0-20)
   5     2     repeatDelay     Big-endian uint16 (1 = 0.2s between set repeats)
-  7     1     reserved        Always 0
+  7     1     flags           0x80 on random drills, else 0
   8     1     ballTime        Inter-ball delay (1=fast, 20=slow)
-  9     1     flag            Always 1
- 10     1     reserved        Always 0
- 11     1     reserved        Always 0
+  9     1     groupSize       Points per group, 1-5 (firmware chunks points into groups). We emit 1.
+ 10     1     randomMode      2 on random drills (sets the firmware's random mode-flag), else 0
+ 11     1     randomPick      1 on random drills (draw this shot's position randomly), else 0
 ```
+
+> Earlier revisions of this doc listed bytes 7/9/10/11 as "reserved / always 1". That was
+> a misread from a single sequence-drill capture; firmware disassembly shows byte 9 is a
+> group size and bytes 10/11 drive random mode.
 
 ### Trailer (4 bytes, after all points)
 
@@ -151,6 +156,63 @@ The original app may apply device-specific adjustments from `ballSettings` / `mi
 Advanced drills contain multiple `BallEntry` objects, each with their own ball/spin/power/points/ballTime. Each ball entry's points are encoded as separate 12-byte blocks in sequence within the same payload.
 
 **TODO**: The timing between different ball types in a sequence needs further investigation. The original app likely uses a different mechanism for inter-ball timing in advanced drills.
+
+## Random Mode
+
+Random mode is a firmware feature, not something the app simulates. The firmware parses the
+pattern payload, chunks points into groups (byte 9 = group size), and for each shot decides the
+landing position based on two per-point control bytes:
+
+- **byte 11 == 1** → the firmware draws the position from a *shuffle-bag* of the enabled groups:
+  `index = rand() % count`, skipping already-used entries and marking each as used, resetting the
+  bag once every position has been fired. `rand()` is a firmware LCG (`seed = seed*mult + 12345`).
+- **byte 10 == 2** → sets the firmware's random mode-flag (governs bag reset between cycles).
+- **byte 7 == 0x80** → observed on random drills in the original app's traffic.
+
+**Basic vs advanced random (confirmed by capture).** The two encodings differ:
+
+- **Basic** full-random drill (whole drill is one random ball type): every point has
+  `b7=0x80, b10=2, b11=1`.
+- **Advanced** per-ball random (a `BallEntry` marked random inside a multi-ball drill): the random
+  ball's points use `b7=0x80, b11=1` **with `b10=0`** — `b10=2` is not set on the advanced path.
+  Non-random balls (e.g. a serve) keep all three at 0. `b11=1` is the operative trigger in both
+  cases; `b7=0x80` travels with it.
+
+With bytes 10/11 left at 0 the firmware walks the positions **in stored order**, which is why a
+"random" drill built with those bytes zeroed plays as a fixed sequence. A single random point
+(basic mode) looks like this on the wire (motor bytes vary):
+
+```
+14 14 22 11 0a 00 01 80 09 01 02 01
+m1 m2  x  y  z │rDly│ b7 b8 b9 b10 b11
+              (00 01) 80 09 01 02 01
+```
+
+Source: HCI capture of the original app playing a random drill, cross-checked against the robot
+firmware (Ghidra): dispatcher `FUN_08013…`, shuffle-bag selector, and the LCG at the
+random-source function.
+
+## Stopping a running drill
+
+The firmware runs the shot loop until a state byte becomes `3`, and its command parser sets that
+state to the value it returns for each command. **Only `0x03` (POST_PATTERN, payload `00`) makes
+the parser return `3`**, so `0x03` is the command that actually halts a firing drill — confirmed
+on the wire (the original app stops with a single `0x03`, which the robot acks with `0x83`) and in
+the firmware (dispatcher `case 3` → `return 3`; the shot loop breaks on `state == 3`).
+
+The parser also gates *which* commands it acts on while a drill is firing — it accepts only `0x99`,
+`0x25` and `0x03` and skips everything else (including `0x05`) — **but that gate is a red herring
+for stopping**:
+
+- `0x05` — silently ignored mid-drill. (This is why the old V2 stop, which sent `0x05`, was flaky.)
+- `0x99` — sets an internal abort flag, **but the shot loop never reads it**, and the parser
+  returns `0` (state unchanged), so the drill keeps firing. `0x99` does **not** stop a running
+  drill (verified on hardware). It doubles as DISCONNECT when idle.
+- `0x25` — pause; clears some counters, returns `0`, does not drive the loop to `state == 3`.
+- `0x03` — returns `3` → shot loop exits. **Use this for the stop button.**
+
+Practical consequence: to stop a running drill send **`0x03`** (POST_PATTERN, payload `00`) and do
+**not** immediately re-handshake with `0x89` (CONNECT), which can re-arm the pattern.
 
 ## Grid Layout
 
@@ -188,3 +250,5 @@ In practice, CMD 0x01 worked on the tested robot (firmware 02.02).
 - CMD 0x98 behavior vs CMD 0x01 on different firmware versions
 - Post-pattern CMD 0x03 — is it required or optional?
 - Exact mapping of `adjustPosition` and `adjustSpin` flags to motor behavior
+- Whether random within a multi-point group (byte 10 == 1, a second firmware code path) is used by the original app for anything
+- Exact role of per-point byte 7 = 0x80 on random drills (present on the wire; firmware usage not fully traced)
