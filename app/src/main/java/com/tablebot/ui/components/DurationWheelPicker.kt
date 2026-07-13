@@ -32,7 +32,7 @@ import androidx.compose.ui.unit.sp
 
 /**
  * A drag-to-set duration picker: two columns (minutes, seconds) of numbers with the selected
- * value in the centre. **Pull down to increase, up to decrease.** The combined mm:ss is clamped
+ * value in the centre. **Drag up to increase, down to decrease.** The combined mm:ss is clamped
  * to [minSec, maxSec] and reported as whole seconds via [onDurationChange].
  */
 @Composable
@@ -87,9 +87,12 @@ private fun NumberColumn(
 ) {
     // Pixels of vertical drag per one unit of change.
     val stepPx = with(LocalDensity.current) { 40.dp.toPx() }
-    // Read the latest value/range inside the long-lived drag gesture without restarting it.
+    // Read the latest value/range/callback inside the long-lived drag gesture without restarting
+    // it. onChange closes over the *other* unit (minutes captures seconds and vice-versa), so a
+    // stale copy would clobber that unit — e.g. scrolling seconds would reset minutes.
     val current by rememberUpdatedState(value)
     val rng by rememberUpdatedState(range)
+    val latestOnChange by rememberUpdatedState(onChange)
     // Derive the target from the total drag since the gesture started, so a fast drag advances
     // by many units in one frame instead of getting stuck on a stale mid-gesture value.
     var startValue by remember { mutableStateOf(value) }
@@ -107,10 +110,10 @@ private fun NumberColumn(
                         onDragStart = { startValue = current; dragTotal = 0f },
                     ) { change, dy ->
                         change.consume()
-                        dragTotal += dy // pull down (positive) increases
-                        val target = (startValue + (dragTotal / stepPx).toInt())
+                        dragTotal += dy // drag up (negative dy) increases
+                        val target = (startValue - (dragTotal / stepPx).toInt())
                             .coerceIn(rng.first, rng.last)
-                        if (target != current) onChange(target)
+                        if (target != current) latestOnChange(target)
                     }
                 },
             contentAlignment = Alignment.Center,
