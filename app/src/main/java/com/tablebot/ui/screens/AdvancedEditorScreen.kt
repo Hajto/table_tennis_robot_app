@@ -260,7 +260,18 @@ fun AdvancedEditorContent(
         HorizontalDivider()
 
         // Repeat settings
-        StepSlider("Repeat Count", state.repeatNum, 1..50) { state.repeatNum = it }
+        com.tablebot.ui.components.PlayModeSelector(
+            playMode = state.playMode,
+            reps = state.repeatNum,
+            ballCount = state.ballCount,
+            durationSec = state.durationSec,
+            ballsPerPattern = state.ballList.sumOf { it.points.size },
+            repsRange = 1..50,
+            onPlayModeChange = { state.playMode = it },
+            onRepsChange = { state.repeatNum = it },
+            onBallCountChange = { state.ballCount = it },
+            onDurationChange = { state.durationSec = it },
+        )
         StepSlider("Repeat Delay", state.repeatDelay, 0..10) { state.repeatDelay = it }
     }
 }

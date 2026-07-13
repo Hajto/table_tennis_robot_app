@@ -294,7 +294,18 @@ fun DrillEditorContent(
         }
 
         // 5. Repetitions
-        StepSlider("Repetitions", state.times, 1..100) { state.times = it }
+        com.tablebot.ui.components.PlayModeSelector(
+            playMode = state.playMode,
+            reps = state.times,
+            ballCount = state.ballCount,
+            durationSec = state.durationSec,
+            ballsPerPattern = state.points.size,
+            repsRange = 1..100,
+            onPlayModeChange = { state.playMode = it },
+            onRepsChange = { state.times = it },
+            onBallCountChange = { state.ballCount = it },
+            onDurationChange = { state.durationSec = it },
+        )
 
         // 6. Ball Adjustments (disabled)
         Text("Ball Adjustments", style = MaterialTheme.typography.labelLarge)
