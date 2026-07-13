@@ -13,9 +13,10 @@ private val json = Json { ignoreUnknownKeys = true; prettyPrint = true }
 private const val SESSION_GAP_MS = 30 * 60 * 1000L // 30 minutes
 private const val BREAK_INTERVAL_MS = 30 * 60 * 1000L // suggest break every 30 minutes
 
-class HistoryStore(private val context: Context) {
+class HistoryStore(private val file: File) {
 
-    private val file get() = File(context.filesDir, "training-history.json")
+    constructor(context: Context) : this(File(context.filesDir, "training-history.json"))
+
     private var lastBreakReminderAt: Long = 0L
 
     suspend fun loadSessions(): List<TrainingSession> = withContext(Dispatchers.IO) {
@@ -29,15 +30,13 @@ class HistoryStore(private val context: Context) {
     /**
      * Logs an exercise and returns true when a break is recommended
      * (session has been going for 30+ continuous minutes).
+     *
+     * All time logic derives from entry.timestamp (callers stamp entries
+     * with the current time), which keeps session grouping and reminder
+     * behavior deterministic under test.
      */
-    suspend fun logEntry(name: String, type: String, trainingId: Int): Boolean = withContext(Dispatchers.IO) {
-        val now = System.currentTimeMillis()
-        val entry = HistoryEntry(
-            trainingName = name,
-            trainingType = type,
-            trainingId = trainingId,
-            timestamp = now,
-        )
+    suspend fun logEntry(entry: HistoryEntry): Boolean = withContext(Dispatchers.IO) {
+        val now = entry.timestamp
 
         val sessions = loadSessions().toMutableList()
         val last = sessions.lastOrNull()

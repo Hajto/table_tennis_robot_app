@@ -95,7 +95,16 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
         robotManager.drillJob = viewModelScope.launch {
             _isPlaying.value = true
             _currentTrainingName.value = training.name
-            if (historyStore.logEntry(training.name, "basic", training.id)) {
+            val profile = activeProfile.value
+            if (historyStore.logEntry(HistoryEntry(
+                    trainingName = training.name,
+                    trainingType = "basic",
+                    trainingId = training.id,
+                    timestamp = System.currentTimeMillis(),
+                    snapshot = DrillSnapshot.Basic(training, timesOverride, ballTimeOverride),
+                    profileName = profile?.name,
+                    robotType = profile?.robotType,
+                ))) {
                 _breakReminder.tryEmit(Unit)
             }
             val payload = RobotProtocol.encodeBasicPattern(
@@ -116,7 +125,16 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
         robotManager.drillJob = viewModelScope.launch {
             _isPlaying.value = true
             _currentTrainingName.value = training.name
-            if (historyStore.logEntry(training.name, "advanced", training.id)) {
+            val profile = activeProfile.value
+            if (historyStore.logEntry(HistoryEntry(
+                    trainingName = training.name,
+                    trainingType = "advanced",
+                    trainingId = training.id,
+                    timestamp = System.currentTimeMillis(),
+                    snapshot = DrillSnapshot.Advanced(training, repeatNumOverride, repeatDelayOverride),
+                    profileName = profile?.name,
+                    robotType = profile?.robotType,
+                ))) {
                 _breakReminder.tryEmit(Unit)
             }
             val payload = RobotProtocol.encodeAdvancedPattern(
