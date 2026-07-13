@@ -14,7 +14,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tablebot.data.*
-import com.tablebot.ui.components.StepSlider
+import com.tablebot.ui.components.PlayModeSelector
 import com.tablebot.ui.components.TableGrid
 import com.tablebot.ui.components.buildCellBallNumbers
 
@@ -25,6 +25,7 @@ fun BasicTrainingList(
     connected: Boolean,
     isPlaying: Boolean,
     onPlay: (BasicTraining) -> Unit,
+    onUpdate: (BasicTraining) -> Unit,
     onStop: () -> Unit,
     onEdit: (BasicTraining) -> Unit,
     onDelete: (BasicTraining) -> Unit,
@@ -50,7 +51,8 @@ fun BasicTrainingList(
                 training = training,
                 connected = connected,
                 isPlaying = isPlaying,
-                onPlay = { _, _ -> onPlay(training) },
+                onPlay = onPlay,
+                onUpdate = onUpdate,
                 onStop = onStop,
                 onEdit = { onEdit(training) },
                 onDelete = { onDelete(training) },
@@ -66,6 +68,7 @@ fun AdvancedTrainingList(
     connected: Boolean,
     isPlaying: Boolean,
     onPlay: (AdvancedTraining) -> Unit,
+    onUpdate: (AdvancedTraining) -> Unit,
     onStop: () -> Unit,
     onEdit: (AdvancedTraining) -> Unit,
     onDelete: (AdvancedTraining) -> Unit,
@@ -91,7 +94,8 @@ fun AdvancedTrainingList(
                 training = training,
                 connected = connected,
                 isPlaying = isPlaying,
-                onPlay = { _, _ -> onPlay(training) },
+                onPlay = onPlay,
+                onUpdate = onUpdate,
                 onStop = onStop,
                 onEdit = { onEdit(training) },
                 onDelete = { onDelete(training) },
@@ -107,7 +111,8 @@ private fun BasicTrainingCard(
     training: BasicTraining,
     connected: Boolean,
     isPlaying: Boolean,
-    onPlay: (times: Int, ballTime: Int) -> Unit,
+    onPlay: (BasicTraining) -> Unit,
+    onUpdate: (BasicTraining) -> Unit,
     onStop: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
@@ -115,8 +120,7 @@ private fun BasicTrainingCard(
 ) {
     var expanded by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var times by remember { mutableIntStateOf(training.times) }
-    var ballTime by remember { mutableIntStateOf(training.ballTime) }
+    var editT by remember(training) { mutableStateOf(training) }
 
     Card(
         modifier = Modifier
@@ -152,7 +156,7 @@ private fun BasicTrainingCard(
                 }
 
                 if (connected && !isPlaying) {
-                    IconButton(onClick = { onPlay(times, ballTime) }) {
+                    IconButton(onClick = { onPlay(editT) }) {
                         Icon(
                             Icons.Default.PlayArrow,
                             "Play",
@@ -176,13 +180,23 @@ private fun BasicTrainingCard(
                     DetailChip("Spin", SpinType.fromValue(training.spin).label)
                     DetailChip("Power", PowerType.fromValue(training.power).label)
                     DetailChip("Land", LandType.fromValue(training.landType).label)
-                    DetailChip("Reps", "${training.times}")
+                    DetailChip("Reps", "${editT.times}")
                 }
 
-                // Adjustable parameters
+                // Play mode
                 Spacer(Modifier.height(8.dp))
-                StepSlider("Ball Count", times, 1..100) { times = it }
-                StepSlider("Ball Timing", ballTime, 1..20) { ballTime = it }
+                PlayModeSelector(
+                    playMode = editT.playMode,
+                    reps = editT.times,
+                    ballCount = editT.ballCount,
+                    durationSec = editT.durationSec,
+                    ballsPerPattern = editT.points.size,
+                    repsRange = 1..100,
+                    onPlayModeChange = { editT = editT.copy(playMode = it); onUpdate(editT) },
+                    onRepsChange = { editT = editT.copy(times = it); onUpdate(editT) },
+                    onBallCountChange = { editT = editT.copy(ballCount = it); onUpdate(editT) },
+                    onDurationChange = { editT = editT.copy(durationSec = it); onUpdate(editT) },
+                )
 
                 Spacer(Modifier.height(8.dp))
                 val cellBallNumbers = remember(training.points) {
@@ -241,7 +255,8 @@ private fun AdvancedTrainingCard(
     training: AdvancedTraining,
     connected: Boolean,
     isPlaying: Boolean,
-    onPlay: (repeatNum: Int, repeatDelay: Int) -> Unit,
+    onPlay: (AdvancedTraining) -> Unit,
+    onUpdate: (AdvancedTraining) -> Unit,
     onStop: () -> Unit,
     onEdit: () -> Unit,
     onDelete: () -> Unit,
@@ -249,8 +264,7 @@ private fun AdvancedTrainingCard(
 ) {
     var expanded by remember { mutableStateOf(false) }
     var showDeleteDialog by remember { mutableStateOf(false) }
-    var repeatNum by remember { mutableIntStateOf(training.repeatNum) }
-    var repeatDelay by remember { mutableIntStateOf(training.repeatDelay) }
+    var editT by remember(training) { mutableStateOf(training) }
 
     val allPoints = training.ballList.flatMap { it.points }
 
@@ -288,7 +302,7 @@ private fun AdvancedTrainingCard(
                 }
 
                 if (connected && !isPlaying) {
-                    IconButton(onClick = { onPlay(repeatNum, repeatDelay) }) {
+                    IconButton(onClick = { onPlay(editT) }) {
                         Icon(
                             Icons.Default.PlayArrow,
                             "Play",
@@ -313,10 +327,20 @@ private fun AdvancedTrainingCard(
                     )
                 }
 
-                // Adjustable parameters
+                // Play mode
                 Spacer(Modifier.height(8.dp))
-                StepSlider("Repeat Count", repeatNum, 1..50) { repeatNum = it }
-                StepSlider("Repeat Delay", repeatDelay, 1..10) { repeatDelay = it }
+                PlayModeSelector(
+                    playMode = editT.playMode,
+                    reps = editT.repeatNum,
+                    ballCount = editT.ballCount,
+                    durationSec = editT.durationSec,
+                    ballsPerPattern = editT.ballList.sumOf { it.points.size },
+                    repsRange = 1..50,
+                    onPlayModeChange = { editT = editT.copy(playMode = it); onUpdate(editT) },
+                    onRepsChange = { editT = editT.copy(repeatNum = it); onUpdate(editT) },
+                    onBallCountChange = { editT = editT.copy(ballCount = it); onUpdate(editT) },
+                    onDurationChange = { editT = editT.copy(durationSec = it); onUpdate(editT) },
+                )
 
                 Spacer(Modifier.height(8.dp))
                 val cellBallNumbers = remember(training.ballList) {
