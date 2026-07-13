@@ -43,18 +43,42 @@ data class BallEntry(
 )
 
 @Serializable
+data class Step(
+    val ball: Int = 1,
+    val spin: Int = 2,
+    val power: Int = 2,
+    val ballTime: Int = 9,
+    val balls: List<Point> = emptyList(),   // 1..5; duplicates allowed = weighting
+    val orderRandom: Boolean = false,
+) {
+    val withinRandom: Boolean get() = balls.size > 1
+}
+
+@Serializable
 data class AdvancedTraining(
     val id: Int,
     val name: String,
     val repeatNum: Int = 10,
     val repeatDelay: Int = 1,
     val intervalTrain: Int = 0,
-    val ballList: List<BallEntry> = emptyList(),
+    val steps: List<Step> = emptyList(),
+    @SerialName("ballList") val legacyBallList: List<BallEntry>? = null,
     val isFavourite: Int = 0,
     val skillLevel: SkillLevel = SkillLevel(),
     val tags: List<String> = emptyList(),
     val isDefault: Boolean = false,
 )
+
+/**
+ * Normalizes a decoded [AdvancedTraining] onto the step model: if a legacy
+ * `ballList` was present, converts it into [steps] and clears the legacy field
+ * so it is never written back. Idempotent.
+ */
+fun AdvancedTraining.migrated(): AdvancedTraining =
+    if (legacyBallList != null && steps.isEmpty())
+        copy(steps = migrateBallEntriesToSteps(legacyBallList), legacyBallList = null)
+    else if (legacyBallList != null) copy(legacyBallList = null)
+    else this
 
 @Serializable
 data class MotorParams(

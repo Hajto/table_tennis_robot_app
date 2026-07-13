@@ -1,10 +1,12 @@
 package com.tablebot.ble
 
+import com.tablebot.data.AdvancedTraining
 import com.tablebot.data.BasicTraining
 import com.tablebot.data.LandType
 import com.tablebot.data.MotorParams
 import com.tablebot.data.Point
 import com.tablebot.data.RobotType
+import com.tablebot.data.Step
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -368,6 +370,44 @@ class RobotProtocolTest {
             assertEquals("point $i byte10", 2.toByte(), buf[p + 10])
             assertEquals("point $i byte11", 1.toByte(), buf[p + 11])
         }
+    }
+
+    // ── encodeAdvancedPattern (step model) ──────────────────────────────────────
+
+    private fun step(vararg xs: Int, orderRandom: Boolean = false, ball: Int = 1) =
+        Step(ball = ball, spin = 2, power = 2, ballTime = 9,
+             balls = xs.map { Point(it, 2) }, orderRandom = orderRandom)
+    private fun adv(vararg steps: Step) =
+        AdvancedTraining(id = 1, name = "adv", repeatNum = 10, repeatDelay = 1, steps = steps.toList())
+
+    @Test fun `advanced in-order single-ball step is all-zero flags`() {
+        val buf = RobotProtocol.encodeAdvancedPattern(adv(step(8)), lookup = nullLookup)
+        assertEquals(0.toByte(), buf[7]); assertEquals(1.toByte(), buf[9])
+        assertEquals(0.toByte(), buf[10]); assertEquals(0.toByte(), buf[11])
+    }
+    @Test fun `advanced order-random single-ball step sets b7 b11 not b9 b10`() {
+        val buf = RobotProtocol.encodeAdvancedPattern(adv(step(8, orderRandom = true)), lookup = nullLookup)
+        assertEquals(0x80.toByte(), buf[7]); assertEquals(1.toByte(), buf[9])
+        assertEquals(0.toByte(), buf[10]); assertEquals(1.toByte(), buf[11])
+    }
+    @Test fun `advanced within-random multi-ball step groups with b10=1 on leader only`() {
+        val buf = RobotProtocol.encodeAdvancedPattern(adv(step(6, 8, 10)), lookup = nullLookup)
+        for (i in 0 until 3) { val o = i*12
+            assertEquals("b7 $i", 0x80.toByte(), buf[o+7]); assertEquals("b9 $i", 3.toByte(), buf[o+9])
+            assertEquals("b11 $i", 1.toByte(), buf[o+11])
+            assertEquals("b10 $i", (if (i==0) 1 else 0).toByte(), buf[o+10]) }
+    }
+    @Test fun `advanced weighting duplicate positions emit duplicate points`() {
+        val buf = RobotProtocol.encodeAdvancedPattern(adv(step(5, 5, 11, 11, 20)), lookup = nullLookup)
+        assertEquals(5.toByte(), buf[9])                 // group size 5
+        assertEquals(1.toByte(), buf[10])                // leader
+        assertEquals(5*12 + 4, buf.size)                 // 5 points + trailer
+    }
+    @Test fun `advanced two multi-ball steps produce two groups each leader b10=1`() {
+        val buf = RobotProtocol.encodeAdvancedPattern(adv(step(6,7,8,9,10), step(1,2,3,4,5)), lookup = nullLookup)
+        assertEquals(1.toByte(), buf[10])                // step1 leader
+        assertEquals(1.toByte(), buf[5*12 + 10])         // step2 leader
+        assertEquals(0.toByte(), buf[1*12 + 10])         // non-leader
     }
 
     // ── CRC consistency ───────────────────────────────────────────────────────

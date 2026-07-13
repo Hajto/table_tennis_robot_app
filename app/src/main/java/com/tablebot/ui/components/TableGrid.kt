@@ -157,7 +157,7 @@ fun TableGrid(
 
 const val MAX_BALLS_PER_CELL = 4
 
-/** Build a cell→ball-numbers map from a list of [BallEntry]-like items. */
+/** Build a cell→ball-numbers map from a list of (ball number, points) pairs. */
 fun buildCellBallNumbers(ballEntries: List<Pair<Int, List<Point>>>): Map<Int, List<Int>> {
     val result = mutableMapOf<Int, MutableList<Int>>()
     ballEntries.forEach { (ballIndex, points) ->
@@ -178,12 +178,12 @@ fun spinColor(spin: Int): Color = when (spin) {
     else -> Color(0xFF212121)
 }
 
-/** Build a cell→colors map from ball entries, colored by each ball's spin. */
-fun buildCellBallColors(ballEntries: List<com.tablebot.data.BallEntry>): Map<Int, List<Color>> {
+/** Build a cell→colors map from steps, colored by each step's spin. */
+fun buildCellBallColors(steps: List<com.tablebot.data.Step>): Map<Int, List<Color>> {
     val result = mutableMapOf<Int, MutableList<Color>>()
-    ballEntries.forEach { entry ->
-        val color = spinColor(entry.spin)
-        entry.points.forEach { point ->
+    steps.forEach { step ->
+        val color = spinColor(step.spin)
+        step.balls.forEach { point ->
             result.getOrPut(point.x) { mutableListOf() }.add(color)
         }
     }

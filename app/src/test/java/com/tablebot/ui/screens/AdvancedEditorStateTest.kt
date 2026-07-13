@@ -1,15 +1,15 @@
 package com.tablebot.ui.screens
 
 import com.tablebot.data.AdvancedTraining
-import com.tablebot.data.BallEntry
 import com.tablebot.data.Point
+import com.tablebot.data.Step
 import org.junit.Assert.*
 import org.junit.Test
 
 class AdvancedEditorStateTest {
     private fun state(n: Int): AdvancedEditorState {
         val s = AdvancedEditorState(initial = null, id = 1)
-        s.ballList = (0 until n).map { BallEntry(ball = 1, spin = 2, power = 2, points = listOf(Point(it + 1, 2)), ballTime = 9) }
+        s.steps = (0 until n).map { Step(ball = 1, spin = 2, power = 2, balls = listOf(Point(it + 1, 2)), ballTime = 9) }
         return s
     }
 
@@ -36,26 +36,26 @@ class AdvancedEditorStateTest {
         assertNull(s.lastExpandedIndex())
     }
 
-    @Test fun `removeBall keeps the correct ball expanded`() {
+    @Test fun `removeStep keeps the correct ball expanded`() {
         val s = state(3)          // balls 0,1,2
         s.toggleExpanded(2)       // ball 2 expanded
-        s.removeBall(0)           // now old ball 2 is at index 1
+        s.removeStep(0)           // now old ball 2 is at index 1
         assertFalse(s.isExpanded(0))
         assertTrue(s.isExpanded(1))
         assertEquals(1, s.lastExpandedIndex())
     }
 
-    @Test fun `removeBall drops the expanded flag of the removed ball`() {
+    @Test fun `removeStep drops the expanded flag of the removed ball`() {
         val s = state(3)
         s.toggleExpanded(1)
-        s.removeBall(1)
+        s.removeStep(1)
         assertNull(s.lastExpandedIndex())
     }
 
-    @Test fun `moveBall follows the expanded ball to its new index`() {
+    @Test fun `moveStep follows the expanded ball to its new index`() {
         val s = state(3)
         s.toggleExpanded(0)       // ball 0 expanded
-        s.moveBall(0, 2)          // swap 0<->2; expanded ball now at index 2
+        s.moveStep(0, 2)          // swap 0<->2; expanded ball now at index 2
         assertTrue(s.isExpanded(2))
         assertFalse(s.isExpanded(0))
     }
@@ -68,8 +68,8 @@ class AdvancedEditorStateTest {
         val training = AdvancedTraining(
             id = 2,
             name = "Fresh Drill",
-            ballList = listOf(
-                BallEntry(ball = 1, spin = 2, power = 2, points = listOf(Point(1, 2)), ballTime = 9)
+            steps = listOf(
+                Step(ball = 1, spin = 2, power = 2, balls = listOf(Point(1, 2)), ballTime = 9)
             ),
         )
         s.loadFrom(training)

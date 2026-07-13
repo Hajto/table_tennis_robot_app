@@ -36,16 +36,16 @@ class AdvancedEditorState(
     var name by mutableStateOf(initial?.name ?: "")
     var repeatNum by mutableIntStateOf(initial?.repeatNum ?: 10)
     var repeatDelay by mutableIntStateOf(initial?.repeatDelay ?: 1)
-    var ballList by mutableStateOf(
-        initial?.ballList ?: listOf(
-            BallEntry(ball = 1, spin = 2, power = 2, points = listOf(Point(8, 2)), ballTime = 9)
+    var steps by mutableStateOf(
+        initial?.steps ?: listOf(
+            Step(ball = 1, spin = 2, power = 2, balls = listOf(Point(8, 2)), ballTime = 9)
         )
     )
     var isFavourite by mutableIntStateOf(initial?.isFavourite ?: 0)
     var skillLevel: SkillLevel = initial?.skillLevel ?: SkillLevel()
     var tags by mutableStateOf(initial?.tags ?: emptyList())
 
-    // Indices of ball entries whose settings panel is expanded (hoisted from BallEntryEditor
+    // Indices of steps whose settings panel is expanded (hoisted from StepEditor
     // so expansion survives navigation and drives the calibration seed).
     private val _expandedIndices = mutableStateListOf<Int>()
     val expandedIndices: List<Int> get() = _expandedIndices
@@ -61,7 +61,7 @@ class AdvancedEditorState(
         name = training.name
         repeatNum = training.repeatNum
         repeatDelay = training.repeatDelay
-        ballList = training.ballList
+        steps = training.steps
         _expandedIndices.clear()
         isFavourite = training.isFavourite
         skillLevel = training.skillLevel
@@ -73,35 +73,35 @@ class AdvancedEditorState(
         name = name.ifBlank { "Quick Play Advanced" },
         repeatNum = repeatNum,
         repeatDelay = repeatDelay,
-        ballList = ballList,
+        steps = steps,
         isFavourite = isFavourite,
         skillLevel = skillLevel,
         tags = tags,
     )
 
-    fun addBall() {
-        ballList = ballList + BallEntry(
+    fun addStep() {
+        steps = steps + Step(
             ball = 1, spin = 2, power = 2,
-            points = listOf(Point(8, 2)), ballTime = 9,
+            balls = listOf(Point(8, 2)), ballTime = 9,
         )
     }
 
-    fun updateBall(index: Int, entry: BallEntry) {
-        ballList = ballList.toMutableList().apply { set(index, entry) }
+    fun updateStep(index: Int, step: Step) {
+        steps = steps.toMutableList().apply { set(index, step) }
     }
 
-    fun removeBall(index: Int) {
-        if (ballList.size > 1) {
-            ballList = ballList.toMutableList().apply { removeAt(index) }
-            // Remove the deleted ball's flag and shift higher indices down by one.
+    fun removeStep(index: Int) {
+        if (steps.size > 1) {
+            steps = steps.toMutableList().apply { removeAt(index) }
+            // Remove the deleted step's flag and shift higher indices down by one.
             val shifted = _expandedIndices.filter { it != index }.map { if (it > index) it - 1 else it }
             _expandedIndices.clear(); _expandedIndices.addAll(shifted)
         }
     }
 
-    fun moveBall(from: Int, to: Int) {
-        if (from !in ballList.indices || to !in ballList.indices || from == to) return
-        ballList = ballList.toMutableList().apply {
+    fun moveStep(from: Int, to: Int) {
+        if (from !in steps.indices || to !in steps.indices || from == to) return
+        steps = steps.toMutableList().apply {
             java.util.Collections.swap(this, from, to)
         }
         val fromExp = from in _expandedIndices
@@ -136,14 +136,14 @@ fun AdvancedEditorContent(
         }
 
         // Sequence overview grid
-        val allPoints = state.ballList.flatMap { it.points }
-        val overviewBallNumbers = remember(state.ballList) {
+        val allPoints = state.steps.flatMap { it.balls }
+        val overviewBallNumbers = remember(state.steps) {
             buildCellBallNumbers(
-                state.ballList.mapIndexed { i, entry -> (i + 1) to entry.points }
+                state.steps.mapIndexed { i, step -> (i + 1) to step.balls }
             )
         }
-        val overviewBallColors = remember(state.ballList) {
-            buildCellBallColors(state.ballList)
+        val overviewBallColors = remember(state.steps) {
+            buildCellBallColors(state.steps)
         }
         Text("Sequence Overview", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold)
         TableGrid(
@@ -168,7 +168,7 @@ fun AdvancedEditorContent(
         val itemHeights = remember { mutableStateMapOf<Int, Int>() }
         val isDraggingAny = draggingIndex >= 0
 
-        state.ballList.forEachIndexed { index, entry ->
+        state.steps.forEachIndexed { index, step ->
             val isDragging = draggingIndex == index
 
             Box(
@@ -184,7 +184,7 @@ fun AdvancedEditorContent(
                         shadowElevation = if (isDragging) 12f else 0f
                         alpha = if (isDraggingAny && !isDragging) 0.5f else 1f
                     }
-                    .pointerInput(state.ballList.size) {
+                    .pointerInput(state.steps.size) {
                         detectDragGesturesAfterLongPress(
                             onDragStart = {
                                 draggingIndex = index
@@ -199,12 +199,12 @@ fun AdvancedEditorContent(
                                     .takeIf { it.isNotEmpty() }
                                     ?.average()?.toFloat() ?: return@detectDragGesturesAfterLongPress
                                 val threshold = avgHeight * 0.5f
-                                if (dragOffsetY > threshold && draggingIndex < state.ballList.lastIndex) {
-                                    state.moveBall(draggingIndex, draggingIndex + 1)
+                                if (dragOffsetY > threshold && draggingIndex < state.steps.lastIndex) {
+                                    state.moveStep(draggingIndex, draggingIndex + 1)
                                     draggingIndex++
                                     dragOffsetY -= avgHeight
                                 } else if (dragOffsetY < -threshold && draggingIndex > 0) {
-                                    state.moveBall(draggingIndex, draggingIndex - 1)
+                                    state.moveStep(draggingIndex, draggingIndex - 1)
                                     draggingIndex--
                                     dragOffsetY += avgHeight
                                 }
@@ -220,19 +220,19 @@ fun AdvancedEditorContent(
                         )
                     },
             ) {
-                BallEntryEditor(
+                StepEditor(
                     index = index,
-                    entry = entry,
+                    entry = step,
                     ballNumber = index + 1,
-                    onUpdate = { state.updateBall(index, it) },
-                    onRemove = if (state.ballList.size > 1) {
-                        { state.removeBall(index) }
+                    onUpdate = { state.updateStep(index, it) },
+                    onRemove = if (state.steps.size > 1) {
+                        { state.removeStep(index) }
                     } else null,
                     onMoveUp = if (index > 0) {
-                        { state.moveBall(index, index - 1) }
+                        { state.moveStep(index, index - 1) }
                     } else null,
-                    onMoveDown = if (index < state.ballList.lastIndex) {
-                        { state.moveBall(index, index + 1) }
+                    onMoveDown = if (index < state.steps.lastIndex) {
+                        { state.moveStep(index, index + 1) }
                     } else null,
                     motorConfig = motorConfig,
                     expanded = state.isExpanded(index),
@@ -242,7 +242,7 @@ fun AdvancedEditorContent(
         }
 
         OutlinedButton(
-            onClick = { state.addBall() },
+            onClick = { state.addStep() },
             modifier = Modifier.fillMaxWidth(),
         ) {
             Icon(Icons.Default.Add, null)
@@ -284,7 +284,7 @@ fun AdvancedEditorScreen(
                 actions = {
                     IconButton(
                         onClick = { onSave(state.toTraining()) },
-                        enabled = state.name.isNotBlank() && state.ballList.isNotEmpty(),
+                        enabled = state.name.isNotBlank() && state.steps.isNotEmpty(),
                     ) {
                         Icon(Icons.Default.Check, "Save")
                     }
@@ -304,14 +304,14 @@ fun AdvancedEditorScreen(
     }
 }
 
-// ── Ball entry editor card ──────────────────────────────────────────
+// ── Step editor card ────────────────────────────────────────────────
 
 @Composable
-private fun BallEntryEditor(
+private fun StepEditor(
     index: Int,
-    entry: BallEntry,
+    entry: Step,
     ballNumber: Int,
-    onUpdate: (BallEntry) -> Unit,
+    onUpdate: (Step) -> Unit,
     onRemove: (() -> Unit)?,
     onMoveUp: (() -> Unit)?,
     onMoveDown: (() -> Unit)?,
@@ -321,10 +321,10 @@ private fun BallEntryEditor(
 ) {
     val constraints = rememberMotorConstraints(
         ball = entry.ball, spin = entry.spin, power = entry.power,
-        points = entry.points, motorConfig = motorConfig,
+        points = entry.balls, motorConfig = motorConfig,
         onSpinChange = { onUpdate(entry.copy(spin = it)) },
         onPowerChange = { onUpdate(entry.copy(power = it)) },
-        onPointsChange = { onUpdate(entry.copy(points = it)) },
+        onPointsChange = { onUpdate(entry.copy(balls = it)) },
     )
     val availableSpins = constraints.validSpins
     val availablePowers = constraints.validPowers
@@ -408,19 +408,19 @@ private fun BallEntryEditor(
                 StepSlider("Ball Interval", entry.ballTime, 2..30) { onUpdate(entry.copy(ballTime = it)) }
 
                 Text("Target Points", style = MaterialTheme.typography.labelMedium)
-                val entryBallNumbers = remember(entry.points, ballNumber) {
-                    buildCellBallNumbers(listOf(ballNumber to entry.points))
+                val entryBallNumbers = remember(entry.balls, ballNumber) {
+                    buildCellBallNumbers(listOf(ballNumber to entry.balls))
                 }
                 TableGrid(
-                    selectedPoints = entry.points,
+                    selectedPoints = entry.balls,
                     onCellClick = { cellNum ->
-                        val existing = entry.points.find { it.x == cellNum }
+                        val existing = entry.balls.find { it.x == cellNum }
                         val newPoints = if (existing != null) {
-                            entry.points.filter { it.x != cellNum }
+                            entry.balls.filter { it.x != cellNum }
                         } else {
-                            entry.points + Point(cellNum, 2)
+                            entry.balls + Point(cellNum, 2)
                         }
-                        onUpdate(entry.copy(points = newPoints))
+                        onUpdate(entry.copy(balls = newPoints))
                     },
                     cellBallNumbers = entryBallNumbers,
                     enabledCells = enabledCells,

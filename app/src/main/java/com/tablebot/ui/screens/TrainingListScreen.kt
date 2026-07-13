@@ -252,7 +252,7 @@ private fun AdvancedTrainingCard(
     var repeatNum by remember { mutableIntStateOf(training.repeatNum) }
     var repeatDelay by remember { mutableIntStateOf(training.repeatDelay) }
 
-    val allPoints = training.ballList.flatMap { it.points }
+    val allPoints = training.steps.flatMap { it.balls }
 
     Card(
         modifier = Modifier
@@ -269,7 +269,7 @@ private fun AdvancedTrainingCard(
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        "${SkillLevelType.fromValue(training.skillLevel.id).label} · ${training.ballList.size} balls",
+                        "${SkillLevelType.fromValue(training.skillLevel.id).label} · ${training.steps.size} balls",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -303,12 +303,12 @@ private fun AdvancedTrainingCard(
                 HorizontalDivider()
                 Spacer(Modifier.height(8.dp))
 
-                // Show each ball entry
-                training.ballList.forEachIndexed { i, entry ->
+                // Show each step
+                training.steps.forEachIndexed { i, step ->
                     Text(
-                        "Ball ${i + 1}: ${BallType.fromValue(entry.ball).label}, " +
-                            "${SpinType.fromValue(entry.spin).label}, ${PowerType.fromValue(entry.power).label}, " +
-                            "Speed ${entry.ballTime}",
+                        "Ball ${i + 1}: ${BallType.fromValue(step.ball).label}, " +
+                            "${SpinType.fromValue(step.spin).label}, ${PowerType.fromValue(step.power).label}, " +
+                            "Speed ${step.ballTime}",
                         style = MaterialTheme.typography.bodySmall,
                     )
                 }
@@ -319,9 +319,9 @@ private fun AdvancedTrainingCard(
                 StepSlider("Repeat Delay", repeatDelay, 1..10) { repeatDelay = it }
 
                 Spacer(Modifier.height(8.dp))
-                val cellBallNumbers = remember(training.ballList) {
+                val cellBallNumbers = remember(training.steps) {
                     buildCellBallNumbers(
-                        training.ballList.mapIndexed { i, entry -> (i + 1) to entry.points }
+                        training.steps.mapIndexed { i, step -> (i + 1) to step.balls }
                     )
                 }
                 TableGrid(

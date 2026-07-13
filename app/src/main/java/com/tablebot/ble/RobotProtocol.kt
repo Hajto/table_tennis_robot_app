@@ -208,46 +208,53 @@ object RobotProtocol {
         return buf
     }
 
+    // Per-point layout mirrors encodeBasicPattern. Each step contributes n = balls.size points
+    // (1..5). Duplicate positions within a step are emitted as duplicate points (= weighting).
+    //   [7]  0x80 when the step is random (within-random OR order-random), else 0
+    //   [9]  group size n (firmware fires this many balls as one group)
+    //   [10] 1 on the group leader (first point of a within-random group), else 0
+    //   [11] 1 when the step is random, else 0
+    // The lookup overload keeps this unit-testable without an Android Context.
     fun encodeAdvancedPattern(
         training: AdvancedTraining,
-        motorConfig: MotorConfig,
         repeatNumOverride: Int? = null,
         repeatDelayOverride: Int? = null,
+        lookup: (ball: Int, spin: Int, power: Int, cell: Int) -> MotorParams?,
     ): ByteArray {
         val effectiveRepeatNum = repeatNumOverride ?: training.repeatNum
         val effectiveRepeatDelay = repeatDelayOverride ?: training.repeatDelay
-        val allPoints = mutableListOf<ByteArray>()
-        for (entry in training.ballList) {
-            for (p in entry.points) {
-                val params = motorConfig.lookup(entry.ball, entry.spin, entry.power, p.x)
-                val buf = ByteArray(12)
-                buf[0] = (params?.m1speed ?: 0).toByte()
-                buf[1] = (params?.m2speed ?: 0).toByte()
-                buf[2] = (params?.xaxis ?: 0).toByte()
-                buf[3] = (params?.yaxis ?: 0).toByte()
-                buf[4] = (params?.zaxis ?: 0).toByte()
-                buf[5] = 0  // repeatDelay high
-                buf[6] = (effectiveRepeatDelay.coerceAtLeast(1) and 0xFF).toByte()
-                buf[7] = 0
-                buf[8] = (entry.ballTime and 0xFF).toByte()
-                buf[9] = 1
-                buf[10] = 0
-                buf[11] = 0
-                allPoints.add(buf)
+        val points = mutableListOf<ByteArray>()
+        for (step in training.steps) {
+            val n = step.balls.size
+            val within = n > 1
+            val rnd = within || step.orderRandom
+            step.balls.forEachIndexed { j, p ->
+                val params = lookup(step.ball, step.spin, step.power, p.x)
+                val b = ByteArray(12)
+                b[0] = (params?.m1speed ?: 0).toByte(); b[1] = (params?.m2speed ?: 0).toByte()
+                b[2] = (params?.xaxis ?: 0).toByte(); b[3] = (params?.yaxis ?: 0).toByte()
+                b[4] = (params?.zaxis ?: 0).toByte()
+                b[5] = 0; b[6] = (effectiveRepeatDelay.coerceAtLeast(1) and 0xFF).toByte()
+                b[7] = if (rnd) 0x80.toByte() else 0
+                b[8] = (step.ballTime and 0xFF).toByte()
+                b[9] = n.coerceIn(1, 5).toByte()
+                b[10] = if (within && j == 0) 1 else 0
+                b[11] = if (rnd) 1 else 0
+                points.add(b)
             }
         }
-
-        val payload = ByteArray((allPoints.size * 12) + 4)
-        for ((i, pointBuf) in allPoints.withIndex()) {
-            pointBuf.copyInto(payload, i * 12)
-        }
-        val trailerOff = allPoints.size * 12
-        payload[trailerOff + 0] = (effectiveRepeatNum and 0xFF).toByte()  // repeatNum
-        payload[trailerOff + 1] = 1
-        payload[trailerOff + 2] = 0
-        payload[trailerOff + 3] = 0
-
+        val payload = ByteArray(points.size * 12 + 4)
+        points.forEachIndexed { i, pb -> pb.copyInto(payload, i * 12) }
+        val t = points.size * 12
+        payload[t] = (effectiveRepeatNum and 0xFF).toByte(); payload[t+1] = 1; payload[t+2] = 0; payload[t+3] = 0
         return payload
+    }
+
+    fun encodeAdvancedPattern(
+        training: AdvancedTraining, motorConfig: MotorConfig,
+        repeatNumOverride: Int? = null, repeatDelayOverride: Int? = null,
+    ): ByteArray = encodeAdvancedPattern(training, repeatNumOverride, repeatDelayOverride) { ball, spin, power, cell ->
+        motorConfig.lookup(ball, spin, power, cell)
     }
 
     fun splitIntoChunks(frame: ByteArray, mtu: Int = BLE_MTU): List<ByteArray> {

@@ -17,7 +17,7 @@ class DrillSnapshotTest {
 
     private fun advancedTraining() = AdvancedTraining(
         id = 3, name = "Two-Ball Combo", repeatNum = 10, repeatDelay = 1,
-        ballList = listOf(BallEntry(points = listOf(Point(6))), BallEntry(spin = 3)),
+        steps = listOf(Step(balls = listOf(Point(6))), Step(spin = 3)),
     )
 
     @Test
