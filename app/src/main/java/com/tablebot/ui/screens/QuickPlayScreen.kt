@@ -414,46 +414,16 @@ fun QuickPlayScreen(
                 Spacer(Modifier.height(16.dp))
 
                 when (mode) {
-                    0 -> {
-                        DrillEditorContent(
-                            state = basicState,
-                            motorConfig = motorConfig,
-                            showName = false,
-                        )
-                        Spacer(Modifier.height(16.dp))
-                        com.tablebot.ui.components.PlayModeSelector(
-                            playMode = basicState.playMode,
-                            reps = basicState.times,
-                            ballCount = basicState.ballCount,
-                            durationSec = basicState.durationSec,
-                            ballsPerPattern = basicState.points.size,
-                            repsRange = 1..100,
-                            onPlayModeChange = { basicState.playMode = it },
-                            onRepsChange = { basicState.times = it },
-                            onBallCountChange = { basicState.ballCount = it },
-                            onDurationChange = { basicState.durationSec = it },
-                        )
-                    }
-                    1 -> {
-                        AdvancedEditorContent(
-                            state = advancedState,
-                            motorConfig = motorConfig,
-                            showName = false,
-                        )
-                        Spacer(Modifier.height(16.dp))
-                        com.tablebot.ui.components.PlayModeSelector(
-                            playMode = advancedState.playMode,
-                            reps = advancedState.repeatNum,
-                            ballCount = advancedState.ballCount,
-                            durationSec = advancedState.durationSec,
-                            ballsPerPattern = advancedState.ballList.sumOf { it.points.size },
-                            repsRange = 1..50,
-                            onPlayModeChange = { advancedState.playMode = it },
-                            onRepsChange = { advancedState.repeatNum = it },
-                            onBallCountChange = { advancedState.ballCount = it },
-                            onDurationChange = { advancedState.durationSec = it },
-                        )
-                    }
+                    0 -> DrillEditorContent(
+                        state = basicState,
+                        motorConfig = motorConfig,
+                        showName = false,
+                    )
+                    1 -> AdvancedEditorContent(
+                        state = advancedState,
+                        motorConfig = motorConfig,
+                        showName = false,
+                    )
                 }
 
                 Spacer(Modifier.height(16.dp))
