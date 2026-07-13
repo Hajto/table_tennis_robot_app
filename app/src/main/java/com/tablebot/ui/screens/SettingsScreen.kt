@@ -17,6 +17,7 @@ import com.tablebot.data.AppPrefs
 fun SettingsScreen(onBack: () -> Unit) {
     val showFieldNumbers by AppPrefs.showFieldNumbers.collectAsState()
     val debugMode by AppPrefs.debugMode.collectAsState()
+    val inferRowCalibration by AppPrefs.inferRowCalibration.collectAsState()
 
     Scaffold(
         topBar = {
@@ -53,6 +54,14 @@ fun SettingsScreen(onBack: () -> Unit) {
                 onCheckedChange = { AppPrefs.setDebugMode(it) },
             )
 
+            HorizontalDivider()
+
+            SettingsToggle(
+                title = "Infer calibration row from ends",
+                subtitle = "Experimental: adds a button on the calibration screen to fill a row's middle cells by interpolating its two calibrated ends",
+                checked = inferRowCalibration,
+                onCheckedChange = { AppPrefs.setInferRowCalibration(it) },
+            )
         }
     }
 }

@@ -9,6 +9,7 @@ object AppPrefs {
     private const val PREFS_NAME = "tablebot_prefs"
     private const val KEY_SHOW_FIELD_NUMBERS = "show_field_numbers"
     private const val KEY_DEBUG_MODE = "debug_mode"
+    private const val KEY_INFER_ROW_CALIBRATION = "infer_row_calibration"
     private const val KEY_HAS_SEEN_ONBOARDING = "has_seen_onboarding"
     private const val KEY_TRAINING_MIGRATION_VERSION = "training_migration_version"
     const val CURRENT_MIGRATION_VERSION = 2 // 1 = tags, 2 = isDefault
@@ -21,6 +22,9 @@ object AppPrefs {
     private val _debugMode = MutableStateFlow(false)
     val debugMode: StateFlow<Boolean> = _debugMode
 
+    private val _inferRowCalibration = MutableStateFlow(false)
+    val inferRowCalibration: StateFlow<Boolean> = _inferRowCalibration
+
     private val _hasSeenOnboarding = MutableStateFlow(false)
     val hasSeenOnboarding: StateFlow<Boolean> = _hasSeenOnboarding
 
@@ -28,6 +32,7 @@ object AppPrefs {
         prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         _showFieldNumbers.value = prefs.getBoolean(KEY_SHOW_FIELD_NUMBERS, true)
         _debugMode.value = prefs.getBoolean(KEY_DEBUG_MODE, false)
+        _inferRowCalibration.value = prefs.getBoolean(KEY_INFER_ROW_CALIBRATION, false)
         _hasSeenOnboarding.value = prefs.getBoolean(KEY_HAS_SEEN_ONBOARDING, false)
     }
 
@@ -39,6 +44,11 @@ object AppPrefs {
     fun setDebugMode(enabled: Boolean) {
         _debugMode.value = enabled
         prefs.edit().putBoolean(KEY_DEBUG_MODE, enabled).apply()
+    }
+
+    fun setInferRowCalibration(enabled: Boolean) {
+        _inferRowCalibration.value = enabled
+        prefs.edit().putBoolean(KEY_INFER_ROW_CALIBRATION, enabled).apply()
     }
 
     fun setHasSeenOnboarding(seen: Boolean) {
