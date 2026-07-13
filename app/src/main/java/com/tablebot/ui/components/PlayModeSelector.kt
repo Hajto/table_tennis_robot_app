@@ -54,9 +54,11 @@ fun PlayModeSelector(
                 }
             }
             PlayMode.TIMED -> {
-                StepSlider("Duration (seconds)", durationSec, 15..1800, displayValue = { formatDurationMmSs(it) }) {
-                    onDurationChange(it)
-                }
+                DurationWheelPicker(
+                    durationSec = durationSec,
+                    onDurationChange = onDurationChange,
+                    modifier = Modifier.fillMaxWidth(),
+                )
             }
         }
     }
