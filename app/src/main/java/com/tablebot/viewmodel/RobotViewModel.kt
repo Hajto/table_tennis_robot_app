@@ -8,6 +8,8 @@ import com.tablebot.ble.RobotManager
 import com.tablebot.data.*
 import com.tablebot.data.HistoryStore
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -50,6 +52,10 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
     private val _currentTrainingName = MutableStateFlow<String?>(null)
     val currentTrainingName: StateFlow<String?> = _currentTrainingName
 
+    private val _playCountdownSec = MutableStateFlow<Int?>(null)
+    val playCountdownSec: StateFlow<Int?> = _playCountdownSec
+    private var countdownJob: Job? = null
+
     private val _profileError = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val profileError: SharedFlow<String> = _profileError.asSharedFlow()
 
@@ -62,6 +68,7 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
         robotManager.onPatternDone = {
             _isPlaying.value = false
             _currentTrainingName.value = null
+            clearCountdown()
         }
         viewModelScope.launch {
             profileStore.migrateIfNeeded()
@@ -86,12 +93,14 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
 
     fun disconnect() = robotManager.disconnect()
 
-    fun playBasicTraining(
-        training: BasicTraining,
-        timesOverride: Int? = null,
-        ballTimeOverride: Int? = null,
-    ) {
+    fun playBasicTraining(training: BasicTraining, ballTimeOverride: Int? = null) {
         robotManager.drillJob?.cancel()
+        val ballTime = ballTimeOverride ?: training.ballTime
+        val resolved = resolvePlay(
+            PlayMode.fromValue(training.playMode),
+            training.times, training.ballCount, training.durationSec,
+            ballsPerPatternBasic(training), ballTime,
+        )
         // History logging is decoupled from the drill path: it runs in its own
         // coroutine so history I/O can never block or crash drill playback.
         val profile = activeProfile.value
@@ -101,7 +110,7 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
                     trainingType = "basic",
                     trainingId = training.id,
                     timestamp = System.currentTimeMillis(),
-                    snapshot = DrillSnapshot.Basic(training, timesOverride, ballTimeOverride),
+                    snapshot = DrillSnapshot.Basic(training, resolved.reps, ballTimeOverride),
                     profileName = profile?.name,
                     robotType = profile?.robotType,
                 ))) {
@@ -112,20 +121,20 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
             _isPlaying.value = true
             _currentTrainingName.value = training.name
             val payload = RobotProtocol.encodeBasicPattern(
-                training, motorConfig,
-                timesOverride = timesOverride,
-                ballTimeOverride = ballTimeOverride,
+                training, motorConfig, timesOverride = resolved.reps, ballTimeOverride = ballTimeOverride,
             )
-            robotManager.sendBasicDrill(payload, reps = timesOverride ?: training.times)
+            robotManager.sendBasicDrill(payload, reps = resolved.reps)
+            resolved.timedDurationSec?.let { startTimedCountdown(it) }
         }
     }
 
-    fun playAdvancedTraining(
-        training: AdvancedTraining,
-        repeatNumOverride: Int? = null,
-        repeatDelayOverride: Int? = null,
-    ) {
+    fun playAdvancedTraining(training: AdvancedTraining, repeatDelayOverride: Int? = null) {
         robotManager.drillJob?.cancel()
+        val resolved = resolvePlay(
+            PlayMode.fromValue(training.playMode),
+            training.repeatNum, training.ballCount, training.durationSec,
+            ballsPerPatternAdvanced(training), /* ballTime for timed est */ firstBallTime(training),
+        )
         // History logging is decoupled from the drill path: it runs in its own
         // coroutine so history I/O can never block or crash drill playback.
         val profile = activeProfile.value
@@ -135,7 +144,7 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
                     trainingType = "advanced",
                     trainingId = training.id,
                     timestamp = System.currentTimeMillis(),
-                    snapshot = DrillSnapshot.Advanced(training, repeatNumOverride, repeatDelayOverride),
+                    snapshot = DrillSnapshot.Advanced(training, resolved.reps, repeatDelayOverride),
                     profileName = profile?.name,
                     robotType = profile?.robotType,
                 ))) {
@@ -146,12 +155,33 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
             _isPlaying.value = true
             _currentTrainingName.value = training.name
             val payload = RobotProtocol.encodeAdvancedPattern(
-                training, motorConfig,
-                repeatNumOverride = repeatNumOverride,
-                repeatDelayOverride = repeatDelayOverride,
+                training, motorConfig, repeatNumOverride = resolved.reps, repeatDelayOverride = repeatDelayOverride,
             )
-            robotManager.sendAdvancedDrill(payload, reps = repeatNumOverride ?: training.repeatNum)
+            robotManager.sendAdvancedDrill(payload, reps = resolved.reps)
+            resolved.timedDurationSec?.let { startTimedCountdown(it) }
         }
+    }
+
+    private fun firstBallTime(t: AdvancedTraining): Int = t.ballList.firstOrNull()?.ballTime ?: 9
+
+    private fun startTimedCountdown(durationSec: Int) {
+        countdownJob?.cancel()
+        countdownJob = viewModelScope.launch {
+            var remaining = durationSec
+            _playCountdownSec.value = remaining
+            while (remaining > 0) {
+                delay(1000)
+                remaining--
+                _playCountdownSec.value = remaining
+            }
+            stop()
+        }
+    }
+
+    private fun clearCountdown() {
+        countdownJob?.cancel()
+        countdownJob = null
+        _playCountdownSec.value = null
     }
 
     fun sendTestBall(params: MotorParams, ballTime: Int = 15) {
@@ -242,6 +272,7 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
 
     fun stop() {
         viewModelScope.launch {
+            clearCountdown()
             robotManager.stop()
             _isPlaying.value = false
             _currentTrainingName.value = null
