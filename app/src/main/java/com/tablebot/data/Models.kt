@@ -27,6 +27,9 @@ data class BasicTraining(
     val skillLevel: SkillLevel = SkillLevel(),
     val tags: List<String> = emptyList(),
     val isDefault: Boolean = false,
+    val playMode: Int = 0,
+    val ballCount: Int = 30,
+    val durationSec: Int = 60,
 )
 
 @Serializable
@@ -54,6 +57,9 @@ data class AdvancedTraining(
     val skillLevel: SkillLevel = SkillLevel(),
     val tags: List<String> = emptyList(),
     val isDefault: Boolean = false,
+    val playMode: Int = 0,
+    val ballCount: Int = 30,
+    val durationSec: Int = 60,
 )
 
 @Serializable
@@ -107,6 +113,13 @@ enum class LandType(val value: Int, val label: String, val description: String) 
     RANDOM(2, "Random", "Select multiple positions and the ball will be shot to a randomly chosen one each time.");
     companion object {
         fun fromValue(v: Int) = entries.firstOrNull { it.value == v } ?: STATIC
+    }
+}
+
+enum class PlayMode(val value: Int) {
+    REPETITIONS(0), BALL_COUNT(1), TIMED(2);
+    companion object {
+        fun fromValue(v: Int) = entries.firstOrNull { it.value == v } ?: REPETITIONS
     }
 }
 

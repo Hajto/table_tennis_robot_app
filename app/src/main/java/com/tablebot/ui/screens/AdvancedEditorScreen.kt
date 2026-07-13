@@ -44,6 +44,9 @@ class AdvancedEditorState(
     var isFavourite by mutableIntStateOf(initial?.isFavourite ?: 0)
     var skillLevel: SkillLevel = initial?.skillLevel ?: SkillLevel()
     var tags by mutableStateOf(initial?.tags ?: emptyList())
+    var playMode by mutableIntStateOf(initial?.playMode ?: 0)
+    var ballCount by mutableIntStateOf(initial?.ballCount ?: 30)
+    var durationSec by mutableIntStateOf(initial?.durationSec ?: 60)
 
     // Indices of ball entries whose settings panel is expanded (hoisted from BallEntryEditor
     // so expansion survives navigation and drives the calibration seed).
@@ -66,6 +69,9 @@ class AdvancedEditorState(
         isFavourite = training.isFavourite
         skillLevel = training.skillLevel
         tags = training.tags
+        playMode = training.playMode
+        ballCount = training.ballCount
+        durationSec = training.durationSec
     }
 
     fun toTraining(): AdvancedTraining = AdvancedTraining(
@@ -77,6 +83,7 @@ class AdvancedEditorState(
         isFavourite = isFavourite,
         skillLevel = skillLevel,
         tags = tags,
+        playMode = playMode, ballCount = ballCount, durationSec = durationSec,
     )
 
     fun addBall() {

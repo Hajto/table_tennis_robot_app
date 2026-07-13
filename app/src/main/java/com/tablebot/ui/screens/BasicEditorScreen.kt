@@ -42,6 +42,9 @@ class DrillEditorState(
     var isFavourite by mutableIntStateOf(initial?.isFavourite ?: 0)
     var skillLevel: SkillLevel = initial?.skillLevel ?: SkillLevel()
     var tags by mutableStateOf(initial?.tags ?: emptyList())
+    var playMode by mutableIntStateOf(initial?.playMode ?: 0)
+    var ballCount by mutableIntStateOf(initial?.ballCount ?: 30)
+    var durationSec by mutableIntStateOf(initial?.durationSec ?: 60)
 
     fun loadFrom(training: BasicTraining) {
         id = training.id
@@ -58,6 +61,9 @@ class DrillEditorState(
         isFavourite = training.isFavourite
         skillLevel = training.skillLevel
         tags = training.tags
+        playMode = training.playMode
+        ballCount = training.ballCount
+        durationSec = training.durationSec
     }
 
     fun toTraining(): BasicTraining = BasicTraining(
@@ -67,6 +73,7 @@ class DrillEditorState(
         ballTime = ballTime, times = times, landType = landType,
         points = points, adjustSpin = adjustSpin, adjustPosition = adjustPosition,
         isFavourite = isFavourite, skillLevel = skillLevel, tags = tags,
+        playMode = playMode, ballCount = ballCount, durationSec = durationSec,
     )
 }
 
