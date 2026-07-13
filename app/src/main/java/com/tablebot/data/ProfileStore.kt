@@ -69,7 +69,7 @@ class ProfileStore(private val context: Context) {
         indexFile.writeText(json.encodeToString(index))
     }
 
-    suspend fun createProfile(name: String): Profile = withContext(Dispatchers.IO) {
+    suspend fun createProfile(name: String, robotType: RobotType = RobotType.JOOLA_V2): Profile = withContext(Dispatchers.IO) {
         val index = loadIndex()
         val trimmed = name.trim()
         require(trimmed.isNotEmpty()) { "Profile name cannot be empty" }
@@ -87,6 +87,7 @@ class ProfileStore(private val context: Context) {
             id = id,
             name = trimmed,
             motorConfigFileName = newFileName,
+            robotType = robotType,
         )
         val updated = index.copy(profiles = index.profiles + profile)
         saveIndex(updated)

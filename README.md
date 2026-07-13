@@ -75,7 +75,7 @@ Tap the training name card on the main screen to open the drill library. Use the
 - [x] Interactive 3x5 table grid with ball number display
 - [x] Connection status bar
 - [x] Dark/light theme support
-- [ ] Proper app icon (currently placeholder green square)
+- [x] Proper app icon
 - [x] Onboarding / first-use guide
 - [x] Training history / session logging (auto-grouped into sessions with 30min gap)
 - [x] Break reminder (suggests 5min break every 30min of continuous training)

@@ -1,5 +1,7 @@
 package com.tablebot.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -9,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.tablebot.ble.BlePermissions
 import com.tablebot.ble.ConnectionState
 import com.tablebot.ble.RobotProtocol
 import com.tablebot.ui.components.ConnectionBar
@@ -22,6 +25,7 @@ fun DebugScreen(robotVm: RobotViewModel) {
     val connectionState by robotVm.connectionState.collectAsState()
     val deviceName by robotVm.deviceName.collectAsState()
     val statusMessage by robotVm.statusMessage.collectAsState()
+    val firmwareVersion by robotVm.firmwareVersion.collectAsState()
     val isPlaying by robotVm.isPlaying.collectAsState()
     val currentTrainingName by robotVm.currentTrainingName.collectAsState()
     val scope = rememberCoroutineScope()
@@ -39,6 +43,19 @@ fun DebugScreen(robotVm: RobotViewModel) {
 
     val connected = connectionState == ConnectionState.CONNECTED
 
+    // Permission handling
+    var permissionsGranted by remember { mutableStateOf(false) }
+    val permissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { results ->
+        permissionsGranted = results.values.all { it }
+        if (permissionsGranted) robotVm.scan()
+    }
+    val requiredPermissions = remember { BlePermissions.required() }
+    fun handleScan() {
+        if (permissionsGranted) robotVm.scan() else permissionLauncher.launch(requiredPermissions)
+    }
+
     Scaffold(
         topBar = {
             Column {
@@ -47,9 +64,10 @@ fun DebugScreen(robotVm: RobotViewModel) {
                     state = connectionState,
                     deviceName = deviceName,
                     statusMessage = statusMessage,
+                    firmwareVersion = firmwareVersion,
                     isPlaying = isPlaying,
                     currentTrainingName = currentTrainingName,
-                    onScanClick = { robotVm.scan() },
+                    onScanClick = ::handleScan,
                     onDisconnectClick = { robotVm.disconnect() },
                     onStopClick = { robotVm.stop() },
                 )

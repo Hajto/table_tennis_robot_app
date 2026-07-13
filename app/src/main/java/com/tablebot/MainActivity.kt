@@ -47,6 +47,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 val robotVm: RobotViewModel = viewModel()
                 val trainingVm: TrainingViewModel = viewModel()
+                val quickPlayVm: com.tablebot.viewmodel.QuickPlayDraftViewModel = viewModel()
 
                 Box(Modifier.fillMaxSize()) {
                     val motorConfig by robotVm.motorConfigFlow.collectAsState()
@@ -131,6 +132,7 @@ class MainActivity : ComponentActivity() {
                             }
 
                             QuickPlayScreen(
+                                draft = quickPlayVm,
                                 reopenProfileSwitcher = reopenSwitcher,
                                 scrollToProfileId = scrollToProfileId,
                                 motorConfig = motorConfig,
@@ -147,6 +149,7 @@ class MainActivity : ComponentActivity() {
                                 connectionState = connectionState,
                                 deviceName = robotVm.deviceName.collectAsState().value,
                                 statusMessage = robotVm.statusMessage.collectAsState().value,
+                                firmwareVersion = robotVm.firmwareVersion.collectAsState().value,
                                 currentTrainingName = robotVm.currentTrainingName.collectAsState().value,
                                 onScan = { robotVm.scan() },
                                 onDisconnect = { robotVm.disconnect() },
@@ -177,8 +180,8 @@ class MainActivity : ComponentActivity() {
                                 onEditProfile = {
                                     navController.navigate("editProfile/$it")
                                 },
-                                onCreateProfile = {
-                                    robotVm.createProfile("New Profile") { profile ->
+                                onCreateProfile = { name, robotType ->
+                                    robotVm.createProfile(name, robotType) { profile ->
                                         navController.navigate("editProfile/${profile.id}")
                                     }
                                 },
@@ -196,6 +199,7 @@ class MainActivity : ComponentActivity() {
                                 robotVm = robotVm,
                                 onBack = { navController.popBackStack() },
                                 activeProfileName = activeProfile?.name,
+                                seed = quickPlayVm.calibrationSeed,
                             )
                         }
 

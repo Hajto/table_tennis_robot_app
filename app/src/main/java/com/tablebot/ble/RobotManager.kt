@@ -7,7 +7,10 @@ import android.bluetooth.le.ScanFilter
 import android.bluetooth.le.ScanResult
 import android.bluetooth.le.ScanSettings
 import android.content.Context
+import android.location.LocationManager
 import android.util.Log
+import androidx.core.location.LocationManagerCompat
+import com.tablebot.data.RobotType
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -27,12 +30,30 @@ class RobotManager(private val context: Context) {
     private val adapter: BluetoothAdapter? =
         (context.getSystemService(Context.BLUETOOTH_SERVICE) as? BluetoothManager)?.adapter
 
+    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
+    var drillJob: kotlinx.coroutines.Job? = null  // track active drill coroutine
+    private var keepaliveJob: kotlinx.coroutines.Job? = null
+
+    // Sequential response processing
+    private val frameChannel = kotlinx.coroutines.channels.Channel<ByteArray>(kotlinx.coroutines.channels.Channel.UNLIMITED)
+    private var responseJob: kotlinx.coroutines.Job? = null
+
+    init {
+        // Start sequential response processor
+        responseJob = scope.launch {
+            for (frame in frameChannel) {
+                processFrame(frame)
+            }
+        }
+    }
+
     private var gatt: BluetoothGatt? = null
     private var writeChar: BluetoothGattCharacteristic? = null      // for control (connect/stop)
     private var dataWriteChar: BluetoothGattCharacteristic? = null  // for pattern data (fed5 if available)
     var deviceId: String = "0000000000000000"
         private set
     private var useAltService = false
+    @Volatile var activeRobotType: RobotType = RobotType.JOOLA_V2
 
     private val _state = MutableStateFlow(ConnectionState.DISCONNECTED)
     val state: StateFlow<ConnectionState> = _state
@@ -41,37 +62,38 @@ class RobotManager(private val context: Context) {
     val deviceName: StateFlow<String?> = _deviceName
 
     private val _statusMessage = MutableStateFlow<String?>(null)
+
+    private val _firmwareVersion = MutableStateFlow<String?>(null)
+    val firmwareVersion: StateFlow<String?> = _firmwareVersion
     val statusMessage: StateFlow<String?> = _statusMessage
 
-    private val scope = CoroutineScope(Dispatchers.Main + SupervisorJob())
-    var drillJob: kotlinx.coroutines.Job? = null  // track active drill coroutine
-    private var keepaliveJob: kotlinx.coroutines.Job? = null
-
-    // Callback synchronization
+    // Sequential response processing
     private var writeCompletion: CompletableDeferred<Int>? = null
     private var descriptorCompletion: CompletableDeferred<Int>? = null
 
     // Pattern repetition
     private var currentPatternPayload: ByteArray? = null
     private var remainingReps: Int = 0
-    private var patternActive: Boolean = false  // only handle 0x8F when we're actually playing
-    var onPatternDone: (() -> Unit)? = null  // called when all reps finished
+    private var totalReps: Int = 0
+    private var patternActive: Boolean = false
+    var onPatternDone: (() -> Unit)? = null
 
     // Response reassembly
     private val rxBuffer = mutableListOf<Byte>()
-    private var rxComplete = false
 
     private val scanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             val device = result.device
-            val name = device.name ?: return
+            val scanRecord = result.scanRecord
+            val name = scanRecord?.deviceName ?: device.name ?: return
+
             if (!name.startsWith("J-")) return
 
-            Log.i(TAG, "Found robot: $name")
+            Log.i(TAG, "Found robot: $name (${device.address})")
             stopScan()
             _state.value = ConnectionState.CONNECTING
             _statusMessage.value = "Connecting to $name..."
-            connectToDevice(device)
+            connectToDevice(device, name)
         }
 
         override fun onScanFailed(errorCode: Int) {
@@ -85,6 +107,15 @@ class RobotManager(private val context: Context) {
         val scanner = adapter?.bluetoothLeScanner
         if (scanner == null) {
             _statusMessage.value = "Bluetooth not available"
+            return
+        }
+
+        // Below Android 12 the OS silently withholds all BLE scan results
+        // while Location Services are off — fail loudly instead.
+        if (BlePermissions.locationRequiredForScan() && !isLocationEnabled()) {
+            _state.value = ConnectionState.DISCONNECTED
+            _statusMessage.value =
+                "Location is off. Android requires Location Services for Bluetooth scanning — enable it in Settings and try again."
             return
         }
 
@@ -113,19 +144,29 @@ class RobotManager(private val context: Context) {
         try { adapter?.bluetoothLeScanner?.stopScan(scanCallback) } catch (_: Exception) {}
     }
 
-    private fun connectToDevice(device: BluetoothDevice) {
-        _deviceName.value = device.name
+    private fun isLocationEnabled(): Boolean {
+        val lm = context.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
+            ?: return true // no LocationManager — don't block scanning on exotic devices
+        return LocationManagerCompat.isLocationEnabled(lm)
+    }
+
+    private fun connectToDevice(device: BluetoothDevice, name: String) {
+        _deviceName.value = name
 
         // Extract device ID from name: "J-XXXXXXXXXXXXXXXX"
-        val name = device.name ?: ""
-        deviceId = if (name.startsWith("J-") && name.length >= 18) {
-            name.substring(2, 18)
-        } else if (name.startsWith("J-")) {
-            name.substring(2).padEnd(16, '0')
+        // Name should be "J-" followed by up to 16 hex chars.
+        val nameSuffix = if (name.startsWith("J-")) {
+            name.substring(2).padEnd(16, '0').take(16)
         } else {
-            "0000000000000000"
+            ""
         }
-        Log.i(TAG, "Device ID extracted: $deviceId")
+
+        deviceId = if (nameSuffix.length == 16 && nameSuffix.all { it.isDigit() || it.lowercaseChar() in 'a'..'f' }) {
+            nameSuffix
+        } else {
+            device.address.replace(":", "").padEnd(16, '0').take(16)
+        }
+        Log.i(TAG, "Initial Device ID guess: $deviceId")
 
         gatt = device.connectGatt(context, false, gattCallback, BluetoothDevice.TRANSPORT_LE)
     }
@@ -144,6 +185,7 @@ class RobotManager(private val context: Context) {
                     _state.value = ConnectionState.DISCONNECTED
                     _statusMessage.value = "Disconnected"
                     _deviceName.value = null
+                    _firmwareVersion.value = null
                     writeChar = null
                     gatt = null
                 }
@@ -183,39 +225,44 @@ class RobotManager(private val context: Context) {
                 }
             }
 
-            // Fallback to alt service — detect write vs notify by properties
+            // Fallback to alt service
             var dChar: BluetoothGattCharacteristic? = null  // secondary write char for data
             if (wChar == null) {
                 service = g.getService(UUID.fromString(RobotProtocol.ALT_SERVICE_UUID))
                 if (service != null) {
-                    Log.i(TAG, "Using ALT service, detecting characteristics by properties...")
+                    Log.i(TAG, "Using ALT service, detecting characteristics...")
                     useAltService = true
 
                     val writeChars = mutableListOf<BluetoothGattCharacteristic>()
                     val notifyChars = mutableListOf<BluetoothGattCharacteristic>()
 
                     for (ch in service.characteristics) {
+                        val uuidStr = ch.uuid.toString().lowercase()
                         val props = ch.properties
                         val isWritable = (props and BluetoothGattCharacteristic.PROPERTY_WRITE != 0) ||
-                            (props and BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE != 0)
+                                (props and BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE != 0)
                         val isNotifiable = (props and BluetoothGattCharacteristic.PROPERTY_NOTIFY != 0) ||
-                            (props and BluetoothGattCharacteristic.PROPERTY_INDICATE != 0)
+                                (props and BluetoothGattCharacteristic.PROPERTY_INDICATE != 0)
 
                         Log.i(TAG, "  ${ch.uuid} props=0x${props.toString(16)} writable=$isWritable notifiable=$isNotifiable")
+
+                        // Prefer specific UUIDs if they match
+                        if (uuidStr == RobotProtocol.ALT_CHAR_WRITE.lowercase()) {
+                            wChar = ch
+                        } else if (uuidStr == RobotProtocol.ALT_CHAR_NOTIFY.lowercase()) {
+                            nChar = ch
+                        }
 
                         if (isWritable) writeChars.add(ch)
                         if (isNotifiable) notifyChars.add(ch)
                     }
 
-                    // First writable = control, second writable = data (if available)
-                    wChar = writeChars.getOrNull(0)
-                    dChar = writeChars.getOrNull(1)
-                    nChar = notifyChars.getOrNull(0)
+                    // Fallback to first available if specific UUIDs not found
+                    if (wChar == null) wChar = writeChars.getOrNull(0)
+                    if (dChar == null) dChar = writeChars.getOrNull(1)
+                    if (nChar == null) nChar = notifyChars.getOrNull(0)
 
                     Log.i(TAG, "Write chars found: ${writeChars.size}, Notify chars found: ${notifyChars.size}")
-                    if (wChar != null) Log.i(TAG, "  Control write: ${wChar.uuid}")
-                    if (dChar != null) Log.i(TAG, "  Data write: ${dChar.uuid}")
-                    if (nChar != null) Log.i(TAG, "  Notify: ${nChar.uuid}")
                 }
             }
 
@@ -229,14 +276,13 @@ class RobotManager(private val context: Context) {
             Log.i(TAG, "Write char: ${wChar.uuid} props=0x${wChar.properties.toString(16)}")
             if (nChar != null) Log.i(TAG, "Notify char: ${nChar.uuid} props=0x${nChar.properties.toString(16)}")
             writeChar = wChar
-            dataWriteChar = dChar  // may be null if only one write char exists
+            dataWriteChar = dChar
 
-            // Setup notifications and send handshake in coroutine to properly sequence operations
+            // Setup notifications and send handshake
             scope.launch {
                 try {
-                    // Enable notifications/indications on ALL notifiable/indicatable characteristics
-                    // CRITICAL: Original app enables BOTH fec8 notifications AND fed6 indications
                     if (service != null && useAltService) {
+                        // Enable notifications/indications on ALL notifiable/indicatable characteristics in alt service
                         for (ch in service.characteristics) {
                             val props = ch.properties
                             val hasNotify = props and BluetoothGattCharacteristic.PROPERTY_NOTIFY != 0
@@ -244,21 +290,27 @@ class RobotManager(private val context: Context) {
                             if (hasNotify || hasIndicate) {
                                 Log.i(TAG, "Enabling ${if (hasIndicate) "INDICATIONS" else "notifications"} on ${ch.uuid}")
                                 enableNotificationsAsync(g, ch, hasIndicate)
-                                delay(500)
+                                delay(300)
                             }
                         }
-                    } else {
-                        if (nChar != null && nChar != wChar) {
-                            Log.i(TAG, "Enabling notifications on notify char ${nChar.uuid}")
-                            enableNotificationsAsync(g, nChar)
-                            delay(500)
-                        }
+                    } else if (nChar != null) {
+                        // Primary service - enable notifications even if same as write char
+                        Log.i(TAG, "Enabling notifications on char ${nChar.uuid}")
+                        enableNotificationsAsync(g, nChar)
+                        delay(300)
                     }
 
                     // Send handshake
-                    Log.i(TAG, "Sending handshake frame...")
+                    Log.i(TAG, "Sending handshake frame for ID: $deviceId")
                     _statusMessage.value = "Sending handshake..."
-                    val connectFrame = RobotProtocol.buildConnectFrame(deviceId)
+                    val connectFrame = try {
+                        RobotProtocol.buildConnectFrame(deviceId)
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Failed to build connect frame: ${e.message}")
+                        // Fallback to zeros if ID is invalid
+                        RobotProtocol.buildConnectFrame("0000000000000000")
+                    }
+
                     Log.i(TAG, "Handshake frame (${connectFrame.size} bytes): ${connectFrame.toHex()}")
                     sendFrame(connectFrame)
 
@@ -267,6 +319,12 @@ class RobotManager(private val context: Context) {
 
                     _state.value = ConnectionState.CONNECTED
                     _statusMessage.value = "Connected to ${_deviceName.value}"
+
+                    // Query firmware version — sends 0x05 which triggers 0x85 response on new firmware.
+                    // Skip for V1: 0x05 is STOP on old firmware.
+                    if (activeRobotType != RobotType.JOOLA_V1) {
+                        sendFrame(RobotProtocol.buildVersionQueryFrame(deviceId))
+                    }
                     Log.i(TAG, "Connection complete!")
                 } catch (e: Exception) {
                     Log.e(TAG, "Setup failed: ${e.message}", e)
@@ -325,109 +383,132 @@ class RobotManager(private val context: Context) {
 
     private fun handleNotification(data: ByteArray) {
         if (data.isEmpty()) return
-
-        val first = data[0]
-        val last = data[data.size - 1]
-
-        if (first == 0x68.toByte()) {
-            rxBuffer.clear()
-            rxComplete = false
+        synchronized(rxBuffer) {
             rxBuffer.addAll(data.toList())
-            if (last == 0x16.toByte()) rxComplete = true
-        } else if (last == 0x16.toByte()) {
-            rxBuffer.addAll(data.toList())
-            rxComplete = true
-        } else {
-            rxBuffer.addAll(data.toList())
-        }
+            
+            // Extract all complete frames
+            while (rxBuffer.size >= 17) {
+                val startIdx = rxBuffer.indexOf(0x68.toByte())
+                if (startIdx == -1) { rxBuffer.clear(); break }
+                if (startIdx > 0) { repeat(startIdx) { rxBuffer.removeAt(0) } }
+                if (rxBuffer.size < 14) break
+                
+                // Verify the second marker at index 10
+                if (rxBuffer.size >= 11 && rxBuffer[10] != 0x68.toByte()) {
+                    rxBuffer.removeAt(0) // Not the right 0x68
+                    continue
+                }
 
-        if (!rxComplete) return
-
-        val frame = rxBuffer.toByteArray()
-        rxBuffer.clear()
-        rxComplete = false
-
-        Log.i(TAG, "Complete response frame (${frame.size} bytes): ${frame.toHex()}")
-        val response = RobotProtocol.parseFrame(frame)
-        if (response != null) {
-            Log.i(TAG, "Parsed response: cmd=0x${response.cmd.toString(16)} status=0x${response.status.toString(16)} payloadLen=${response.payload.size}")
-            if (response.firmwareVersion != null) {
-                Log.i(TAG, "Firmware: ${response.firmwareVersion}")
-            }
-
-            // Handle pattern completion
-            if (response.cmd == RobotProtocol.RESP_PATTERN_DONE && patternActive) {
-                // 0x8F = basic drill single rep done — resend for remaining reps
-                Log.i(TAG, "Basic rep done! Remaining reps: $remainingReps")
-                if (remainingReps > 0) {
-                    remainingReps--
-                    val payload = currentPatternPayload
-                    if (payload != null) {
-                        scope.launch {
-                            Log.i(TAG, "Resending pattern, reps left: $remainingReps")
-                            sendFrame(RobotProtocol.buildStopFrame(deviceId))
-                            delay(100)
-                            sendFrame(RobotProtocol.buildPrePatternFrame(deviceId))
-                            delay(100)
-                            val frame2 = RobotProtocol.buildFrame(deviceId, RobotProtocol.CMD_PATTERN, payload)
-                            sendFrame(frame2)
-                        }
-                    }
+                val payloadLen = ((rxBuffer[12].toInt() and 0xFF) shl 8) or (rxBuffer[13].toInt() and 0xFF)
+                val totalSize = 14 + payloadLen + 3
+                if (rxBuffer.size < totalSize) break
+                
+                if (rxBuffer[totalSize - 1] == 0x16.toByte()) {
+                    val frame = rxBuffer.take(totalSize).toByteArray()
+                    repeat(totalSize) { rxBuffer.removeAt(0) }
+                    // Queue for sequential processing
+                    frameChannel.trySend(frame)
                 } else {
-                    patternActive = false
-                    currentPatternPayload = null
-                    Log.i(TAG, "All basic reps complete")
-                    _statusMessage.value = "Training complete"
-                    onPatternDone?.invoke()
+                    rxBuffer.removeAt(0)
                 }
-            } else if (response.cmd == 0x82) {
-                // 0x82 = finished (drill complete or stopped)
-                Log.i(TAG, "Robot finished (0x82)")
-                stopConfirmed = true
-                stopJob?.cancel()
-                keepaliveJob?.cancel()
-                // Wait for motors to physically stop, then reconnect handshake
-                scope.launch {
-                    delay(2000)
-                    // Re-send connect handshake since 0x99 (stop) doubles as disconnect
-                    Log.i(TAG, "Re-sending connect handshake after stop")
-                    sendFrame(RobotProtocol.buildConnectFrame(deviceId))
-                    patternActive = false
-                    currentPatternPayload = null
-                    _statusMessage.value = "Connected to ${_deviceName.value}"
-                    onPatternDone?.invoke()
-                }
-            } else if (response.cmd == RobotProtocol.RESP_PATTERN_DONE) {
-                Log.i(TAG, "Got 0x8F but no pattern active, ignoring")
             }
         }
+    }
+
+    private suspend fun processFrame(frame: ByteArray) {
+        Log.i(TAG, "Complete response frame (${frame.size} bytes): ${frame.toHex()}")
+        val response = RobotProtocol.parseFrame(frame) ?: return
+        
+        // DYNAMIC ID UPDATE: Update if robot responds with a specific ID
+        if (response.deviceId != "0000000000000000" && response.deviceId != deviceId) {
+            Log.i(TAG, "Updating deviceId from robot response: ${response.deviceId}")
+            deviceId = response.deviceId
+        }
+
+        Log.d(TAG, "Response: cmd=0x${response.cmd.toString(16)} status=0x${response.status.toString(16)} payload=${response.payload.toHex()}")
+        
+        when (response.cmd) {
+            0x81 -> { // PATTERN_ACK
+                if (_statusMessage.value?.startsWith("Playing") != true) {
+                    _statusMessage.value = "Pattern accepted"
+                }
+            }
+            0x84 -> { // PRE_ACK
+                if (_statusMessage.value?.startsWith("Playing") != true) {
+                    _statusMessage.value = "Preparing robot..."
+                }
+            }
+            0x85 -> { // FIRMWARE
+                val version = response.firmwareVersion
+                Log.i(TAG, "Robot Firmware: $version")
+                _firmwareVersion.value = version
+                if (version != null && isLegacyFirmware(version)) {
+                    Log.w(TAG, "Legacy firmware detected ($version) but profile is set to ${activeRobotType}. Consider switching to V1.")
+                }
+            }
+            0x83 -> { // POST_ACK
+                Log.d(TAG, "Post-pattern acknowledged")
+            }
+            RobotProtocol.RESP_PATTERN_DONE, 0x82 -> { // 0x8F or 0x82
+                if (!patternActive) {
+                    if (response.cmd == 0x82) {
+                        Log.i(TAG, "Robot reported 0x82 (stopped)")
+                        finishDrill()
+                    }
+                    return
+                }
+
+                Log.i(TAG, "Robot reported drill complete (0x${response.cmd.toString(16)})")
+                finishDrill()
+            }
+        }
+    }
+
+    private suspend fun finishDrill() {
+        if (!patternActive && _statusMessage.value == "Connected to ${_deviceName.value}") return
+        
+        patternActive = false
+        currentPatternPayload = null
+        keepaliveJob?.cancel()
+        
+        _statusMessage.value = "Cleaning up..."
+        sendFrame(RobotProtocol.buildPostPatternFrame(deviceId))
+        delay(1000)
+        
+        // Re-handshake to ensure clean state
+        sendFrame(RobotProtocol.buildConnectFrame(deviceId))
+        _statusMessage.value = "Connected to ${_deviceName.value}"
+        onPatternDone?.invoke()
     }
 
     suspend fun sendFrame(frame: ByteArray) {
         val char = writeChar
         val g = gatt
         if (char == null || g == null) {
-            Log.e(TAG, "sendFrame: not connected (char=$char gatt=$g)")
+            Log.e(TAG, "sendFrame: not connected")
             return
         }
 
-        Log.i(TAG, "sendFrame: ${frame.size} bytes, splitting into ${RobotProtocol.splitIntoChunks(frame).size} chunks")
         val chunks = RobotProtocol.splitIntoChunks(frame)
         for ((i, chunk) in chunks.withIndex()) {
-            Log.d(TAG, "  chunk[$i/${chunks.size}] (${chunk.size} bytes): ${chunk.toHex()}")
-
             writeCompletion = CompletableDeferred()
             char.value = chunk
-
-            // HCI snoop confirms: original app uses WRITE_CMD (no response) opcode 0x52
-            char.writeType = BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
-            val success = g.writeCharacteristic(char)
-            if (!success) {
-                Log.e(TAG, "  writeCharacteristic returned false for chunk $i!")
+            
+            // Protocol says: Use ATT Write Command (Write Without Response)
+            val hasWriteNoResp = char.properties and BluetoothGattCharacteristic.PROPERTY_WRITE_NO_RESPONSE != 0
+            char.writeType = if (hasWriteNoResp) {
+                BluetoothGattCharacteristic.WRITE_TYPE_NO_RESPONSE
+            } else {
+                BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT
             }
-            delay(5) // 5ms between chunks
+            
+            val success = g.writeCharacteristic(char)
+            if (success && char.writeType == BluetoothGattCharacteristic.WRITE_TYPE_DEFAULT) {
+                withTimeoutOrNull(1000) { writeCompletion?.await() }
+            }
+            // Essential delay for robot processing
+            delay(30)
         }
-        Log.i(TAG, "sendFrame: all chunks sent")
     }
 
     private suspend fun sendFrameToChar(frame: ByteArray, char: BluetoothGattCharacteristic) {
@@ -486,50 +567,54 @@ class RobotManager(private val context: Context) {
 
     suspend fun sendBasicDrill(payload: ByteArray, reps: Int = 1) {
         Log.i(TAG, "sendBasicDrill: payload ${payload.size} bytes, reps=$reps")
+        
         currentPatternPayload = payload
-        remainingReps = (reps - 1).coerceAtLeast(0)
+        totalReps = reps
+        remainingReps = 0 // Hardware handles repetitions
         patternActive = true
 
-        // Sequence captured from HCI snoop of original app:
-        // 1. Stop any existing pattern
+        // Sequence for firmware compatibility:
         Log.i(TAG, "sendBasicDrill: stop existing")
-        sendFrame(RobotProtocol.buildStopFrame(deviceId))
-        delay(300)
+        sendFrame(RobotProtocol.buildStopFrame(deviceId, activeRobotType))
+        delay(500)
 
-        // 2. Pre-pattern setup (cmd 0x04, payload 0x02)
         Log.i(TAG, "sendBasicDrill: pre-pattern 0x04")
         sendFrame(RobotProtocol.buildPrePatternFrame(deviceId))
-        delay(200)
+        delay(500)
 
-        // 3. Send pattern (cmd 0x01)
+        _statusMessage.value = "Playing... (Total $reps reps)"
+        
+        // Use CMD_PATTERN (0x01) for basic drills
         val frame = RobotProtocol.buildFrame(deviceId, RobotProtocol.CMD_PATTERN, payload)
         Log.i(TAG, "sendBasicDrill: pattern 0x01, ${frame.size} bytes: ${frame.toHex()}")
         sendFrame(frame)
 
-        // 4. Start keepalive (0x04 every 5s, like original app)
         startKeepalive()
     }
 
     suspend fun sendAdvancedDrill(payload: ByteArray, reps: Int = 1) {
         Log.i(TAG, "sendAdvancedDrill: payload ${payload.size} bytes, reps=$reps")
+        
         currentPatternPayload = payload
-        remainingReps = 0  // robot handles advanced drill reps internally
+        totalReps = reps
+        remainingReps = 0 // Hardware handles repetitions
         patternActive = true
 
-        // Same sequence as basic: stop → pre-pattern → pattern
         Log.i(TAG, "sendAdvancedDrill: stop existing")
-        sendFrame(RobotProtocol.buildStopFrame(deviceId))
-        delay(300)
+        sendFrame(RobotProtocol.buildStopFrame(deviceId, activeRobotType))
+        delay(500)
 
         Log.i(TAG, "sendAdvancedDrill: pre-pattern 0x04")
         sendFrame(RobotProtocol.buildPrePatternFrame(deviceId))
-        delay(200)
+        delay(500)
 
+        _statusMessage.value = "Playing... (Total $reps reps)"
+
+        // Use CMD_PATTERN (0x01) for advanced drills as well on this firmware
         val frame = RobotProtocol.buildFrame(deviceId, RobotProtocol.CMD_PATTERN, payload)
         Log.i(TAG, "sendAdvancedDrill: pattern 0x01, ${frame.size} bytes: ${frame.toHex()}")
         sendFrame(frame)
 
-        // Start keepalive
         startKeepalive()
     }
 
@@ -546,35 +631,26 @@ class RobotManager(private val context: Context) {
         }
     }
 
-    private var stopJob: kotlinx.coroutines.Job? = null
-    @Volatile private var stopConfirmed = false
-
     suspend fun stop() {
-        Log.i(TAG, "Sending STOP — repeating until 0x82 confirmation")
-        keepaliveJob?.cancel()
-        keepaliveJob = null
-        drillJob?.cancel()
-        drillJob = null
+        Log.i(TAG, "Stopping drill for ID: $deviceId")
+
+        // Immediate UI/State update
         patternActive = false
         currentPatternPayload = null
-        remainingReps = 0
-        stopConfirmed = false
+        drillJob?.cancel()
+        drillJob = null
+        keepaliveJob?.cancel()
 
-        // Keep sending stop sequence every 500ms until robot confirms with 0x82
-        stopJob?.cancel()
-        stopJob = scope.launch {
-            repeat(20) { // max 10 seconds
-                if (stopConfirmed) return@launch
-                Log.i(TAG, "Stop attempt ${it + 1}")
-                sendFrame(RobotProtocol.buildFrame(deviceId, 0x04, byteArrayOf(0x02)))
-                delay(50)
-                sendFrame(RobotProtocol.buildFrame(deviceId, 0x99.toByte(), byteArrayOf(0)))
-                delay(100)
-                sendFrame(RobotProtocol.buildFrame(deviceId, 0x03, byteArrayOf(0)))
-                delay(350)
-            }
+        scope.launch {
+            // POST_PATTERN (0x03) is the only command that halts a drill while it is firing: the
+            // firmware drives its shot loop to the "done" state (state == 3) only on 0x03, which is
+            // exactly what the original app sends to stop. 0x05 (old V2 stop) and 0x99 (abort flag)
+            // are both ignored by the running shot loop, and the re-handshake that finishDrill()
+            // does (CONNECT 0x89) can re-arm the pattern — so stop sends 0x03 alone, no reconnect.
+            sendFrame(RobotProtocol.buildPostPatternFrame(deviceId))
+            _statusMessage.value = "Connected to ${_deviceName.value}"
+            onPatternDone?.invoke()
         }
-        _statusMessage.value = "Stopping..."
     }
 
     fun disconnect() {
@@ -602,6 +678,15 @@ class RobotManager(private val context: Context) {
     fun destroy() {
         disconnect()
         scope.cancel()
+    }
+
+    private fun isLegacyFirmware(version: String): Boolean {
+        // Firmware format is "MM.mm" e.g. "01.13"
+        val parts = version.split(".")
+        if (parts.size != 2) return false
+        val major = parts[0].toIntOrNull() ?: return false
+        val minor = parts[1].toIntOrNull() ?: return false
+        return major < 1 || (major == 1 && minor <= 13)
     }
 }
 

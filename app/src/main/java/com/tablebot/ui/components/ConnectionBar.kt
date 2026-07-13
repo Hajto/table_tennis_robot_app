@@ -20,6 +20,7 @@ fun ConnectionBar(
     state: ConnectionState,
     deviceName: String?,
     statusMessage: String?,
+    firmwareVersion: String?,
     isPlaying: Boolean,
     currentTrainingName: String?,
     onScanClick: () -> Unit,
@@ -75,6 +76,12 @@ fun ConnectionBar(
             if (state == ConnectionState.CONNECTED && isPlaying) {
                 Text(
                     text = deviceName ?: "",
+                    color = contentColor.copy(alpha = 0.7f),
+                    style = MaterialTheme.typography.bodySmall,
+                )
+            } else if (state == ConnectionState.CONNECTED && firmwareVersion != null) {
+                Text(
+                    text = "Firmware $firmwareVersion",
                     color = contentColor.copy(alpha = 0.7f),
                     style = MaterialTheme.typography.bodySmall,
                 )

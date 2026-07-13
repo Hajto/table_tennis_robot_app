@@ -9,6 +9,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,12 +45,24 @@ class AdvancedEditorState(
     var skillLevel: SkillLevel = initial?.skillLevel ?: SkillLevel()
     var tags by mutableStateOf(initial?.tags ?: emptyList())
 
+    // Indices of ball entries whose settings panel is expanded (hoisted from BallEntryEditor
+    // so expansion survives navigation and drives the calibration seed).
+    private val _expandedIndices = mutableStateListOf<Int>()
+    val expandedIndices: List<Int> get() = _expandedIndices
+
+    fun isExpanded(index: Int): Boolean = index in _expandedIndices
+    fun toggleExpanded(index: Int) {
+        if (!_expandedIndices.remove(index)) _expandedIndices.add(index)
+    }
+    fun lastExpandedIndex(): Int? = _expandedIndices.maxOrNull()
+
     fun loadFrom(training: AdvancedTraining) {
         id = training.id
         name = training.name
         repeatNum = training.repeatNum
         repeatDelay = training.repeatDelay
         ballList = training.ballList
+        _expandedIndices.clear()
         isFavourite = training.isFavourite
         skillLevel = training.skillLevel
         tags = training.tags
@@ -80,6 +93,9 @@ class AdvancedEditorState(
     fun removeBall(index: Int) {
         if (ballList.size > 1) {
             ballList = ballList.toMutableList().apply { removeAt(index) }
+            // Remove the deleted ball's flag and shift higher indices down by one.
+            val shifted = _expandedIndices.filter { it != index }.map { if (it > index) it - 1 else it }
+            _expandedIndices.clear(); _expandedIndices.addAll(shifted)
         }
     }
 
@@ -88,6 +104,11 @@ class AdvancedEditorState(
         ballList = ballList.toMutableList().apply {
             java.util.Collections.swap(this, from, to)
         }
+        val fromExp = from in _expandedIndices
+        val toExp = to in _expandedIndices
+        _expandedIndices.remove(from); _expandedIndices.remove(to)
+        if (toExp) _expandedIndices.add(from)
+        if (fromExp) _expandedIndices.add(to)
     }
 }
 
@@ -214,6 +235,8 @@ fun AdvancedEditorContent(
                         { state.moveBall(index, index + 1) }
                     } else null,
                     motorConfig = motorConfig,
+                    expanded = state.isExpanded(index),
+                    onToggleExpanded = { state.toggleExpanded(index) },
                 )
             }
         }
@@ -293,9 +316,9 @@ private fun BallEntryEditor(
     onMoveUp: (() -> Unit)?,
     onMoveDown: (() -> Unit)?,
     motorConfig: MotorConfig? = null,
+    expanded: Boolean,
+    onToggleExpanded: () -> Unit,
 ) {
-    var expanded by remember { mutableStateOf(false) }
-
     val constraints = rememberMotorConstraints(
         ball = entry.ball, spin = entry.spin, power = entry.power,
         points = entry.points, motorConfig = motorConfig,
@@ -347,7 +370,7 @@ private fun BallEntryEditor(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                IconButton(onClick = { expanded = !expanded }) {
+                IconButton(onClick = onToggleExpanded) {
                     Icon(
                         if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
                         "Toggle",

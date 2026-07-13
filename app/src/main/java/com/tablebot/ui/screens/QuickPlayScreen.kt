@@ -1,7 +1,5 @@
 package com.tablebot.ui.screens
 
-import android.Manifest
-import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
@@ -21,6 +19,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.tablebot.ble.BlePermissions
 import com.tablebot.ble.ConnectionState
 import androidx.compose.material.icons.filled.SwapHoriz
 import com.tablebot.data.*
@@ -30,6 +29,7 @@ import com.tablebot.ui.components.ProfileSwitcherDialog
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun QuickPlayScreen(
+    draft: com.tablebot.viewmodel.QuickPlayDraftViewModel,
     // Robot control
     motorConfig: MotorConfig?,
     connected: Boolean,
@@ -42,6 +42,7 @@ fun QuickPlayScreen(
     connectionState: ConnectionState,
     deviceName: String?,
     statusMessage: String?,
+    firmwareVersion: String?,
     currentTrainingName: String?,
     onScan: () -> Unit,
     onDisconnect: () -> Unit,
@@ -69,22 +70,27 @@ fun QuickPlayScreen(
     profileIndex: ProfileIndex? = null,
     onSwitchProfile: (String) -> Unit = {},
     onEditProfile: (String) -> Unit = {},
-    onCreateProfile: () -> Unit = {},
+    onCreateProfile: (name: String, robotType: com.tablebot.data.RobotType) -> Unit = { _, _ -> },
     reopenProfileSwitcher: Boolean = false,
     scrollToProfileId: String = "",
     profileErrorFlow: kotlinx.coroutines.flow.Flow<String>? = null,
     importStatusFlow: kotlinx.coroutines.flow.Flow<String>? = null,
 ) {
-    // Mode: 0 = Basic, 1 = Advanced
-    var mode by remember { mutableIntStateOf(0) }
+    // Editing state lives in the activity-scoped draft VM so it survives navigation + rotation.
+    var mode by draft::mode
+    val basicState = draft.basicState
+    val advancedState = draft.advancedState
+    var loadedBasicId by draft::loadedBasicId
+    var loadedAdvancedId by draft::loadedAdvancedId
 
-    // Basic state
-    val basicState = rememberDrillEditorState(initial = null, id = nextBasicId())
-    var loadedBasicId by remember { mutableStateOf<Int?>(null) }
-
-    // Advanced state
-    val advancedState = rememberAdvancedEditorState(initial = null, id = nextAdvancedId())
-    var loadedAdvancedId by remember { mutableStateOf<Int?>(null) }
+    // Assign real next ids once (VM constructed the states with a placeholder id).
+    LaunchedEffect(Unit) {
+        if (!draft.idsInitialized) {
+            if (loadedBasicId == null) basicState.id = nextBasicId()
+            if (loadedAdvancedId == null) advancedState.id = nextAdvancedId()
+            draft.idsInitialized = true
+        }
+    }
 
     var showTrainingSheet by remember { mutableStateOf(false) }
     var showSaveDialog by remember { mutableStateOf(false) }
@@ -107,21 +113,7 @@ fun QuickPlayScreen(
         permissionsGranted = results.values.all { it }
         if (permissionsGranted) onScan()
     }
-    val requiredPermissions = remember {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            arrayOf(
-                Manifest.permission.BLUETOOTH_SCAN,
-                Manifest.permission.BLUETOOTH_CONNECT,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-            )
-        } else {
-            arrayOf(
-                Manifest.permission.BLUETOOTH,
-                Manifest.permission.BLUETOOTH_ADMIN,
-                Manifest.permission.ACCESS_FINE_LOCATION,
-            )
-        }
-    }
+    val requiredPermissions = remember { BlePermissions.required() }
     fun handleScan() {
         if (permissionsGranted) onScan()
         else permissionLauncher.launch(requiredPermissions)
@@ -286,9 +278,9 @@ fun QuickPlayScreen(
                 showProfileSwitcher = false
                 onEditProfile(id)
             },
-            onAddProfile = {
+            onAddProfile = { name, robotType ->
                 showProfileSwitcher = false
-                onCreateProfile()
+                onCreateProfile(name, robotType)
             },
             onDismiss = { showProfileSwitcher = false },
         )
@@ -325,7 +317,11 @@ fun QuickPlayScreen(
                         ) {
                             DropdownMenuItem(
                                 text = { Text("Calibration") },
-                                onClick = { menuExpanded = false; onCalibrate() },
+                                onClick = {
+                                    menuExpanded = false
+                                    draft.calibrationSeed = com.tablebot.viewmodel.calibrationSeed(mode, basicState, advancedState)
+                                    onCalibrate()
+                                },
                             )
                             if (debugMode) {
                                 DropdownMenuItem(
@@ -352,6 +348,7 @@ fun QuickPlayScreen(
                     state = connectionState,
                     deviceName = deviceName,
                     statusMessage = statusMessage,
+                    firmwareVersion = firmwareVersion,
                     isPlaying = isPlaying,
                     currentTrainingName = currentTrainingName,
                     onScanClick = ::handleScan,
