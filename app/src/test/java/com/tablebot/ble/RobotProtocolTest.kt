@@ -1,5 +1,7 @@
 package com.tablebot.ble
 
+import com.tablebot.data.AdvancedTraining
+import com.tablebot.data.BallEntry
 import com.tablebot.data.BasicTraining
 import com.tablebot.data.LandType
 import com.tablebot.data.MotorParams
@@ -208,6 +210,76 @@ class RobotProtocolTest {
         val buf = RobotProtocol.encodeBasicPattern(drill, lookup = nullLookup)
         for (i in drill.points.indices) {
             assertEquals("point $i byte9 groupSize", 1.toByte(), buf[i * 12 + 9])
+        }
+    }
+
+    // ── Advanced random-mode pattern encoding ────────────────────────────────────
+
+    private fun ballEntry(random: Int, points: List<Point>, ball: Int = 1, spin: Int = 2, power: Int = 2) =
+        BallEntry(ball = ball, spin = spin, power = power, points = points, ballTime = 9, random = random)
+
+    private fun advancedTraining(vararg entries: BallEntry) =
+        AdvancedTraining(id = 1, name = "adv", repeatNum = 10, repeatDelay = 1, ballList = entries.toList())
+
+    @Test
+    fun `encodeAdvancedPattern random entry sets byte7 and byte11 but leaves byte10 clear`() {
+        val training = advancedTraining(ballEntry(random = 1, points = listOf(Point(6, 2), Point(7, 2), Point(8, 2))))
+        val buf = RobotProtocol.encodeAdvancedPattern(training, lookup = nullLookup)
+        for (i in 0 until 3) {
+            val off = i * 12
+            assertEquals("point $i byte7", 0x80.toByte(), buf[off + 7])
+            assertEquals("point $i byte9 groupSize", 1.toByte(), buf[off + 9])
+            assertEquals("point $i byte10 must stay 0 on advanced path", 0.toByte(), buf[off + 10])
+            assertEquals("point $i byte11 random-trigger", 1.toByte(), buf[off + 11])
+        }
+    }
+
+    @Test
+    fun `encodeAdvancedPattern non-random entry leaves all random flags clear`() {
+        val training = advancedTraining(ballEntry(random = 0, points = listOf(Point(3, 2), Point(8, 2))))
+        val buf = RobotProtocol.encodeAdvancedPattern(training, lookup = nullLookup)
+        for (i in 0 until 2) {
+            val off = i * 12
+            assertEquals("point $i byte7", 0.toByte(), buf[off + 7])
+            assertEquals("point $i byte10", 0.toByte(), buf[off + 10])
+            assertEquals("point $i byte11", 0.toByte(), buf[off + 11])
+        }
+    }
+
+    @Test
+    fun `encodeAdvancedPattern mixes in-order serve with random loop per entry`() {
+        // Entry 0: in-order serve (1 point). Entry 1: random loop (2 points).
+        val training = advancedTraining(
+            ballEntry(random = 0, points = listOf(Point(8, 2)), ball = 0),
+            ballEntry(random = 1, points = listOf(Point(6, 2), Point(10, 2))),
+        )
+        val buf = RobotProtocol.encodeAdvancedPattern(training, lookup = nullLookup)
+        // Point 0 (serve) — flags clear
+        assertEquals("serve byte7", 0.toByte(), buf[7])
+        assertEquals("serve byte11", 0.toByte(), buf[11])
+        // Points 1 and 2 (random loop) — flags set, byte10 clear
+        for (i in 1 until 3) {
+            val off = i * 12
+            assertEquals("loop point $i byte7", 0x80.toByte(), buf[off + 7])
+            assertEquals("loop point $i byte10", 0.toByte(), buf[off + 10])
+            assertEquals("loop point $i byte11", 1.toByte(), buf[off + 11])
+        }
+    }
+
+    @Test
+    fun `encodeAdvancedPattern regression - Half Long FH Loop preset shape randomizes all points`() {
+        // Mirrors the bundled "Half Long 2/3 FH Loop" preset: random=1 with 10 points.
+        val points = listOf(
+            Point(6, 1), Point(6, 2), Point(7, 1), Point(7, 2), Point(8, 2),
+            Point(8, 3), Point(9, 2), Point(9, 3), Point(10, 2), Point(10, 3),
+        )
+        val training = advancedTraining(ballEntry(random = 1, points = points))
+        val buf = RobotProtocol.encodeAdvancedPattern(training, lookup = nullLookup)
+        assertEquals("payload size", points.size * 12 + 4, buf.size)
+        for (i in points.indices) {
+            val off = i * 12
+            assertEquals("point $i byte7", 0x80.toByte(), buf[off + 7])
+            assertEquals("point $i byte11", 1.toByte(), buf[off + 11])
         }
     }
 

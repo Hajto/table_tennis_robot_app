@@ -210,16 +210,19 @@ object RobotProtocol {
 
     fun encodeAdvancedPattern(
         training: AdvancedTraining,
-        motorConfig: MotorConfig,
         repeatNumOverride: Int? = null,
         repeatDelayOverride: Int? = null,
+        lookup: (ball: Int, spin: Int, power: Int, cell: Int) -> MotorParams?,
     ): ByteArray {
         val effectiveRepeatNum = repeatNumOverride ?: training.repeatNum
         val effectiveRepeatDelay = repeatDelayOverride ?: training.repeatDelay
         val allPoints = mutableListOf<ByteArray>()
         for (entry in training.ballList) {
+            // Advanced path: the per-ball randomness marker is `random`, not landType.
+            // Random points get b7=0x80 and b11=1 but b10 stays 0 (basic uses b10=2). See PROTOCOL.md.
+            val isRandom = entry.random == 1
             for (p in entry.points) {
-                val params = motorConfig.lookup(entry.ball, entry.spin, entry.power, p.x)
+                val params = lookup(entry.ball, entry.spin, entry.power, p.x)
                 val buf = ByteArray(12)
                 buf[0] = (params?.m1speed ?: 0).toByte()
                 buf[1] = (params?.m2speed ?: 0).toByte()
@@ -228,11 +231,11 @@ object RobotProtocol {
                 buf[4] = (params?.zaxis ?: 0).toByte()
                 buf[5] = 0  // repeatDelay high
                 buf[6] = (effectiveRepeatDelay.coerceAtLeast(1) and 0xFF).toByte()
-                buf[7] = 0
+                buf[7] = if (isRandom) 0x80.toByte() else 0
                 buf[8] = (entry.ballTime and 0xFF).toByte()
                 buf[9] = 1
                 buf[10] = 0
-                buf[11] = 0
+                buf[11] = if (isRandom) 1 else 0
                 allPoints.add(buf)
             }
         }
@@ -248,6 +251,15 @@ object RobotProtocol {
         payload[trailerOff + 3] = 0
 
         return payload
+    }
+
+    fun encodeAdvancedPattern(
+        training: AdvancedTraining,
+        motorConfig: MotorConfig,
+        repeatNumOverride: Int? = null,
+        repeatDelayOverride: Int? = null,
+    ): ByteArray = encodeAdvancedPattern(training, repeatNumOverride, repeatDelayOverride) { ball, spin, power, cell ->
+        motorConfig.lookup(ball, spin, power, cell)
     }
 
     fun splitIntoChunks(frame: ByteArray, mtu: Int = BLE_MTU): List<ByteArray> {
