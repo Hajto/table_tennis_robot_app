@@ -33,10 +33,6 @@ import com.tablebot.ui.components.ConnectionBar
 import com.tablebot.ui.components.StepSlider
 import com.tablebot.viewmodel.RobotViewModel
 import com.tablebot.viewmodel.interpolateCell
-import com.tablebot.viewmodel.rowLeftCell
-import com.tablebot.viewmodel.rowMiddleCells
-import com.tablebot.viewmodel.rowOf
-import com.tablebot.viewmodel.rowRightCell
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -352,49 +348,60 @@ fun CalibrationScreen(
                         }
                     }
 
-                    // ── PoC (toggled in Settings, off by default): infer this row's middle
-                    //    cells by interpolating between its two hand-calibrated ends ──
+                    // ── PoC (toggled in Settings, off by default): infer a row's middle cells by
+                    //    interpolating between its two hand-calibrated ends. One button per row
+                    //    whose left (col 1) and right (col 5) ends are both calibrated. ──
                     if (inferRowEnabled) {
-                        var pocMessage by remember(selectedCell) { mutableStateOf<String?>(null) }
-                        val rowNum = rowOf(selectedCell!!) + 1
-                        val leftEnd = rowLeftCell(selectedCell!!)
-                        val rightEnd = rowRightCell(selectedCell!!)
-                        OutlinedButton(
-                            onClick = {
-                                scope.launch {
-                                    // Capture the end you're currently editing: slider changes aren't
-                                    // saved until Accept, so without this the infer would read the stale
-                                    // saved value and the reload would snap the slider back (the "reset").
-                                    if (dirty) {
-                                        robotVm.saveMotorParams(buildParams())
-                                        dirty = false
-                                    }
-                                    val mc = robotVm.motorConfig
-                                    val left = mc.lookup(ball, spin, power, leftEnd)
-                                    val right = mc.lookup(ball, spin, power, rightEnd)
-                                    if (left == null || right == null) {
-                                        pocMessage = "Set + Accept both ends first — cells $leftEnd and $rightEnd."
-                                    } else {
-                                        val filled = mutableListOf<Int>()
-                                        for (mid in rowMiddleCells(selectedCell!!)) {
-                                            val base = mc.lookup(ball, spin, power, mid) ?: MotorParams(
-                                                id = mc.nextId(), ball = ball, spin = spin, power = power,
-                                                landarea = mid, m1speed = 0, m2speed = 0, xaxis = 0, yaxis = 0, zaxis = 0,
-                                            )
-                                            robotVm.saveMotorParams(interpolateCell(left, right, base))
-                                            filled += mid
+                        var pocMessage by remember { mutableStateOf<String?>(null) }
+                        val availableRows = (0..2).filter { r ->
+                            motorConfig.lookup(ball, spin, power, r * 5 + 1) != null &&
+                                motorConfig.lookup(ball, spin, power, r * 5 + 5) != null
+                        }
+                        if (availableRows.isEmpty()) {
+                            Text(
+                                "Infer row: calibrate both ends (columns 1 and 5) of a row to enable.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        availableRows.forEach { r ->
+                            val leftEnd = r * 5 + 1
+                            val rightEnd = r * 5 + 5
+                            OutlinedButton(
+                                onClick = {
+                                    scope.launch {
+                                        // Capture the end currently being edited: slider changes
+                                        // aren't saved until Accept, so without this the infer would
+                                        // read the stale saved value (the earlier "reset" bug).
+                                        if (dirty) {
+                                            robotVm.saveMotorParams(buildParams())
+                                            dirty = false
                                         }
-                                        robotVm.reloadMotorConfig()
-                                        loadParams()
-                                        pocMessage = "Filled ${filled.joinToString(", ")} from ends " +
-                                            "$leftEnd(m1=${left.m1speed * 225}) ↔ $rightEnd(m1=${right.m1speed * 225}). " +
-                                            "Ends kept. Play to test; Reset to Factory Defaults to undo."
+                                        val mc = robotVm.motorConfig
+                                        val left = mc.lookup(ball, spin, power, leftEnd)
+                                        val right = mc.lookup(ball, spin, power, rightEnd)
+                                        if (left == null || right == null) {
+                                            pocMessage = "Set + Accept both ends first — cells $leftEnd and $rightEnd."
+                                        } else {
+                                            val mids = listOf(r * 5 + 2, r * 5 + 3, r * 5 + 4)
+                                            for (mid in mids) {
+                                                val base = mc.lookup(ball, spin, power, mid) ?: MotorParams(
+                                                    id = mc.nextId(), ball = ball, spin = spin, power = power,
+                                                    landarea = mid, m1speed = 0, m2speed = 0, xaxis = 0, yaxis = 0, zaxis = 0,
+                                                )
+                                                robotVm.saveMotorParams(interpolateCell(left, right, base))
+                                            }
+                                            robotVm.reloadMotorConfig()
+                                            loadParams()
+                                            pocMessage = "Row ${r + 1}: filled ${mids.joinToString(", ")} from ends " +
+                                                "$leftEnd(m1=${left.m1speed * 225}) ↔ $rightEnd(m1=${right.m1speed * 225})."
+                                        }
                                     }
-                                }
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) {
-                            Text("⚡ Infer row $rowNum middle from ends ($leftEnd↔$rightEnd)")
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                            ) {
+                                Text("⚡ Infer row ${r + 1} middle ($leftEnd↔$rightEnd)")
+                            }
                         }
                         pocMessage?.let {
                             Text(
