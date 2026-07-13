@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -24,27 +23,24 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import kotlin.math.roundToInt
 
 /**
- * A flip-clock-style duration picker. Two reels (minutes, seconds) that you drag up/down to set;
- * dragging up increases the value. The combined mm:ss is clamped to [minSec, maxSec] and reported
- * as whole seconds via [onDurationChange].
+ * A drag-to-set duration picker: two columns (minutes, seconds) of numbers with the selected
+ * value in the centre. **Pull down to increase, up to decrease.** The combined mm:ss is clamped
+ * to [minSec, maxSec] and reported as whole seconds via [onDurationChange].
  */
 @Composable
 fun DurationWheelPicker(
     durationSec: Int,
     onDurationChange: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    minSec: Int = 15,
+    minSec: Int = 1,
     maxSec: Int = 30 * 60,
 ) {
     val mm = durationSec / 60
@@ -57,7 +53,7 @@ fun DurationWheelPicker(
             horizontalArrangement = Arrangement.Center,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            DigitReel(
+            NumberColumn(
                 value = mm,
                 range = 0..(maxSec / 60),
                 label = "min",
@@ -65,12 +61,12 @@ fun DurationWheelPicker(
             )
             Text(
                 ":",
-                fontSize = 34.sp,
-                fontWeight = FontWeight.Black,
+                fontSize = 32.sp,
+                fontWeight = FontWeight.Bold,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.padding(horizontal = 10.dp),
             )
-            DigitReel(
+            NumberColumn(
                 value = ss,
                 range = 0..59,
                 label = "sec",
@@ -80,86 +76,73 @@ fun DurationWheelPicker(
     }
 }
 
-private const val REEL_ITEM_HEIGHT_DP = 56
+private const val ITEM_HEIGHT_DP = 44
 
 @Composable
-private fun DigitReel(
+private fun NumberColumn(
     value: Int,
     range: IntRange,
     label: String,
     onChange: (Int) -> Unit,
 ) {
-    val stepPx = with(LocalDensity.current) { REEL_ITEM_HEIGHT_DP.dp.toPx() }
+    // Pixels of vertical drag per one unit of change.
+    val stepPx = with(LocalDensity.current) { 40.dp.toPx() }
     // Read the latest value/range inside the long-lived drag gesture without restarting it.
     val current by rememberUpdatedState(value)
     val rng by rememberUpdatedState(range)
-    var offset by remember { mutableStateOf(0f) }
-
-    val bg = MaterialTheme.colorScheme.inverseSurface
-    val fg = MaterialTheme.colorScheme.inverseOnSurface
+    // Derive the target from the total drag since the gesture started, so a fast drag advances
+    // by many units in one frame instead of getting stuck on a stale mid-gesture value.
+    var startValue by remember { mutableStateOf(value) }
+    var dragTotal by remember { mutableStateOf(0f) }
 
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Box(
             modifier = Modifier
-                .width(84.dp)
-                .height((REEL_ITEM_HEIGHT_DP * 3).dp)
+                .width(88.dp)
+                .height((ITEM_HEIGHT_DP * 3).dp)
                 .clip(RoundedCornerShape(16.dp))
-                .background(bg)
+                .background(MaterialTheme.colorScheme.surfaceVariant)
                 .pointerInput(Unit) {
                     detectVerticalDragGestures(
-                        onDragEnd = { offset = 0f },
-                        onDragCancel = { offset = 0f },
+                        onDragStart = { startValue = current; dragTotal = 0f },
                     ) { change, dy ->
                         change.consume()
-                        offset += dy
-                        // Drag up (negative dy) increases the value.
-                        while (offset <= -stepPx) {
-                            offset += stepPx
-                            if (current + 1 <= rng.last) onChange(current + 1) else offset = 0f
-                        }
-                        while (offset >= stepPx) {
-                            offset -= stepPx
-                            if (current - 1 >= rng.first) onChange(current - 1) else offset = 0f
-                        }
+                        dragTotal += dy // pull down (positive) increases
+                        val target = (startValue + (dragTotal / stepPx).toInt())
+                            .coerceIn(rng.first, rng.last)
+                        if (target != current) onChange(target)
                     }
                 },
             contentAlignment = Alignment.Center,
         ) {
-            // Five stacked rows (centre ± 2) translated by the live drag offset, clipped to 3 rows.
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.offset { IntOffset(0, offset.roundToInt()) },
-            ) {
-                for (rel in -2..2) {
+            // Selection band behind the centre number.
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(ITEM_HEIGHT_DP.dp)
+                    .align(Alignment.Center)
+                    .clip(RoundedCornerShape(10.dp))
+                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.12f)),
+            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                for (rel in -1..1) {
                     val n = value + rel
-                    val inRange = n in rng
-                    val (size, alpha) = when (kotlin.math.abs(rel)) {
-                        0 -> 34.sp to 1f
-                        1 -> 22.sp to 0.45f
-                        else -> 15.sp to 0.2f
-                    }
+                    val selected = rel == 0
                     Box(
-                        modifier = Modifier.height(REEL_ITEM_HEIGHT_DP.dp).width(84.dp),
+                        modifier = Modifier.height(ITEM_HEIGHT_DP.dp).width(88.dp),
                         contentAlignment = Alignment.Center,
                     ) {
                         Text(
-                            if (inRange) "%02d".format(n) else "",
-                            color = fg.copy(alpha = alpha),
-                            fontSize = size,
-                            fontWeight = if (rel == 0) FontWeight.Black else FontWeight.Medium,
+                            if (n in rng) "%02d".format(n) else "",
+                            color = if (selected) MaterialTheme.colorScheme.primary
+                            else MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                            fontSize = if (selected) 34.sp else 18.sp,
+                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
                             textAlign = TextAlign.Center,
                         )
                     }
                 }
             }
-            // Flip-clock seam across the middle of the current digit.
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(1.dp)
-                    .align(Alignment.Center)
-                    .background(Color.Black.copy(alpha = 0.25f)),
-            )
         }
         Spacer(Modifier.height(4.dp))
         Text(
