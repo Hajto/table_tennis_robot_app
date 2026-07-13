@@ -15,6 +15,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tablebot.data.*
 import com.tablebot.ui.components.PlayModeSelector
+import com.tablebot.ui.components.formatDurationMmSs
 import com.tablebot.ui.components.TableGrid
 import com.tablebot.ui.components.buildCellBallNumbers
 
@@ -180,7 +181,11 @@ private fun BasicTrainingCard(
                     DetailChip("Spin", SpinType.fromValue(training.spin).label)
                     DetailChip("Power", PowerType.fromValue(training.power).label)
                     DetailChip("Land", LandType.fromValue(training.landType).label)
-                    DetailChip("Reps", "${editT.times}")
+                    when (PlayMode.fromValue(editT.playMode)) {
+                        PlayMode.REPETITIONS -> DetailChip("Reps", "${editT.times}")
+                        PlayMode.BALL_COUNT -> DetailChip("Balls", "${editT.ballCount}")
+                        PlayMode.TIMED -> DetailChip("Time", formatDurationMmSs(editT.durationSec))
+                    }
                 }
 
                 // Play mode

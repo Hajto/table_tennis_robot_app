@@ -277,23 +277,7 @@ fun DrillEditorContent(
         // 3. Ball Interval
         StepSlider("Ball Interval", state.ballTime, 2..30) { state.ballTime = it }
 
-        // 4. Play Mode
-        Text("Play Mode", style = MaterialTheme.typography.labelLarge)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilterChip(
-                selected = true,
-                onClick = { },
-                label = { Text("Count") },
-            )
-            FilterChip(
-                selected = false,
-                onClick = { },
-                enabled = false,
-                label = { Text("Time (coming soon)") },
-            )
-        }
-
-        // 5. Repetitions
+        // 4. Play mode
         com.tablebot.ui.components.PlayModeSelector(
             playMode = state.playMode,
             reps = state.times,

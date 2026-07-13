@@ -11,6 +11,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.tablebot.data.PlayMode
 
+/** mm:ss for a whole-second duration (e.g. 90 -> "1:30"). */
+fun formatDurationMmSs(seconds: Int): String = "%d:%02d".format(seconds / 60, seconds % 60)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PlayModeSelector(
@@ -51,7 +54,7 @@ fun PlayModeSelector(
                 }
             }
             PlayMode.TIMED -> {
-                StepSlider("Duration (seconds)", durationSec, 15..1800, displayValue = { "%d:%02d".format(it / 60, it % 60) }) {
+                StepSlider("Duration (seconds)", durationSec, 15..1800, displayValue = { formatDurationMmSs(it) }) {
                     onDurationChange(it)
                 }
             }

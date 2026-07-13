@@ -93,13 +93,13 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
 
     fun disconnect() = robotManager.disconnect()
 
-    fun playBasicTraining(training: BasicTraining, ballTimeOverride: Int? = null) {
+    fun playBasicTraining(training: BasicTraining) {
         robotManager.drillJob?.cancel()
-        val ballTime = ballTimeOverride ?: training.ballTime
+        clearCountdown()
         val resolved = resolvePlay(
             PlayMode.fromValue(training.playMode),
             training.times, training.ballCount, training.durationSec,
-            ballsPerPatternBasic(training), ballTime,
+            ballsPerPatternBasic(training), patternDurationTenthsBasic(training),
         )
         // History logging is decoupled from the drill path: it runs in its own
         // coroutine so history I/O can never block or crash drill playback.
@@ -110,7 +110,7 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
                     trainingType = "basic",
                     trainingId = training.id,
                     timestamp = System.currentTimeMillis(),
-                    snapshot = DrillSnapshot.Basic(training, resolved.reps, ballTimeOverride),
+                    snapshot = DrillSnapshot.Basic(training, resolved.reps),
                     profileName = profile?.name,
                     robotType = profile?.robotType,
                 ))) {
@@ -121,19 +121,20 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
             _isPlaying.value = true
             _currentTrainingName.value = training.name
             val payload = RobotProtocol.encodeBasicPattern(
-                training, motorConfig, timesOverride = resolved.reps, ballTimeOverride = ballTimeOverride,
+                training, motorConfig, timesOverride = resolved.reps,
             )
             robotManager.sendBasicDrill(payload, reps = resolved.reps)
             resolved.timedDurationSec?.let { startTimedCountdown(it) }
         }
     }
 
-    fun playAdvancedTraining(training: AdvancedTraining, repeatDelayOverride: Int? = null) {
+    fun playAdvancedTraining(training: AdvancedTraining) {
         robotManager.drillJob?.cancel()
+        clearCountdown()
         val resolved = resolvePlay(
             PlayMode.fromValue(training.playMode),
             training.repeatNum, training.ballCount, training.durationSec,
-            ballsPerPatternAdvanced(training), /* ballTime for timed est */ firstBallTime(training),
+            ballsPerPatternAdvanced(training), patternDurationTenthsAdvanced(training),
         )
         // History logging is decoupled from the drill path: it runs in its own
         // coroutine so history I/O can never block or crash drill playback.
@@ -144,7 +145,7 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
                     trainingType = "advanced",
                     trainingId = training.id,
                     timestamp = System.currentTimeMillis(),
-                    snapshot = DrillSnapshot.Advanced(training, resolved.reps, repeatDelayOverride),
+                    snapshot = DrillSnapshot.Advanced(training, resolved.reps),
                     profileName = profile?.name,
                     robotType = profile?.robotType,
                 ))) {
@@ -155,14 +156,12 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
             _isPlaying.value = true
             _currentTrainingName.value = training.name
             val payload = RobotProtocol.encodeAdvancedPattern(
-                training, motorConfig, repeatNumOverride = resolved.reps, repeatDelayOverride = repeatDelayOverride,
+                training, motorConfig, repeatNumOverride = resolved.reps,
             )
             robotManager.sendAdvancedDrill(payload, reps = resolved.reps)
             resolved.timedDurationSec?.let { startTimedCountdown(it) }
         }
     }
-
-    private fun firstBallTime(t: AdvancedTraining): Int = t.ballList.firstOrNull()?.ballTime ?: 9
 
     private fun startTimedCountdown(durationSec: Int) {
         countdownJob?.cancel()

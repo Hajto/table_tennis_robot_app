@@ -56,7 +56,7 @@ fun StopOverlay(
             countdownSec?.let {
                 Spacer(Modifier.height(16.dp))
                 Text(
-                    "%d:%02d".format(it / 60, it % 60),
+                    formatDurationMmSs(it),
                     color = Color.White,
                     fontSize = 40.sp,
                     fontWeight = FontWeight.Bold,
