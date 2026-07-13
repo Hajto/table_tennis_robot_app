@@ -165,6 +165,97 @@ private fun IllustrationBallCard() {
 }
 
 @Composable
+private fun IllustrationWeightedGrid() {
+    // One ball card targeting 6, 8 and 10, with position 6 tapped twice (weighted x2).
+    val points = listOf(Point(6, 2), Point(8, 2), Point(10, 2))
+    val counts = mapOf(6 to listOf(2), 8 to listOf(1), 10 to listOf(1))
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        ),
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(
+                "Example: one ball card, position 6 weighted ×2",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(8.dp))
+            TableGrid(
+                selectedPoints = points,
+                cellBallNumbers = counts,
+            )
+        }
+    }
+}
+
+@Composable
+private fun IllustrationRandomTarget() {
+    // A ball card with three equally-weighted positions -> fires a random one each shot.
+    val points = listOf(Point(6, 2), Point(8, 2), Point(10, 2))
+    val counts = mapOf(6 to listOf(1), 8 to listOf(1), 10 to listOf(1))
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        ),
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(
+                "Example: a 3-position ball card fires to a random one each shot",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(8.dp))
+            TableGrid(
+                selectedPoints = points,
+                cellBallNumbers = counts,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "Randomises target (weighted by repeats)",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun IllustrationRandomOrder() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        ),
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(
+                "Example: Random order toggle (locked on for a multi-ball card)",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Random order", style = MaterialTheme.typography.labelMedium)
+                    Text(
+                        "Multi-ball steps are always randomised.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(checked = true, onCheckedChange = null, enabled = false)
+            }
+        }
+    }
+}
+
+@Composable
 private fun IllustrationTimingSlider() {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -410,8 +501,35 @@ val helpArticles: List<HelpArticle> = listOf(
             HelpSection.Heading("Per-Ball Settings"),
             HelpSection.Paragraph(
                 "Tap a ball card to expand it. Inside you can configure its ball type, spin, power, " +
-                "ball interval, and target positions independently of other balls."
+                "and ball interval independently of other balls, and choose its target positions."
             ),
+            HelpSection.Heading("Target positions and weighting"),
+            HelpSection.Paragraph(
+                "Under \"Target Points\", tap a grid cell to add a ball at that position; " +
+                "long-press a cell to remove one. A cell shows a count when it holds more than one ball. " +
+                "A single ball card can hold up to 5 balls (the \"N/5\" counter tracks this)."
+            ),
+            HelpSection.Paragraph(
+                "Tapping the same cell more than once weights it: a card with positions " +
+                "{A, A, B} lands on A twice as often as B. Duplicate taps raise a spot's odds."
+            ),
+            HelpSection.Illustration { IllustrationWeightedGrid() },
+            HelpSection.Heading("Randomising the target"),
+            HelpSection.Paragraph(
+                "To randomise the target, give a ball card more than one position: tap two or more " +
+                "grid cells (tap a cell again to weight it, and long-press a cell to remove one). " +
+                "A card with two or more positions then automatically fires to a randomly chosen " +
+                "one each time (\"Randomises target, weighted by repeats\"). " +
+                "A card with a single position always fires there."
+            ),
+            HelpSection.Illustration { IllustrationRandomTarget() },
+            HelpSection.Heading("Random order"),
+            HelpSection.Paragraph(
+                "The \"Random order\" toggle shuffles the order the ball cards fire in, rather than " +
+                "playing them top-to-bottom. Multi-position cards are always randomised, so the toggle " +
+                "is shown on and locked for them; it is freely settable on single-position cards."
+            ),
+            HelpSection.Illustration { IllustrationRandomOrder() },
             HelpSection.Heading("Sequence Overview"),
             HelpSection.Paragraph(
                 "The overview grid at the top shows all target positions with ball numbers, " +
