@@ -1,7 +1,7 @@
 package com.tablebot.viewmodel
 
-import com.tablebot.data.BallEntry
 import com.tablebot.data.Point
+import com.tablebot.data.Step
 import com.tablebot.ui.screens.AdvancedEditorState
 import com.tablebot.ui.screens.DrillEditorState
 import org.junit.Assert.assertEquals
@@ -15,13 +15,13 @@ class CalibrationSeedTest {
         s.points = if (cell == null) emptyList() else listOf(Point(cell, 2))
         return s
     }
-    private fun advanced(vararg balls: BallEntry): AdvancedEditorState {
+    private fun advanced(vararg balls: Step): AdvancedEditorState {
         val s = AdvancedEditorState(initial = null, id = 1)
-        s.ballList = balls.toList()
+        s.steps = balls.toList()
         return s
     }
     private fun ball(ball: Int, spin: Int, power: Int, cell: Int) =
-        BallEntry(ball = ball, spin = spin, power = power, points = listOf(Point(cell, 2)), ballTime = 9)
+        Step(ball = ball, spin = spin, power = power, balls = listOf(Point(cell, 2)), ballTime = 9)
 
     @Test fun `basic tab seeds from basic state`() {
         val seed = calibrationSeed(0, basic(0, 3, 1, 12), advanced(ball(1, 2, 2, 8)))

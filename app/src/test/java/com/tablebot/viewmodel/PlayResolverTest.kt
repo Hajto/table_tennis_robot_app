@@ -1,6 +1,6 @@
 package com.tablebot.viewmodel
 
-import com.tablebot.data.BallEntry
+import com.tablebot.data.Step
 import com.tablebot.data.BasicTraining
 import com.tablebot.data.AdvancedTraining
 import com.tablebot.data.PlayMode
@@ -14,10 +14,10 @@ class PlayResolverTest {
         assertEquals(3, ballsPerPatternBasic(t))
     }
 
-    @Test fun `ballsPerPattern advanced sums points across entries`() {
-        val t = AdvancedTraining(id = 1, name = "x", ballList = listOf(
-            BallEntry(points = listOf(Point(1, 2), Point(2, 2))),
-            BallEntry(points = listOf(Point(3, 2))),
+    @Test fun `ballsPerPattern advanced sums balls across steps`() {
+        val t = AdvancedTraining(id = 1, name = "x", steps = listOf(
+            Step(balls = listOf(Point(1, 2), Point(2, 2))),
+            Step(balls = listOf(Point(3, 2))),
         ))
         assertEquals(3, ballsPerPatternAdvanced(t))
     }
@@ -58,10 +58,10 @@ class PlayResolverTest {
         assertEquals(27, patternDurationTenthsBasic(t))
     }
 
-    @Test fun `pattern duration advanced sums points times per-entry ballTime`() {
-        val t = AdvancedTraining(id = 1, name = "x", ballList = listOf(
-            BallEntry(points = listOf(Point(1, 2)), ballTime = 20),
-            BallEntry(points = listOf(Point(2, 2), Point(3, 2), Point(4, 2), Point(5, 2), Point(6, 2)), ballTime = 5),
+    @Test fun `pattern duration advanced sums balls times per-step ballTime`() {
+        val t = AdvancedTraining(id = 1, name = "x", steps = listOf(
+            Step(balls = listOf(Point(1, 2)), ballTime = 20),
+            Step(balls = listOf(Point(2, 2), Point(3, 2), Point(4, 2), Point(5, 2), Point(6, 2)), ballTime = 5),
         ))
         assertEquals(45, patternDurationTenthsAdvanced(t))
     }

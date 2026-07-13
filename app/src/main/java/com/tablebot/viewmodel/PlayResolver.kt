@@ -8,12 +8,12 @@ import com.tablebot.data.PlayMode
 const val MAX_REPS = 255
 
 fun ballsPerPatternBasic(t: BasicTraining): Int = t.points.size
-fun ballsPerPatternAdvanced(t: AdvancedTraining): Int = t.ballList.sumOf { it.points.size }
+fun ballsPerPatternAdvanced(t: AdvancedTraining): Int = t.steps.sumOf { it.balls.size }
 
 /** Wall-clock length of one full pattern repetition, in tenths of a second. */
 fun patternDurationTenthsBasic(t: BasicTraining): Int = t.points.size * t.ballTime
 fun patternDurationTenthsAdvanced(t: AdvancedTraining): Int =
-    t.ballList.sumOf { it.points.size * it.ballTime }
+    t.steps.sumOf { it.balls.size * it.ballTime }
 
 /** reps to send to the firmware; timedDurationSec is non-null only for TIMED (stop the drill after it). */
 data class ResolvedPlay(val reps: Int, val timedDurationSec: Int?)

@@ -1,56 +1,43 @@
 [
   {
     "id": 123,
-    "uid": 0,
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "BH Push, BH Loop",
     "repeatNum": 10,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 0,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 14,
+        "balls": [
           {
             "x": 7,
             "y": 2
           }
         ],
-        "ballTime": 14,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 14,
+        "balls": [
           {
             "x": 12,
             "y": 2
           }
         ],
-        "ballTime": 14,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
     },
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
     "tags": [
       "Backhand",
       "Push",
@@ -60,52 +47,39 @@
   },
   {
     "id": 122,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "FH Push, FH Loop",
     "repeatNum": 10,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 0,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 14,
+        "balls": [
           {
             "x": 9,
             "y": 2
           }
         ],
-        "ballTime": 14,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 14,
+        "balls": [
           {
             "x": 14,
             "y": 2
           }
         ],
-        "ballTime": 14,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
@@ -119,56 +93,43 @@
   },
   {
     "id": 121,
-    "uid": 0,
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "BH Flick, BH Drive",
     "repeatNum": 14,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 2,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 14,
+        "balls": [
           {
             "x": 4,
             "y": 2
           }
         ],
-        "ballTime": 14,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 14,
+        "balls": [
           {
             "x": 14,
             "y": 2
           }
         ],
-        "ballTime": 14,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
     },
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
     "tags": [
       "Backhand",
       "Flick"
@@ -177,52 +138,39 @@
   },
   {
     "id": 120,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "FH Flick, FH Drive",
     "repeatNum": 10,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 2,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 14,
+        "balls": [
           {
             "x": 4,
             "y": 2
           }
         ],
-        "ballTime": 14,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 14,
+        "balls": [
           {
             "x": 14,
             "y": 2
           }
         ],
-        "ballTime": 14,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
@@ -235,52 +183,39 @@
   },
   {
     "id": 119,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "BH Loop, FH Drive",
     "repeatNum": 14,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 14,
+        "balls": [
           {
             "x": 12,
             "y": 2
           }
         ],
-        "ballTime": 14,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 14,
+        "balls": [
           {
             "x": 14,
             "y": 2
           }
         ],
-        "ballTime": 14,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
@@ -294,52 +229,39 @@
   },
   {
     "id": 118,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "FH Loop, BH Drive",
     "repeatNum": 10,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 14,
+        "balls": [
           {
             "x": 14,
             "y": 2
           }
         ],
-        "ballTime": 14,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 14,
+        "balls": [
           {
             "x": 14,
             "y": 2
           }
         ],
-        "ballTime": 14,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
@@ -353,56 +275,43 @@
   },
   {
     "id": 117,
-    "uid": 0,
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "BH Loop, BH Drive",
     "repeatNum": 10,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 14,
+        "balls": [
           {
             "x": 12,
             "y": 2
           }
         ],
-        "ballTime": 14,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 14,
+        "balls": [
           {
             "x": 12,
             "y": 2
           }
         ],
-        "ballTime": 14,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
     },
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
     "tags": [
       "Backhand",
       "Openup"
@@ -411,52 +320,39 @@
   },
   {
     "id": 116,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "FH Loop, FH Drive",
     "repeatNum": 10,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 14,
+        "balls": [
           {
             "x": 14,
             "y": 2
           }
         ],
-        "ballTime": 14,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 14,
+        "balls": [
           {
             "x": 14,
             "y": 2
           }
         ],
-        "ballTime": 14,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
@@ -469,68 +365,52 @@
   },
   {
     "id": 1,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "Default Pattern",
     "repeatNum": 2,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 0,
         "spin": 2,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 9,
+        "balls": [
           {
             "x": 8,
             "y": 3
           }
         ],
-        "ballTime": 9,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 3,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 9,
+        "balls": [
           {
             "x": 14,
             "y": 3
           }
         ],
-        "ballTime": 9,
-        "random": 1,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": true
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 9,
+        "balls": [
           {
             "x": 12,
             "y": 3
           }
         ],
-        "ballTime": 9,
-        "random": 1,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": true
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 1,
       "skillLevel": "Beginner"
@@ -543,76 +423,117 @@
   },
   {
     "id": 139,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "FH Flick, Random FH 2/3",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 5,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 2,
-        "landType": 3,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 15,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 15,
             "y": 1
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 14,
             "y": 1
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 14,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 13,
             "y": 1
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 13,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 12,
             "y": 3
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
@@ -627,52 +548,39 @@
   },
   {
     "id": 138,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "BH Flick, BH Drive",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 2,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 11,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
@@ -685,68 +593,52 @@
   },
   {
     "id": 137,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "BH Triangle Drill",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 3,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 3,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 11,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 15,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
@@ -759,68 +651,52 @@
   },
   {
     "id": 136,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "FH Triangle Drill",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 3,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 3,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 15,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 11,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
@@ -833,20 +709,17 @@
   },
   {
     "id": 135,
-    "uid": 0,
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "Half Long 2/3 FH Loop",
     "repeatNum": 15,
     "repeatDelay": 0,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 3,
         "power": 2,
-        "landType": 3,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 6,
             "y": 1
@@ -866,59 +739,16 @@
           {
             "x": 8,
             "y": 2
-          },
-          {
-            "x": 8,
-            "y": 3
-          },
-          {
-            "x": 9,
-            "y": 2
-          },
-          {
-            "x": 9,
-            "y": 3
-          },
-          {
-            "x": 10,
-            "y": 2
-          },
-          {
-            "x": 10,
-            "y": 3
           }
         ],
-        "ballTime": 10,
-        "random": 1,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 3,
         "power": 2,
-        "landType": 3,
-        "points": [
-          {
-            "x": 6,
-            "y": 1
-          },
-          {
-            "x": 6,
-            "y": 2
-          },
-          {
-            "x": 7,
-            "y": 1
-          },
-          {
-            "x": 7,
-            "y": 2
-          },
-          {
-            "x": 8,
-            "y": 2
-          },
+        "ballTime": 10,
+        "balls": [
           {
             "x": 8,
             "y": 3
@@ -940,21 +770,72 @@
             "y": 3
           }
         ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 3,
+        "power": 2,
         "ballTime": 10,
-        "random": 1,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "balls": [
+          {
+            "x": 6,
+            "y": 1
+          },
+          {
+            "x": 6,
+            "y": 2
+          },
+          {
+            "x": 7,
+            "y": 1
+          },
+          {
+            "x": 7,
+            "y": 2
+          },
+          {
+            "x": 8,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 3,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
+          {
+            "x": 8,
+            "y": 3
+          },
+          {
+            "x": 9,
+            "y": 2
+          },
+          {
+            "x": 9,
+            "y": 3
+          },
+          {
+            "x": 10,
+            "y": 2
+          },
+          {
+            "x": 10,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
     },
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
     "tags": [
       "Footwork",
       "Forehand",
@@ -965,140 +846,286 @@
   },
   {
     "id": 134,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "BH Flick, 2 Random Topspin",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 0,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 2,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 2,
-        "landType": 3,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 11,
             "y": 1
-          },
-          {
-            "x": 11,
-            "y": 2
-          },
-          {
-            "x": 12,
-            "y": 1
-          },
-          {
-            "x": 12,
-            "y": 2
-          },
-          {
-            "x": 13,
-            "y": 1
-          },
-          {
-            "x": 13,
-            "y": 2
-          },
-          {
-            "x": 14,
-            "y": 2
-          },
-          {
-            "x": 14,
-            "y": 3
-          },
-          {
-            "x": 15,
-            "y": 2
-          },
-          {
-            "x": 15,
-            "y": 3
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 2,
-        "landType": 3,
-        "points": [
-          {
-            "x": 11,
-            "y": 1
-          },
+        "ballTime": 10,
+        "balls": [
           {
             "x": 11,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 12,
             "y": 1
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 12,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 13,
             "y": 1
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 13,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 14,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 14,
             "y": 3
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 15,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 15,
             "y": 3
           }
         ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
         "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "balls": [
+          {
+            "x": 11,
+            "y": 1
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
+          {
+            "x": 11,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
+          {
+            "x": 12,
+            "y": 1
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
+          {
+            "x": 12,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
+          {
+            "x": 13,
+            "y": 1
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
+          {
+            "x": 13,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
+          {
+            "x": 14,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
+          {
+            "x": 14,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
+          {
+            "x": 15,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
+          {
+            "x": 15,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
@@ -1113,92 +1140,160 @@
   },
   {
     "id": 133,
-    "uid": 0,
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "FH Short Push, Random Loop",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 0,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 4,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 3,
         "power": 2,
-        "landType": 3,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 11,
             "y": 1
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 3,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 11,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 3,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 12,
             "y": 1
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 3,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 12,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 3,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 13,
             "y": 1
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 3,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 13,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 3,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 14,
             "y": 1
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 3,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 14,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 3,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 15,
             "y": 1
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 3,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 15,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
     },
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
     "tags": [
       "Footwork",
       "Forehand",
@@ -1210,60 +1305,56 @@
   },
   {
     "id": 132,
-    "uid": 0,
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "Middle FH Loop, Random Wide",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 3,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 13,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 2,
-        "landType": 3,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 11,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 10,
+        "balls": [
           {
             "x": 15,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
     },
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
     "tags": [
       "Footwork",
       "Forehand",
@@ -1274,52 +1365,39 @@
   },
   {
     "id": 131,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "BH Short Push, BH Loop",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 0,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 2,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 3,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 11,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
@@ -1333,52 +1411,39 @@
   },
   {
     "id": 130,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "FH Short Push, FH Loop",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 0,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 4,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 3,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 15,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
@@ -1392,52 +1457,39 @@
   },
   {
     "id": 129,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "BH Flick, BH Drive",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 0,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 2,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 11,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
@@ -1450,52 +1502,39 @@
   },
   {
     "id": 128,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "FH Flick, FH Loop",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 0,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 4,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 3,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 15,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
@@ -1508,52 +1547,39 @@
   },
   {
     "id": 127,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "BH Loop, FH Drive",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 3,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 11,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 15,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
@@ -1567,52 +1593,39 @@
   },
   {
     "id": 126,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "FH Loop, BH Drive",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 3,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 15,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 11,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
@@ -1626,56 +1639,43 @@
   },
   {
     "id": 125,
-    "uid": 0,
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "BH Loop, BH Drive",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 3,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 11,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 11,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
     },
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
     "tags": [
       "Backhand",
       "Openup"
@@ -1684,56 +1684,43 @@
   },
   {
     "id": 124,
-    "uid": 0,
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "FH Loop, FH Drive",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 3,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 15,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 10,
+        "balls": [
           {
             "x": 15,
             "y": 2
           }
         ],
-        "ballTime": 10,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 2,
       "skillLevel": "Intermediate"
     },
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
     "tags": [
       "Forehand",
       "Openup"
@@ -1742,452 +1729,1066 @@
   },
   {
     "id": 147,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "BH Flick and Topspin Random (8)",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 4,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 6,
+        "balls": [
           {
             "x": 2,
             "y": 2
           }
         ],
-        "ballTime": 6,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 1,
-        "landType": 3,
-        "points": [
+        "ballTime": 4,
+        "balls": [
           {
             "x": 11,
             "y": 2
-          },
-          {
-            "x": 12,
-            "y": 2
-          },
-          {
-            "x": 13,
-            "y": 2
-          },
-          {
-            "x": 14,
-            "y": 2
-          },
-          {
-            "x": 15,
-            "y": 2
-          },
-          {
-            "x": 11,
-            "y": 3
-          },
-          {
-            "x": 12,
-            "y": 3
-          },
-          {
-            "x": 13,
-            "y": 3
-          },
-          {
-            "x": 14,
-            "y": 3
-          },
-          {
-            "x": 15,
-            "y": 3
           }
         ],
-        "ballTime": 4,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 1,
-        "landType": 3,
-        "points": [
-          {
-            "x": 11,
-            "y": 2
-          },
+        "ballTime": 4,
+        "balls": [
           {
             "x": 12,
             "y": 2
-          },
-          {
-            "x": 13,
-            "y": 2
-          },
-          {
-            "x": 14,
-            "y": 2
-          },
-          {
-            "x": 15,
-            "y": 2
-          },
-          {
-            "x": 11,
-            "y": 3
-          },
-          {
-            "x": 12,
-            "y": 3
-          },
-          {
-            "x": 13,
-            "y": 3
-          },
-          {
-            "x": 14,
-            "y": 3
-          },
-          {
-            "x": 15,
-            "y": 3
           }
         ],
-        "ballTime": 4,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 1,
-        "landType": 3,
-        "points": [
-          {
-            "x": 11,
-            "y": 2
-          },
-          {
-            "x": 12,
-            "y": 2
-          },
+        "ballTime": 4,
+        "balls": [
           {
             "x": 13,
             "y": 2
-          },
-          {
-            "x": 14,
-            "y": 2
-          },
-          {
-            "x": 15,
-            "y": 2
-          },
-          {
-            "x": 11,
-            "y": 3
-          },
-          {
-            "x": 12,
-            "y": 3
-          },
-          {
-            "x": 13,
-            "y": 3
-          },
-          {
-            "x": 14,
-            "y": 3
-          },
-          {
-            "x": 15,
-            "y": 3
           }
         ],
-        "ballTime": 4,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 1,
-        "landType": 3,
-        "points": [
-          {
-            "x": 11,
-            "y": 2
-          },
-          {
-            "x": 11,
-            "y": 3
-          },
-          {
-            "x": 12,
-            "y": 2
-          },
-          {
-            "x": 12,
-            "y": 3
-          },
-          {
-            "x": 13,
-            "y": 2
-          },
-          {
-            "x": 13,
-            "y": 3
-          },
+        "ballTime": 4,
+        "balls": [
           {
             "x": 14,
             "y": 2
-          },
-          {
-            "x": 14,
-            "y": 3
-          },
-          {
-            "x": 15,
-            "y": 2
-          },
-          {
-            "x": 15,
-            "y": 3
           }
         ],
-        "ballTime": 4,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 1,
-        "landType": 3,
-        "points": [
-          {
-            "x": 11,
-            "y": 2
-          },
-          {
-            "x": 11,
-            "y": 3
-          },
-          {
-            "x": 12,
-            "y": 2
-          },
-          {
-            "x": 12,
-            "y": 3
-          },
-          {
-            "x": 13,
-            "y": 2
-          },
-          {
-            "x": 13,
-            "y": 3
-          },
-          {
-            "x": 14,
-            "y": 2
-          },
-          {
-            "x": 14,
-            "y": 3
-          },
+        "ballTime": 4,
+        "balls": [
           {
             "x": 15,
             "y": 2
-          },
-          {
-            "x": 15,
-            "y": 3
           }
         ],
-        "ballTime": 4,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 1,
-        "landType": 3,
-        "points": [
+        "ballTime": 4,
+        "balls": [
           {
             "x": 11,
-            "y": 2
-          },
-          {
-            "x": 11,
-            "y": 3
-          },
-          {
-            "x": 12,
-            "y": 2
-          },
-          {
-            "x": 12,
-            "y": 3
-          },
-          {
-            "x": 13,
-            "y": 2
-          },
-          {
-            "x": 13,
-            "y": 3
-          },
-          {
-            "x": 14,
-            "y": 2
-          },
-          {
-            "x": 14,
-            "y": 3
-          },
-          {
-            "x": 15,
-            "y": 2
-          },
-          {
-            "x": 15,
             "y": 3
           }
         ],
-        "ballTime": 4,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 1,
-        "landType": 3,
-        "points": [
-          {
-            "x": 11,
-            "y": 2
-          },
-          {
-            "x": 11,
-            "y": 3
-          },
+        "ballTime": 4,
+        "balls": [
           {
             "x": 12,
-            "y": 2
-          },
-          {
-            "x": 12,
-            "y": 3
-          },
-          {
-            "x": 13,
-            "y": 2
-          },
-          {
-            "x": 13,
-            "y": 3
-          },
-          {
-            "x": 14,
-            "y": 2
-          },
-          {
-            "x": 14,
-            "y": 3
-          },
-          {
-            "x": 15,
-            "y": 2
-          },
-          {
-            "x": 15,
             "y": 3
           }
         ],
-        "ballTime": 4,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 1,
-        "landType": 3,
-        "points": [
-          {
-            "x": 11,
-            "y": 2
-          },
-          {
-            "x": 11,
-            "y": 3
-          },
-          {
-            "x": 12,
-            "y": 2
-          },
-          {
-            "x": 12,
-            "y": 3
-          },
-          {
-            "x": 13,
-            "y": 2
-          },
+        "ballTime": 4,
+        "balls": [
           {
             "x": 13,
             "y": 3
-          },
-          {
-            "x": 14,
-            "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
           {
             "x": 14,
             "y": 3
-          },
-          {
-            "x": 15,
-            "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
           {
             "x": 15,
             "y": 3
           }
         ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
         "ballTime": 4,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "balls": [
+          {
+            "x": 11,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 12,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 13,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 14,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 15,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 11,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 12,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 13,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 14,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 15,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 11,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 12,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 13,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 14,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 15,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 11,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 12,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 13,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 14,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 15,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 11,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 11,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 12,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 12,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 13,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 13,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 14,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 14,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 15,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 15,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 11,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 11,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 12,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 12,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 13,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 13,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 14,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 14,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 15,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 15,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 11,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 11,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 12,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 12,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 13,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 13,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 14,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 14,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 15,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 15,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 11,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 11,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 12,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 12,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 13,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 13,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 14,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 14,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 15,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 15,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 11,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 11,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 12,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 12,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 13,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 13,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 14,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 14,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 15,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 4,
+        "balls": [
+          {
+            "x": 15,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 3,
       "skillLevel": "Advanced"
@@ -2202,108 +2803,221 @@
   },
   {
     "id": 146,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "A7. 2/3 FH Loop, Random FH Smash",
     "repeatNum": 15,
     "repeatDelay": 5,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 4,
         "power": 2,
-        "landType": 3,
-        "points": [
+        "ballTime": 6,
+        "balls": [
           {
             "x": 15,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 4,
+        "power": 2,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 14,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 4,
+        "power": 2,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 13,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 4,
+        "power": 2,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 12,
             "y": 3
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 4,
+        "power": 2,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 13,
             "y": 3
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 4,
+        "power": 2,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 14,
             "y": 3
           }
         ],
-        "ballTime": 6,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 2,
         "spin": 1,
         "power": 2,
-        "landType": 3,
-        "points": [
+        "ballTime": 6,
+        "balls": [
           {
             "x": 11,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 2,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 9,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 2,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 14,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 2,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 15,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 2,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 6,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 2,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 7,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 2,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 13,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 2,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 12,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 2,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 10,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 2,
+        "spin": 1,
+        "power": 2,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 8,
             "y": 2
           }
         ],
-        "ballTime": 6,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 3,
       "skillLevel": "Advanced"
@@ -2318,76 +3032,117 @@
   },
   {
     "id": 145,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "Random BH Flick, BH Drive",
     "repeatNum": 20,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 0,
         "spin": 4,
         "power": 3,
-        "landType": 3,
-        "points": [
+        "ballTime": 6,
+        "balls": [
           {
             "x": 2,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 0,
+        "spin": 4,
+        "power": 3,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 3,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 0,
+        "spin": 4,
+        "power": 3,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 4,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 0,
+        "spin": 4,
+        "power": 3,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 5,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 0,
+        "spin": 4,
+        "power": 3,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 2,
             "y": 3
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 0,
+        "spin": 4,
+        "power": 3,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 3,
             "y": 3
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 0,
+        "spin": 4,
+        "power": 3,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 4,
             "y": 3
           }
         ],
-        "ballTime": 6,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 1,
-        "landType": 0,
-        "points": [
+        "ballTime": 6,
+        "balls": [
           {
             "x": 15,
             "y": 2
           }
         ],
-        "ballTime": 6,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 3,
       "skillLevel": "Advanced"
@@ -2402,92 +3157,160 @@
   },
   {
     "id": 144,
-    "uid": 0,
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "A5. FH Short Push, Random Full Table Loop",
     "repeatNum": 20,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 4,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 6,
+        "balls": [
           {
             "x": 5,
             "y": 2
           }
         ],
-        "ballTime": 6,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 4,
         "power": 2,
-        "landType": 3,
-        "points": [
+        "ballTime": 8,
+        "balls": [
           {
             "x": 11,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 4,
+        "power": 2,
+        "ballTime": 8,
+        "balls": [
           {
             "x": 12,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 4,
+        "power": 2,
+        "ballTime": 8,
+        "balls": [
           {
             "x": 13,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 4,
+        "power": 2,
+        "ballTime": 8,
+        "balls": [
           {
             "x": 14,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 4,
+        "power": 2,
+        "ballTime": 8,
+        "balls": [
           {
             "x": 15,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 4,
+        "power": 2,
+        "ballTime": 8,
+        "balls": [
           {
             "x": 11,
             "y": 3
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 4,
+        "power": 2,
+        "ballTime": 8,
+        "balls": [
           {
             "x": 12,
             "y": 3
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 4,
+        "power": 2,
+        "ballTime": 8,
+        "balls": [
           {
             "x": 13,
             "y": 3
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 4,
+        "power": 2,
+        "ballTime": 8,
+        "balls": [
           {
             "x": 14,
             "y": 3
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 4,
+        "power": 2,
+        "ballTime": 8,
+        "balls": [
           {
             "x": 15,
             "y": 3
           }
         ],
-        "ballTime": 8,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 3,
       "skillLevel": "Advanced"
     },
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
     "tags": [
       "Footwork",
       "Forehand",
@@ -2499,240 +3322,485 @@
   },
   {
     "id": 143,
-    "uid": 0,
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "FH Flip, FH 2/3 Random (5)",
     "repeatNum": 15,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 0,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 6,
+        "balls": [
           {
             "x": 4,
             "y": 2
           }
         ],
-        "ballTime": 6,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 1,
-        "landType": 3,
-        "points": [
+        "ballTime": 6,
+        "balls": [
           {
             "x": 15,
-            "y": 3
-          },
-          {
-            "x": 15,
-            "y": 2
-          },
-          {
-            "x": 14,
-            "y": 3
-          },
-          {
-            "x": 14,
-            "y": 2
-          },
-          {
-            "x": 13,
-            "y": 3
-          },
-          {
-            "x": 13,
-            "y": 2
-          },
-          {
-            "x": 12,
             "y": 3
           }
         ],
-        "ballTime": 6,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 1,
-        "landType": 3,
-        "points": [
-          {
-            "x": 15,
-            "y": 3
-          },
+        "ballTime": 6,
+        "balls": [
           {
             "x": 15,
             "y": 2
-          },
-          {
-            "x": 14,
-            "y": 3
-          },
-          {
-            "x": 14,
-            "y": 2
-          },
-          {
-            "x": 13,
-            "y": 3
-          },
-          {
-            "x": 13,
-            "y": 2
-          },
-          {
-            "x": 12,
-            "y": 3
           }
         ],
-        "ballTime": 6,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 1,
-        "landType": 3,
-        "points": [
-          {
-            "x": 15,
-            "y": 2
-          },
-          {
-            "x": 15,
-            "y": 3
-          },
+        "ballTime": 6,
+        "balls": [
           {
             "x": 14,
-            "y": 2
-          },
-          {
-            "x": 14,
-            "y": 3
-          },
-          {
-            "x": 13,
-            "y": 2
-          },
-          {
-            "x": 13,
-            "y": 3
-          },
-          {
-            "x": 12,
             "y": 3
           }
         ],
-        "ballTime": 6,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 1,
-        "landType": 3,
-        "points": [
-          {
-            "x": 15,
-            "y": 2
-          },
-          {
-            "x": 15,
-            "y": 3
-          },
+        "ballTime": 6,
+        "balls": [
           {
             "x": 14,
             "y": 2
-          },
-          {
-            "x": 14,
-            "y": 3
-          },
-          {
-            "x": 13,
-            "y": 2
-          },
-          {
-            "x": 13,
-            "y": 3
-          },
-          {
-            "x": 12,
-            "y": 3
           }
         ],
-        "ballTime": 6,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 1,
-        "landType": 3,
-        "points": [
-          {
-            "x": 15,
-            "y": 2
-          },
-          {
-            "x": 15,
-            "y": 3
-          },
-          {
-            "x": 14,
-            "y": 2
-          },
-          {
-            "x": 14,
-            "y": 3
-          },
-          {
-            "x": 13,
-            "y": 2
-          },
+        "ballTime": 6,
+        "balls": [
           {
             "x": 13,
             "y": 3
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 13,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 12,
             "y": 3
           }
         ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
         "ballTime": 6,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "balls": [
+          {
+            "x": 15,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 15,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 14,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 14,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 13,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 13,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 12,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 15,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 15,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 14,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 14,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 13,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 13,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 12,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 15,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 15,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 14,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 14,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 13,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 13,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 12,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 15,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 15,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 14,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 14,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 13,
+            "y": 2
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 13,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
+          {
+            "x": 12,
+            "y": 3
+          }
+        ],
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 3,
       "skillLevel": "Advanced"
     },
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
     "tags": [
       "Flick",
       "Footwork",
@@ -2743,56 +3811,43 @@
   },
   {
     "id": 142,
-    "uid": 0,
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "FH Short Push, FH Step-Around Loop",
     "repeatNum": 20,
     "repeatDelay": 1,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 8,
+        "balls": [
           {
             "x": 5,
             "y": 2
           }
         ],
-        "ballTime": 8,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 3,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 8,
+        "balls": [
           {
             "x": 11,
             "y": 2
           }
         ],
-        "ballTime": 8,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 3,
       "skillLevel": "Advanced"
     },
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
     "tags": [
       "Footwork",
       "Forehand",
@@ -2803,60 +3858,56 @@
   },
   {
     "id": 141,
-    "uid": 0,
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "Middle Loop, Random Wide",
     "repeatNum": 20,
     "repeatDelay": 2,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 4,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 6,
+        "balls": [
           {
             "x": 13,
             "y": 2
           }
         ],
-        "ballTime": 6,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       },
       {
         "ball": 1,
         "spin": 1,
         "power": 1,
-        "landType": 3,
-        "points": [
+        "ballTime": 6,
+        "balls": [
           {
             "x": 11,
             "y": 2
-          },
+          }
+        ],
+        "orderRandom": false
+      },
+      {
+        "ball": 1,
+        "spin": 1,
+        "power": 1,
+        "ballTime": 6,
+        "balls": [
           {
             "x": 15,
             "y": 2
           }
         ],
-        "ballTime": 6,
-        "random": 0,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": false
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 3,
       "skillLevel": "Advanced"
     },
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
     "tags": [
       "Footwork",
       "Random",
@@ -2866,52 +3917,39 @@
   },
   {
     "id": 140,
-    "uid": 0,
-    "lastPlayDate": 1735714800,
-    "lastPlayDateUTC": "2025-01-01 08:00:00",
-    "createDate": "2025-01-01 08:00:00",
-    "updateDate": "2025-01-01 08:00:00",
     "name": "Short FH or Long BH",
     "repeatNum": 10,
     "repeatDelay": 0,
     "intervalTrain": 0,
-    "ballList": [
+    "steps": [
       {
         "ball": 1,
         "spin": 3,
         "power": 3,
-        "landType": 0,
-        "points": [
+        "ballTime": 8,
+        "balls": [
           {
             "x": 5,
             "y": 2
           }
         ],
-        "ballTime": 8,
-        "random": 1,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": true
       },
       {
         "ball": 1,
         "spin": 3,
         "power": 2,
-        "landType": 0,
-        "points": [
+        "ballTime": 8,
+        "balls": [
           {
             "x": 11,
             "y": 2
           }
         ],
-        "ballTime": 8,
-        "random": 1,
-        "adjustSpin": 0,
-        "adjustPosition": 0
+        "orderRandom": true
       }
     ],
-    "subTime": 0,
     "isFavourite": 0,
-    "collectFlag": 0,
     "skillLevel": {
       "id": 3,
       "skillLevel": "Advanced"

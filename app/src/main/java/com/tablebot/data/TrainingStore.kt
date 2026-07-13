@@ -39,11 +39,11 @@ class TrainingStore(private val context: Context) {
         runMigrationIfNeeded()
         val file = advancedFile
         if (file.exists()) {
-            json.decodeFromString<List<AdvancedTraining>>(file.readText())
+            json.decodeFromString<List<AdvancedTraining>>(file.readText()).map { it.migrated() }
         } else {
             json.decodeFromString<List<AdvancedTraining>>(
                 context.assets.open("advanced-trainings.json").bufferedReader().use { it.readText() }
-            )
+            ).map { it.migrated() }
         }
     }
 
@@ -56,7 +56,7 @@ class TrainingStore(private val context: Context) {
         ).associateBy { it.id }
         val bundledAdvanced = json.decodeFromString<List<AdvancedTraining>>(
             context.assets.open("advanced-trainings.json").bufferedReader().use { it.readText() }
-        ).associateBy { it.id }
+        ).map { it.migrated() }.associateBy { it.id }
 
         if (basicFile.exists()) {
             val local = json.decodeFromString<List<BasicTraining>>(basicFile.readText())
@@ -71,7 +71,7 @@ class TrainingStore(private val context: Context) {
         }
 
         if (advancedFile.exists()) {
-            val local = json.decodeFromString<List<AdvancedTraining>>(advancedFile.readText())
+            val local = json.decodeFromString<List<AdvancedTraining>>(advancedFile.readText()).map { it.migrated() }
             val migrated = local.map { t ->
                 val b = bundledAdvanced[t.id]
                 t.copy(
@@ -144,7 +144,7 @@ class TrainingStore(private val context: Context) {
 
     @Deprecated("Use TrainingViewModel.nextAdvancedId() which derives from in-memory state")
     fun nextAdvancedId(): Int = (advancedFile.takeIf { it.exists() }?.let {
-        json.decodeFromString<List<AdvancedTraining>>(it.readText()).maxOfOrNull { t -> t.id }
+        json.decodeFromString<List<AdvancedTraining>>(it.readText()).map { t -> t.migrated() }.maxOfOrNull { t -> t.id }
     } ?: 999) + 1
 
     // ── Export / Import ────────────────────────────────────────────────
@@ -160,7 +160,8 @@ class TrainingStore(private val context: Context) {
         json.encodeToString(DrillExportBundle(basic, advanced))
 
     suspend fun parseImportBundle(jsonText: String): DrillExportBundle = withContext(Dispatchers.IO) {
-        json.decodeFromString<DrillExportBundle>(jsonText)
+        val bundle = json.decodeFromString<DrillExportBundle>(jsonText)
+        bundle.copy(advanced = bundle.advanced.map { it.migrated() })
     }
 
     /**

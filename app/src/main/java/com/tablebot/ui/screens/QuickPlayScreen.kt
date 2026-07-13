@@ -466,7 +466,7 @@ fun QuickPlayScreen(
                     // Play button
                     val playEnabled = when (mode) {
                         0 -> connected && profileCalibrated && basicState.points.isNotEmpty() && !isPlaying
-                        1 -> connected && profileCalibrated && advancedState.ballList.isNotEmpty() && !isPlaying
+                        1 -> connected && profileCalibrated && advancedState.steps.isNotEmpty() && !isPlaying
                         else -> false
                     }
                     Button(

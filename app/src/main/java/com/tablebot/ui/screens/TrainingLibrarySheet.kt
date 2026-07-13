@@ -273,14 +273,14 @@ private fun UnifiedTrainingCard(
                     }
                     is TrainingItem.Dynamic -> {
                         val training = item.training
-                        val allPoints = training.ballList.flatMap { it.points }
-                        val cellBallNumbers = remember(training.ballList) {
+                        val allPoints = training.steps.flatMap { it.balls }
+                        val cellBallNumbers = remember(training.steps) {
                             buildCellBallNumbers(
-                                training.ballList.mapIndexed { i, entry -> (i + 1) to entry.points }
+                                training.steps.mapIndexed { i, step -> (i + 1) to step.balls }
                             )
                         }
-                        val cellBallColorMap = remember(training.ballList) {
-                            buildCellBallColors(training.ballList)
+                        val cellBallColorMap = remember(training.steps) {
+                            buildCellBallColors(training.steps)
                         }
                         TableGrid(
                             selectedPoints = allPoints,

@@ -1,8 +1,9 @@
 package com.tablebot.ui.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +40,7 @@ import com.tablebot.data.Point
  *   Cells outside this set are dimmed and ignore clicks.
  *   Pass null to allow all cells (backwards-compatible default).
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TableGrid(
     selectedPoints: List<Point>,
@@ -47,6 +49,7 @@ fun TableGrid(
     cellBallNumbers: Map<Int, List<Int>>? = null,
     cellBallColors: Map<Int, List<Color>>? = null,
     enabledCells: Set<Int>? = null,
+    onCellLongClick: ((Int) -> Unit)? = null,
 ) {
     val selectedCells = selectedPoints.map { it.x }.toSet()
     val showFieldNumbers by AppPrefs.showFieldNumbers.collectAsState()
@@ -99,7 +102,11 @@ fun TableGrid(
                                     }
                                 )
                                 .then(
-                                    if (onCellClick != null && isEnabled) Modifier.clickable { onCellClick(cellNum) }
+                                    if ((onCellClick != null || onCellLongClick != null) && isEnabled)
+                                        Modifier.combinedClickable(
+                                            onClick = { onCellClick?.invoke(cellNum) },
+                                            onLongClick = onCellLongClick?.let { cb -> { cb(cellNum) } },
+                                        )
                                     else Modifier
                                 ),
                             contentAlignment = Alignment.Center,
@@ -157,7 +164,7 @@ fun TableGrid(
 
 const val MAX_BALLS_PER_CELL = 4
 
-/** Build a cell→ball-numbers map from a list of [BallEntry]-like items. */
+/** Build a cell→ball-numbers map from a list of (ball number, points) pairs. */
 fun buildCellBallNumbers(ballEntries: List<Pair<Int, List<Point>>>): Map<Int, List<Int>> {
     val result = mutableMapOf<Int, MutableList<Int>>()
     ballEntries.forEach { (ballIndex, points) ->
@@ -178,12 +185,12 @@ fun spinColor(spin: Int): Color = when (spin) {
     else -> Color(0xFF212121)
 }
 
-/** Build a cell→colors map from ball entries, colored by each ball's spin. */
-fun buildCellBallColors(ballEntries: List<com.tablebot.data.BallEntry>): Map<Int, List<Color>> {
+/** Build a cell→colors map from steps, colored by each step's spin. */
+fun buildCellBallColors(steps: List<com.tablebot.data.Step>): Map<Int, List<Color>> {
     val result = mutableMapOf<Int, MutableList<Color>>()
-    ballEntries.forEach { entry ->
-        val color = spinColor(entry.spin)
-        entry.points.forEach { point ->
+    steps.forEach { step ->
+        val color = spinColor(step.spin)
+        step.balls.forEach { point ->
             result.getOrPut(point.x) { mutableListOf() }.add(color)
         }
     }
