@@ -184,8 +184,12 @@ private fun IllustrationTimingSlider() {
     }
 }
 
+/**
+ * Preview of the play-mode selector locked to a single [mode] (0 Reps, 1 Balls, 2 Time), so each
+ * mode's illustration can sit next to its own description. Non-interactive (callbacks are no-ops).
+ */
 @Composable
-private fun IllustrationPlayModes() {
+private fun IllustrationPlayMode(mode: Int, label: String) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -194,27 +198,23 @@ private fun IllustrationPlayModes() {
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Text(
-                "Example: the three play modes",
+                label,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-            // A preview of the selector locked to each mode so all three value controls are visible.
-            // These previews are non-interactive (the callbacks are no-ops).
-            listOf(0, 1, 2).forEach { mode ->
-                Spacer(Modifier.height(12.dp))
-                PlayModeSelector(
-                    playMode = mode,
-                    reps = 20,
-                    ballCount = 30,
-                    durationSec = 120,
-                    ballsPerPattern = 3,
-                    repsRange = 1..100,
-                    onPlayModeChange = {},
-                    onRepsChange = {},
-                    onBallCountChange = {},
-                    onDurationChange = {},
-                )
-            }
+            Spacer(Modifier.height(8.dp))
+            PlayModeSelector(
+                playMode = mode,
+                reps = 20,
+                ballCount = 30,
+                durationSec = 120,
+                ballsPerPattern = 3,
+                repsRange = 1..100,
+                onPlayModeChange = {},
+                onRepsChange = {},
+                onBallCountChange = {},
+                onDurationChange = {},
+            )
         }
     }
 }
@@ -366,18 +366,24 @@ val helpArticles: List<HelpArticle> = listOf(
                 "Choose how the drill decides when to stop. The mode is saved with the drill and " +
                 "used everywhere you play it — in Quick Play and from the saved-drill list."
             ),
-            HelpSection.BulletList(listOf(
-                "Reps — play a fixed number of pattern repetitions.",
+            HelpSection.Paragraph(
+                "Reps — play a fixed number of pattern repetitions."
+            ),
+            HelpSection.Illustration { IllustrationPlayMode(0, "Example: Reps mode") },
+            HelpSection.Paragraph(
                 "Balls — play until roughly a target number of balls has been shot; " +
-                    "the app converts that to whole repetitions, rounding up.",
+                "the app converts that to whole repetitions, rounding up."
+            ),
+            HelpSection.Illustration { IllustrationPlayMode(1, "Example: Ball count mode") },
+            HelpSection.Paragraph(
                 "Time — play until a countdown elapses. Drag the minutes and seconds to set it; " +
-                    "the countdown shows on the STOP overlay and stops the robot at zero.",
-            )),
+                "the countdown shows on the STOP overlay and stops the robot at zero."
+            ),
+            HelpSection.Illustration { IllustrationPlayMode(2, "Example: Timed mode") },
             HelpSection.Paragraph(
                 "The Reps and Balls limits are capped by your Ball tray capacity (set in Settings), " +
                 "so a drill never asks for more balls than the tray can hold in one load."
             ),
-            HelpSection.Illustration { IllustrationPlayModes() },
         ),
     ),
     HelpArticle(
@@ -418,12 +424,18 @@ val helpArticles: List<HelpArticle> = listOf(
                 "saved with the drill. For Balls and Time the app counts every ball across the sequence " +
                 "(all positions in every ball card), not just the number of cards."
             ),
-            HelpSection.BulletList(listOf(
-                "Reps — play a fixed number of full-sequence repetitions.",
-                "Balls — play until roughly a target total number of balls has been shot, rounding up.",
-                "Time — play until a countdown elapses, then stop.",
-            )),
-            HelpSection.Illustration { IllustrationPlayModes() },
+            HelpSection.Paragraph(
+                "Reps — play a fixed number of full-sequence repetitions."
+            ),
+            HelpSection.Illustration { IllustrationPlayMode(0, "Example: Reps mode") },
+            HelpSection.Paragraph(
+                "Balls — play until roughly a target total number of balls has been shot, rounding up."
+            ),
+            HelpSection.Illustration { IllustrationPlayMode(1, "Example: Ball count mode") },
+            HelpSection.Paragraph(
+                "Time — play until a countdown elapses, then stop."
+            ),
+            HelpSection.Illustration { IllustrationPlayMode(2, "Example: Timed mode") },
             HelpSection.Heading("Repeat Delay"),
             HelpSection.Paragraph(
                 "Repeat Delay adds a pause, in seconds, between repetitions of the full sequence. " +
