@@ -191,6 +191,38 @@ private fun IllustrationWeightedGrid() {
 }
 
 @Composable
+private fun IllustrationRandomTarget() {
+    // A ball card with three equally-weighted positions -> fires a random one each shot.
+    val points = listOf(Point(6, 2), Point(8, 2), Point(10, 2))
+    val counts = mapOf(6 to listOf(1), 8 to listOf(1), 10 to listOf(1))
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        ),
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(
+                "Example: a 3-position ball card fires to a random one each shot",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(8.dp))
+            TableGrid(
+                selectedPoints = points,
+                cellBallNumbers = counts,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                "Randomises target (weighted by repeats)",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
 private fun IllustrationRandomOrder() {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -488,6 +520,7 @@ val helpArticles: List<HelpArticle> = listOf(
                 "chosen one of them each time (\"Randomises target, weighted by repeats\"). " +
                 "A card with a single position always fires there."
             ),
+            HelpSection.Illustration { IllustrationRandomTarget() },
             HelpSection.Heading("Random order"),
             HelpSection.Paragraph(
                 "The \"Random order\" toggle shuffles the order the ball cards fire in, rather than " +
