@@ -410,7 +410,29 @@ val helpArticles: List<HelpArticle> = listOf(
             HelpSection.Heading("Per-Ball Settings"),
             HelpSection.Paragraph(
                 "Tap a ball card to expand it. Inside you can configure its ball type, spin, power, " +
-                "ball interval, and target positions independently of other balls."
+                "and ball interval independently of other balls, and choose its target positions."
+            ),
+            HelpSection.Heading("Target positions and weighting"),
+            HelpSection.Paragraph(
+                "Under \"Target Points\", tap a grid cell to add a ball at that position; " +
+                "long-press a cell to remove one. A cell shows a count when it holds more than one ball. " +
+                "A single ball card can hold up to 5 balls (the \"N/5\" counter tracks this)."
+            ),
+            HelpSection.Paragraph(
+                "Tapping the same cell more than once weights it: a card with positions " +
+                "{A, A, B} lands on A twice as often as B. Duplicate taps raise a spot's odds."
+            ),
+            HelpSection.Heading("Randomising the target"),
+            HelpSection.Paragraph(
+                "When a ball card has more than one position it automatically fires to a randomly " +
+                "chosen one of them each time (\"Randomises target, weighted by repeats\"). " +
+                "A card with a single position always fires there."
+            ),
+            HelpSection.Heading("Random order"),
+            HelpSection.Paragraph(
+                "The \"Random order\" toggle shuffles the order the ball cards fire in, rather than " +
+                "playing them top-to-bottom. Multi-position cards are always randomised, so the toggle " +
+                "is shown on and locked for them; it is freely settable on single-position cards."
             ),
             HelpSection.Heading("Sequence Overview"),
             HelpSection.Paragraph(
