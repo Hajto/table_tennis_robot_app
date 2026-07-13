@@ -1,8 +1,9 @@
 package com.tablebot.ui.components
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +40,7 @@ import com.tablebot.data.Point
  *   Cells outside this set are dimmed and ignore clicks.
  *   Pass null to allow all cells (backwards-compatible default).
  */
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun TableGrid(
     selectedPoints: List<Point>,
@@ -47,6 +49,7 @@ fun TableGrid(
     cellBallNumbers: Map<Int, List<Int>>? = null,
     cellBallColors: Map<Int, List<Color>>? = null,
     enabledCells: Set<Int>? = null,
+    onCellLongClick: ((Int) -> Unit)? = null,
 ) {
     val selectedCells = selectedPoints.map { it.x }.toSet()
     val showFieldNumbers by AppPrefs.showFieldNumbers.collectAsState()
@@ -99,7 +102,11 @@ fun TableGrid(
                                     }
                                 )
                                 .then(
-                                    if (onCellClick != null && isEnabled) Modifier.clickable { onCellClick(cellNum) }
+                                    if ((onCellClick != null || onCellLongClick != null) && isEnabled)
+                                        Modifier.combinedClickable(
+                                            onClick = { onCellClick?.invoke(cellNum) },
+                                            onLongClick = onCellLongClick?.let { cb -> { cb(cellNum) } },
+                                        )
                                     else Modifier
                                 ),
                             contentAlignment = Alignment.Center,

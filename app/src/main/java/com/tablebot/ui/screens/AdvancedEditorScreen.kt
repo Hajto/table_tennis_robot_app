@@ -27,6 +27,18 @@ import com.tablebot.ui.components.TableGrid
 import com.tablebot.ui.components.buildCellBallColors
 import com.tablebot.ui.components.buildCellBallNumbers
 
+// ── Pure list-edit helpers for per-cell ball weighting ──────────────────
+
+/** Add one ball at [cell] if under the 5-ball cap; returns unchanged list if full. */
+fun addBallAt(balls: List<Point>, cell: Int, cap: Int = 5): List<Point> =
+    if (balls.size >= cap) balls else balls + Point(cell, 2)
+
+/** Remove one ball at [cell] (a single occurrence), if present. */
+fun removeBallAt(balls: List<Point>, cell: Int): List<Point> {
+    val i = balls.indexOfFirst { it.x == cell }
+    return if (i < 0) balls else balls.toMutableList().also { it.removeAt(i) }
+}
+
 // ── State holder ────────────────────────────────────────────────────────
 
 class AdvancedEditorState(
@@ -408,23 +420,56 @@ private fun StepEditor(
                 StepSlider("Ball Interval", entry.ballTime, 2..30) { onUpdate(entry.copy(ballTime = it)) }
 
                 Text("Target Points", style = MaterialTheme.typography.labelMedium)
-                val entryBallNumbers = remember(entry.balls, ballNumber) {
-                    buildCellBallNumbers(listOf(ballNumber to entry.balls))
+                Text(
+                    "Tap to add a ball, long-press to remove one. ${entry.balls.size}/5",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                if (entry.balls.size > 1) {
+                    Text(
+                        "Randomises target (weighted by repeats)",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                    )
+                }
+                // Per-cell ball counts (a cell with 2 balls reads "2"); duplicates = weighting.
+                val entryBallCounts = remember(entry.balls) {
+                    entry.balls.groupingBy { it.x }.eachCount()
+                        .mapValues { (_, count) -> listOf(count) }
                 }
                 TableGrid(
                     selectedPoints = entry.balls,
                     onCellClick = { cellNum ->
-                        val existing = entry.balls.find { it.x == cellNum }
-                        val newPoints = if (existing != null) {
-                            entry.balls.filter { it.x != cellNum }
-                        } else {
-                            entry.balls + Point(cellNum, 2)
-                        }
-                        onUpdate(entry.copy(balls = newPoints))
+                        onUpdate(entry.copy(balls = addBallAt(entry.balls, cellNum)))
                     },
-                    cellBallNumbers = entryBallNumbers,
+                    onCellLongClick = { cellNum ->
+                        onUpdate(entry.copy(balls = removeBallAt(entry.balls, cellNum)))
+                    },
+                    cellBallNumbers = entryBallCounts,
                     enabledCells = enabledCells,
                 )
+
+                // Random order toggle (multi-ball steps are always randomised)
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Random order", style = MaterialTheme.typography.labelMedium)
+                        if (entry.withinRandom) {
+                            Text(
+                                "Multi-ball steps are always randomised.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                    Switch(
+                        checked = entry.orderRandom || entry.withinRandom,
+                        onCheckedChange = { onUpdate(entry.copy(orderRandom = it)) },
+                        enabled = !entry.withinRandom,
+                    )
+                }
             }
         }
     }
