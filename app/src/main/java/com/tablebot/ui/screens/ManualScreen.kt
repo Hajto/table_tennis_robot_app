@@ -17,6 +17,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.tablebot.data.*
 import com.tablebot.ui.components.BallSettingsDropdowns
+import com.tablebot.ui.components.PlayModeSelector
 import com.tablebot.ui.components.StepSlider
 import com.tablebot.ui.components.TableGrid
 import com.tablebot.ui.components.buildCellBallNumbers
@@ -173,13 +174,47 @@ private fun IllustrationTimingSlider() {
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Text(
-                "Example: Timing controls",
+                "Example: Ball interval",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Spacer(Modifier.height(8.dp))
             StepSlider("Ball Interval", 9, 2..30) {}
-            StepSlider("Repetitions", 20, 1..100) {}
+        }
+    }
+}
+
+@Composable
+private fun IllustrationPlayModes() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        ),
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(
+                "Example: the three play modes",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            // A preview of the selector locked to each mode so all three value controls are visible.
+            // These previews are non-interactive (the callbacks are no-ops).
+            listOf(0, 1, 2).forEach { mode ->
+                Spacer(Modifier.height(12.dp))
+                PlayModeSelector(
+                    playMode = mode,
+                    reps = 20,
+                    ballCount = 30,
+                    durationSec = 120,
+                    ballsPerPattern = 3,
+                    repsRange = 1..100,
+                    onPlayModeChange = {},
+                    onRepsChange = {},
+                    onBallCountChange = {},
+                    onDurationChange = {},
+                )
+            }
         }
     }
 }
@@ -321,12 +356,28 @@ val helpArticles: List<HelpArticle> = listOf(
                 "Sequence \u2014 balls follow a fixed order through selected positions",
                 "Random \u2014 ball lands on a randomly chosen selected position each time",
             )),
-            HelpSection.Heading("Timing & Repetitions"),
+            HelpSection.Heading("Ball Interval"),
             HelpSection.Paragraph(
-                "Ball Interval controls the time between consecutive balls (in tenths of a second). " +
-                "Repetitions sets how many balls are fired in total."
+                "Ball Interval controls the time between consecutive balls, in tenths of a second."
             ),
             HelpSection.Illustration { IllustrationTimingSlider() },
+            HelpSection.Heading("Play modes"),
+            HelpSection.Paragraph(
+                "Choose how the drill decides when to stop. The mode is saved with the drill and " +
+                "used everywhere you play it — in Quick Play and from the saved-drill list."
+            ),
+            HelpSection.BulletList(listOf(
+                "Reps — play a fixed number of pattern repetitions.",
+                "Balls — play until roughly a target number of balls has been shot; " +
+                    "the app converts that to whole repetitions, rounding up.",
+                "Time — play until a countdown elapses. Drag the minutes and seconds to set it; " +
+                    "the countdown shows on the STOP overlay and stops the robot at zero.",
+            )),
+            HelpSection.Paragraph(
+                "The Reps and Balls limits are capped by your Ball tray capacity (set in Settings), " +
+                "so a drill never asks for more balls than the tray can hold in one load."
+            ),
+            HelpSection.Illustration { IllustrationPlayModes() },
         ),
     ),
     HelpArticle(
@@ -361,10 +412,22 @@ val helpArticles: List<HelpArticle> = listOf(
                 "so you can see the full sequence at a glance."
             ),
             HelpSection.Illustration { IllustrationTableGrid() },
-            HelpSection.Heading("Repeat Settings"),
+            HelpSection.Heading("Play modes"),
             HelpSection.Paragraph(
-                "Repeat Count determines how many times the full sequence plays. " +
-                "Repeat Delay adds a pause (in seconds) between repetitions."
+                "The whole sequence plays by Reps, Balls, or Time — the same selector as Basic mode, " +
+                "saved with the drill. For Balls and Time the app counts every ball across the sequence " +
+                "(all positions in every ball card), not just the number of cards."
+            ),
+            HelpSection.BulletList(listOf(
+                "Reps — play a fixed number of full-sequence repetitions.",
+                "Balls — play until roughly a target total number of balls has been shot, rounding up.",
+                "Time — play until a countdown elapses, then stop.",
+            )),
+            HelpSection.Illustration { IllustrationPlayModes() },
+            HelpSection.Heading("Repeat Delay"),
+            HelpSection.Paragraph(
+                "Repeat Delay adds a pause, in seconds, between repetitions of the full sequence. " +
+                "It applies to every play mode."
             ),
         ),
     ),
