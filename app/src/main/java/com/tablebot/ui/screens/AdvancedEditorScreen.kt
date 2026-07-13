@@ -2,6 +2,7 @@ package com.tablebot.ui.screens
 
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -16,6 +17,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
@@ -428,7 +430,13 @@ private fun BallEntryEditor(
 
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth(),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .toggleable(
+                            value = entry.random == 1,
+                            role = Role.Switch,
+                            onValueChange = { on -> onUpdate(entry.copy(random = if (on) 1 else 0)) },
+                        ),
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Randomize position", style = MaterialTheme.typography.labelMedium)
@@ -440,7 +448,7 @@ private fun BallEntryEditor(
                     }
                     Switch(
                         checked = entry.random == 1,
-                        onCheckedChange = { on -> onUpdate(entry.copy(random = if (on) 1 else 0)) },
+                        onCheckedChange = null,
                     )
                 }
             }
