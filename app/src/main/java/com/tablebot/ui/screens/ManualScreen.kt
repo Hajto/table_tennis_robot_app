@@ -165,6 +165,65 @@ private fun IllustrationBallCard() {
 }
 
 @Composable
+private fun IllustrationWeightedGrid() {
+    // One ball card targeting 6, 8 and 10, with position 6 tapped twice (weighted x2).
+    val points = listOf(Point(6, 2), Point(8, 2), Point(10, 2))
+    val counts = mapOf(6 to listOf(2), 8 to listOf(1), 10 to listOf(1))
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        ),
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(
+                "Example: one ball card, position 6 weighted ×2",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(8.dp))
+            TableGrid(
+                selectedPoints = points,
+                cellBallNumbers = counts,
+            )
+        }
+    }
+}
+
+@Composable
+private fun IllustrationRandomOrder() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        ),
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(
+                "Example: Random order toggle (locked on for a multi-ball card)",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(8.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Random order", style = MaterialTheme.typography.labelMedium)
+                    Text(
+                        "Multi-ball steps are always randomised.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(checked = true, onCheckedChange = null, enabled = false)
+            }
+        }
+    }
+}
+
+@Composable
 private fun IllustrationTimingSlider() {
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -422,6 +481,7 @@ val helpArticles: List<HelpArticle> = listOf(
                 "Tapping the same cell more than once weights it: a card with positions " +
                 "{A, A, B} lands on A twice as often as B. Duplicate taps raise a spot's odds."
             ),
+            HelpSection.Illustration { IllustrationWeightedGrid() },
             HelpSection.Heading("Randomising the target"),
             HelpSection.Paragraph(
                 "When a ball card has more than one position it automatically fires to a randomly " +
@@ -434,6 +494,7 @@ val helpArticles: List<HelpArticle> = listOf(
                 "playing them top-to-bottom. Multi-position cards are always randomised, so the toggle " +
                 "is shown on and locked for them; it is freely settable on single-position cards."
             ),
+            HelpSection.Illustration { IllustrationRandomOrder() },
             HelpSection.Heading("Sequence Overview"),
             HelpSection.Paragraph(
                 "The overview grid at the top shows all target positions with ball numbers, " +
