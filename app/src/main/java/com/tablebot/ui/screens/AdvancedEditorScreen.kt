@@ -400,6 +400,40 @@ private fun StepEditor(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                // At-a-glance randomness indicators (visible without expanding the card):
+                //  target icon + count  → multi-position card fires to a random one
+                //  shuffle icon         → card takes part in the step-order shuffle
+                //                         (always on for multi-position cards)
+                val orderRandomised = entry.withinRandom || entry.orderRandom
+                if (entry.withinRandom || orderRandomised) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(1.dp),
+                        modifier = Modifier.padding(start = 6.dp),
+                    ) {
+                        if (entry.withinRandom) {
+                            Icon(
+                                Icons.Default.Adjust,
+                                contentDescription = "Random target among ${entry.balls.size} positions",
+                                modifier = Modifier.size(16.dp),
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                            Text(
+                                "${entry.balls.size}",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                        if (orderRandomised) {
+                            Icon(
+                                Icons.Default.Shuffle,
+                                contentDescription = "Random order",
+                                modifier = Modifier.size(16.dp).padding(start = 2.dp),
+                                tint = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                    }
+                }
                 IconButton(onClick = onToggleExpanded) {
                     Icon(
                         if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
