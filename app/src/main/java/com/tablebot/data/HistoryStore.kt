@@ -2,6 +2,8 @@ package com.tablebot.data
 
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -19,12 +21,31 @@ class HistoryStore(private val file: File) {
 
     private var lastBreakReminderAt: Long = 0L
 
-    suspend fun loadSessions(): List<TrainingSession> = withContext(Dispatchers.IO) {
-        if (file.exists()) {
-            runCatching {
-                json.decodeFromString<List<TrainingSession>>(file.readText())
-            }.getOrDefault(emptyList())
-        } else emptyList()
+    // NOT reentrant: never call a withLock method from inside another. Public
+    // methods take the lock once and delegate to *Locked helpers below.
+    private val mutex = Mutex()
+
+    suspend fun loadSessions(): List<TrainingSession> =
+        mutex.withLock { loadSessionsLocked() }
+
+    /**
+     * Decodes the on-disk history. Assumes [mutex] is already held.
+     *
+     * A missing file is a plain empty result. A file that exists but fails to
+     * decode is quarantined to a sibling `<name>.corrupt.json` (overwriting any
+     * previous backup) before returning empty — this prevents the next write
+     * from silently overwriting and destroying recoverable history.
+     */
+    private suspend fun loadSessionsLocked(): List<TrainingSession> = withContext(Dispatchers.IO) {
+        if (!file.exists()) return@withContext emptyList()
+        runCatching {
+            json.decodeFromString<List<TrainingSession>>(file.readText())
+        }.getOrElse {
+            val backup = File(file.parentFile, file.nameWithoutExtension + ".corrupt.json")
+            file.copyTo(backup, overwrite = true)
+            file.delete()
+            emptyList()
+        }
     }
 
     /**
@@ -35,10 +56,10 @@ class HistoryStore(private val file: File) {
      * with the current time), which keeps session grouping and reminder
      * behavior deterministic under test.
      */
-    suspend fun logEntry(entry: HistoryEntry): Boolean = withContext(Dispatchers.IO) {
+    suspend fun logEntry(entry: HistoryEntry): Boolean = mutex.withLock {
         val now = entry.timestamp
 
-        val sessions = loadSessions().toMutableList()
+        val sessions = loadSessionsLocked().toMutableList()
         val last = sessions.lastOrNull()
 
         val sessionStart: Long
@@ -58,7 +79,7 @@ class HistoryStore(private val file: File) {
             sessionStart = now
         }
 
-        file.writeText(json.encodeToString(sessions))
+        withContext(Dispatchers.IO) { file.writeText(json.encodeToString(sessions)) }
 
         val elapsed = now - sessionStart
         val shouldRemind = elapsed >= BREAK_INTERVAL_MS &&
@@ -67,7 +88,7 @@ class HistoryStore(private val file: File) {
         shouldRemind
     }
 
-    suspend fun clearHistory() = withContext(Dispatchers.IO) {
-        file.delete()
+    suspend fun clearHistory() = mutex.withLock {
+        withContext(Dispatchers.IO) { file.delete() }
     }
 }

@@ -132,6 +132,11 @@ data class TestBallRequest(
 @Serializable
 data class RobotPosition(val x: Float = 0.5f, val y: Float = 0.5f)
 
+/**
+ * On-disk contract: the constant NAMES (JOOLA_V1, JOOLA_V2) — not the labels —
+ * are serialized into persisted files (profiles, training history). Renaming a
+ * constant breaks decoding of existing files; only `label` is safe to change.
+ */
 @Serializable
 enum class RobotType(val label: String) {
     JOOLA_V1("Infinity V1"),

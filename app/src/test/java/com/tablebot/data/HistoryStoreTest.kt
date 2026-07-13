@@ -1,6 +1,8 @@
 package com.tablebot.data
 
 import java.io.File
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.*
 import org.junit.Rule
@@ -98,6 +100,39 @@ class HistoryStoreTest {
         val sessions = store.loadSessions()
         assertEquals(2, sessions.size)
         assertEquals(T0 + 30 * MIN, sessions[1].startedAt)
+    }
+
+    @Test
+    fun `corrupt file is backed up and not overwritten`() = runTest {
+        file().writeText("not json")
+        val store = HistoryStore(file())
+
+        val sessions = store.loadSessions()
+        assertTrue(sessions.isEmpty())
+
+        val backup = File(file().parentFile, file().nameWithoutExtension + ".corrupt.json")
+        assertTrue("corrupt backup must exist", backup.exists())
+        assertEquals("not json", backup.readText())
+
+        // A subsequent write must succeed and leave the main file decodable.
+        store.logEntry(entry(T0))
+        val after = store.loadSessions()
+        assertEquals(1, after.size)
+        assertEquals(1, after[0].entries.size)
+        assertEquals(T0, after[0].entries[0].timestamp)
+    }
+
+    @Test
+    fun `concurrent logEntry calls lose no entries`() = runTest {
+        val store = HistoryStore(file())
+        coroutineScope {
+            repeat(20) {
+                launch { store.logEntry(entry(T0)) }
+            }
+        }
+        val sessions = store.loadSessions()
+        val total = sessions.sumOf { it.entries.size }
+        assertEquals(20, total)
     }
 
     @Test
