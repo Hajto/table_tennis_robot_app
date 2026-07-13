@@ -114,16 +114,18 @@ Offset  Size  Field           Source
   3     1     yaxis           Y servo position index (from base-conf lookup, 0-32)
   4     1     zaxis           Z servo position index (from base-conf lookup, 0-20)
   5     2     repeatDelay     Big-endian uint16 (1 = 0.2s between set repeats)
-  7     1     flags           0x80 on random drills, else 0
+  7     1     flags           0x80 on any point that takes part in randomness, else 0 (travels with b11)
   8     1     ballTime        Inter-ball delay (1=fast, 20=slow)
-  9     1     groupSize       Points per group, 1-5 (firmware chunks points into groups). We emit 1.
- 10     1     randomMode      2 on random drills (sets the firmware's random mode-flag), else 0
- 11     1     randomPick      1 on random drills (draw this shot's position randomly), else 0
+  9     1     groupSize       Size of the group this point belongs to, 1-5 (see "Random Mode")
+ 10     1     groupMode       0 normally; 1 on the FIRST point of a within-step random group
+                              (advanced); 2 for a basic whole-drill random. See "Random Mode".
+ 11     1     randomDraw      1 if this point takes part in a random draw, else 0
 ```
 
-> Earlier revisions of this doc listed bytes 7/9/10/11 as "reserved / always 1". That was
-> a misread from a single sequence-drill capture; firmware disassembly shows byte 9 is a
-> group size and bytes 10/11 drive random mode.
+> Earlier revisions of this doc listed bytes 7/9/10/11 as "reserved / always 1", then later as
+> a single "random mode" flag. Both were misreads from partial captures. The current model
+> (byte 9 = group size, byte 10 = group leader / random-mode selector, byte 11 = random-draw
+> enable) is confirmed by a battery of controlled HCI captures — see "Random Mode".
 
 ### Trailer (4 bytes, after all points)
 
@@ -151,46 +153,93 @@ Returns: `m1speed`, `m2speed`, `xaxis`, `yaxis`, `zaxis`
 
 The original app may apply device-specific adjustments from `ballSettings` / `minorAdjustments` on top of base-conf values. Without device calibration, base-conf values work correctly.
 
-## Advanced Patterns (Multi-Ball)
+## Advanced Patterns (Multi-Ball) — the "step" model
 
-Advanced drills contain multiple `BallEntry` objects, each with their own ball/spin/power/points/ballTime. Each ball entry's points are encoded as separate 12-byte blocks in sequence within the same payload.
+An advanced (dynamic) drill is an **ordered list of steps**. Each step is one ball configuration
+(ball / spin / power / ballTime) plus **1 to 5 target positions**. The original app's editor caps a
+step at **5 position markers**; to cover more positions you add more steps.
 
-**TODO**: The timing between different ball types in a sequence needs further investigation. The original app likely uses a different mechanism for inter-ball timing in advanced drills.
+Steps map onto the payload as **contiguous groups of 12-byte points** (byte 9 = group size). A
+step's config is baked into every one of its points (bytes 0-4), so distinct steps just sit
+back-to-back in the payload with their own motor bytes — there is no separate step delimiter or
+inter-step timing field beyond the per-point `ballTime`/`repeatDelay`.
+
+There are two kinds of step:
+
+- **Single-ball step** (1 position) → a group of size 1 (`b9=1`).
+- **Multi-ball step** (2-5 positions) → one group of that size (`b9=N`), and it is **always
+  within-step random** ("fire a random one of its balls"); the app has no fixed-order multi-ball
+  step. See "Random Mode".
 
 ## Random Mode
 
-Random mode is a firmware feature, not something the app simulates. The firmware parses the
-pattern payload, chunks points into groups (byte 9 = group size), and for each shot decides the
-landing position based on two per-point control bytes:
+Randomness is a firmware feature — the app only sets flag bytes, and the robot's LCG
+(`seed = seed*mult + 12345`) does the drawing. The firmware chunks the points into **groups**
+(byte 9 = group size) and, for each point whose **byte 11 == 1**, draws from a *shuffle-bag*:
+`index = rand() % count`, skipping already-used entries and marking each used, resetting the bag
+once every entry has fired. `byte 7 == 0x80` travels with every randomised point.
 
-- **byte 11 == 1** → the firmware draws the position from a *shuffle-bag* of the enabled groups:
-  `index = rand() % count`, skipping already-used entries and marking each as used, resetting the
-  bag once every position has been fired. `rand()` is a firmware LCG (`seed = seed*mult + 12345`).
-- **byte 10 == 2** → sets the firmware's random mode-flag (governs bag reset between cycles).
-- **byte 7 == 0x80** → observed on random drills in the original app's traffic.
+Two independent axes of randomness compose through that one mechanism:
 
-**Basic vs advanced random (confirmed by capture).** The two encodings differ:
+### Axis 1 — step-order random (shuffle the order of steps)
 
-- **Basic** full-random drill (whole drill is one random ball type): every point has
-  `b7=0x80, b10=2, b11=1`.
-- **Advanced** per-ball random (a `BallEntry` marked random inside a multi-ball drill): the random
-  ball's points use `b7=0x80, b11=1` **with `b10=0`** — `b10=2` is not set on the advanced path.
-  Non-random balls (e.g. a serve) keep all three at 0. `b11=1` is the operative trigger in both
-  cases; `b7=0x80` travels with it.
+Each participating step stays as its own point(s) and gets `b7=0x80, b11=1` with `b10=0`. The
+firmware's bag then draws over these groups, i.e. it **shuffles the order** in which the steps
+fire. (Everything still fires; only the order varies.)
 
-With bytes 10/11 left at 0 the firmware walks the positions **in stored order**, which is why a
-"random" drill built with those bytes zeroed plays as a fixed sequence. A single random point
-(basic mode) looks like this on the wire (motor bytes vary):
+### Axis 2 — within-step random (a multi-ball step fires a random one of its balls)
+
+A multi-ball step's N points form **one group**: every point carries `b9=N, b7=0x80, b11=1`, and
+the group's **first point additionally carries `b10=1`** — that leader bit is how the firmware
+delimits the group. The bag then draws **within** the group.
+
+`b10=1` on the leader is the "random within a multi-point group" firmware code path. It is
+distinct from **basic** whole-drill random, which uses `b10=2` on every point.
+
+**"Double random"** = a within-step group (`b9=N, b10=1`) whose points are also `b11=1`, so the
+group takes part in the order shuffle-bag alongside its sibling steps. On the wire this is
+identical to a lone within-step group; the ordering effect only manifests when sibling groups
+exist to shuffle against.
+
+### Probability weighting via duplicate positions
+
+A step is an ordered **list** of up to 5 balls, not a set — the same position may appear more than
+once, which adds it to the shuffle-bag again and raises its draw odds. E.g. a step
+`{5, 5, 11, 11, 20}` draws position 5 and position 11 with probability 2/5 each and position 20
+with 1/5.
+
+### Summary of the flag combinations
 
 ```
-14 14 22 11 0a 00 01 80 09 01 02 01
-m1 m2  x  y  z │rDly│ b7 b8 b9 b10 b11
-              (00 01) 80 09 01 02 01
+Step kind                         b7    b9   b10  b11
+in-order single-ball step         0x00   1    0    0
+order-random single-ball step     0x80   1    0    1
+within-random multi-ball step:
+   - group leader (first point)   0x80   N    1    1
+   - other points in the group    0x80   N    0    1
+basic whole-drill random (each)   0x80   1    2    1
 ```
 
-Source: HCI capture of the original app playing a random drill, cross-checked against the robot
-firmware (Ghidra): dispatcher `FUN_08013…`, shuffle-bag selector, and the LCG at the
-random-source function.
+### Worked example — bundled "Half Long 2/3 FH Loop"
+
+Two within-random steps of 5 balls each, both flagged for order-random between them, repeated 15×.
+Note the `b10=1` leader on each group and the duplicated positions (weighting):
+
+```
+      m1 m2  x  y   b9 b10 b11
+grp1   7 22  5 15    5   1   1   ← step 1 leader
+       7 22  5 15    5   0   1   ← dup of position 5 (weight 2/5)
+       8 23 11 15    5   0   1
+       8 23 11 15    5   0   1   ← dup of position 11 (weight 2/5)
+       7 22 20 15    5   0   1   ← position 20 (weight 1/5)
+grp2   7 22  5 15    5   1   1   ← step 2 leader
+       ... (same five) ...
+trailer: 0f 00 00 00             ← repeatCount = 15
+```
+
+Source: a battery of controlled HCI captures of the original app (in-order, step-order random,
+within-step random, and the FH-loop preset), cross-checked against the robot firmware (Ghidra):
+dispatcher, shuffle-bag selector, and the LCG at the random-source function.
 
 ## Stopping a running drill
 
@@ -245,10 +294,18 @@ In practice, CMD 0x01 worked on the tested robot (firmware 02.02).
 ## Open Questions
 
 - Exact role of `fed5` (WRITE) characteristic
-- How advanced drill timing/sequencing works (inter-ball delays)
-- Trailer bytes — values may differ for advanced vs basic drills
 - CMD 0x98 behavior vs CMD 0x01 on different firmware versions
 - Post-pattern CMD 0x03 — is it required or optional?
 - Exact mapping of `adjustPosition` and `adjustSpin` flags to motor behavior
-- Whether random within a multi-point group (byte 10 == 1, a second firmware code path) is used by the original app for anything
-- Exact role of per-point byte 7 = 0x80 on random drills (present on the wire; firmware usage not fully traced)
+- Firmware playback of a within-step group: does `b10=1` fire all N balls once each in random
+  order per cycle, or one random ball per cycle? (Flag encoding is confirmed; the exact draw
+  cadence is not yet observed by ball count.)
+- **Device ID field mismatch:** in the captured original-app frames the 8-byte device-ID field
+  (`68 01 <devid> 68 …`) did not match the name-derived ID (`J-34EAE7F6CDD60001`); the CRC still
+  validated. Our app sends the name-derived ID and the robot accepts it, so the field may be
+  ignored or derived differently — not yet traced.
+
+**Resolved** (previously open): byte 9 is a per-point group size (1-5); byte 10 selects the random
+code path (`1` = within-group leader, `2` = basic whole-drill); byte 7 = 0x80 marks a randomised
+point. Advanced multi-ball timing/sequencing is just contiguous per-step groups (no separate
+inter-step field). See "Random Mode" and "Advanced Patterns".
