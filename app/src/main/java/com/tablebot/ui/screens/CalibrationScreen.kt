@@ -26,7 +26,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.tablebot.FeatureFlags
 import com.tablebot.ble.ConnectionState
 import com.tablebot.data.*
 import com.tablebot.ui.components.BallSettingsDropdowns
@@ -97,6 +96,9 @@ fun CalibrationScreen(
 
     // Observe the motorConfig to reactively derive calibrated cells
     val motorConfig = robotVm.motorConfigFlow.collectAsState().value
+
+    // Experimental "infer row from ends" PoC — toggled in Settings (off by default).
+    val inferRowEnabled by AppPrefs.inferRowCalibration.collectAsState()
 
     // Load params when selection changes
     fun loadParams() {
@@ -350,9 +352,9 @@ fun CalibrationScreen(
                         }
                     }
 
-                    // ── PoC (feature-flagged, off by default): infer this row's middle cells
-                    //    by interpolating between its two hand-calibrated ends ──
-                    if (FeatureFlags.INFER_ROW_CALIBRATION) {
+                    // ── PoC (toggled in Settings, off by default): infer this row's middle
+                    //    cells by interpolating between its two hand-calibrated ends ──
+                    if (inferRowEnabled) {
                         var pocMessage by remember(selectedCell) { mutableStateOf<String?>(null) }
                         val rowNum = rowOf(selectedCell!!) + 1
                         val leftEnd = rowLeftCell(selectedCell!!)
