@@ -277,7 +277,7 @@ fun AdvancedEditorContent(
             reps = state.repeatNum,
             ballCount = state.ballCount,
             durationSec = state.durationSec,
-            ballsPerPattern = state.ballList.sumOf { it.points.size },
+            ballsPerPattern = state.steps.sumOf { it.balls.size },
             repsRange = 1..50,
             onPlayModeChange = { state.playMode = it },
             onRepsChange = { state.repeatNum = it },

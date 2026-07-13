@@ -339,7 +339,7 @@ private fun AdvancedTrainingCard(
                     reps = editT.repeatNum,
                     ballCount = editT.ballCount,
                     durationSec = editT.durationSec,
-                    ballsPerPattern = editT.ballList.sumOf { it.points.size },
+                    ballsPerPattern = editT.steps.sumOf { it.balls.size },
                     repsRange = 1..50,
                     onPlayModeChange = { editT = editT.copy(playMode = it); onUpdate(editT) },
                     onRepsChange = { editT = editT.copy(repeatNum = it); onUpdate(editT) },
