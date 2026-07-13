@@ -410,6 +410,21 @@ class RobotProtocolTest {
         assertEquals(0.toByte(), buf[1*12 + 10])         // non-leader
     }
 
+    // Mirrors the decoded "Half Long 2/3 FH Loop" frame in PROTOCOL.md: two within-random
+    // steps of 5 balls each, with duplicate positions expressing weighting.
+    @Test fun `advanced FH-loop preset shape encodes two weighted 5-ball groups`() {
+        val training = adv(step(5, 5, 11, 11, 20), step(5, 5, 11, 11, 20))
+        val buf = RobotProtocol.encodeAdvancedPattern(training, lookup = nullLookup)
+        assertEquals((10 * 12) + 4, buf.size)
+        for (i in 0 until 10) {
+            val off = i * 12
+            assertEquals("point $i b9 groupSize", 5.toByte(), buf[off + 9])
+            assertEquals("point $i b11 random-trigger", 1.toByte(), buf[off + 11])
+            val expectedB10 = if (off == 0 || off == 5 * 12) 1 else 0
+            assertEquals("point $i b10 leader", expectedB10.toByte(), buf[off + 10])
+        }
+    }
+
     // ── CRC consistency ───────────────────────────────────────────────────────
 
     @Test
