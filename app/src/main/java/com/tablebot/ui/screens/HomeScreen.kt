@@ -175,13 +175,8 @@ fun HomeScreen(
                         },
                         connected = connectionState == ConnectionState.CONNECTED,
                         isPlaying = isPlaying,
-                        onPlay = { training, times, ballTime ->
-                            robotVm.playBasicTraining(
-                                training,
-                                timesOverride = times,
-                                ballTimeOverride = ballTime,
-                            )
-                        },
+                        onPlay = { training -> robotVm.playBasicTraining(training) },
+                        onUpdate = { trainingVm.saveBasicTraining(it) },
                         onStop = { robotVm.stop() },
                         onEdit = { onEditBasic(it.id) },
                         onDelete = { trainingVm.deleteBasicTraining(it.id) },
@@ -194,13 +189,8 @@ fun HomeScreen(
                         },
                         connected = connectionState == ConnectionState.CONNECTED,
                         isPlaying = isPlaying,
-                        onPlay = { training, repeatNum, repeatDelay ->
-                            robotVm.playAdvancedTraining(
-                                training,
-                                repeatNumOverride = repeatNum,
-                                repeatDelayOverride = repeatDelay,
-                            )
-                        },
+                        onPlay = { training -> robotVm.playAdvancedTraining(training) },
+                        onUpdate = { trainingVm.saveAdvancedTraining(it) },
                         onStop = { robotVm.stop() },
                         onEdit = { onEditAdvanced(it.id) },
                         onDelete = { trainingVm.deleteAdvancedTraining(it.id) },

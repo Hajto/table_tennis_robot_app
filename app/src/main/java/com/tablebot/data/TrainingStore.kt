@@ -2,6 +2,8 @@ package com.tablebot.data
 
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -13,6 +15,10 @@ class TrainingStore(private val context: Context) {
 
     private val basicFile get() = File(context.filesDir, "basic-trainings.json")
     private val advancedFile get() = File(context.filesDir, "advanced-trainings.json")
+
+    // Serializes read-modify-write cycles so concurrent saves (e.g. a slider dragged
+    // through many values) can't interleave and lose updates or corrupt the file.
+    private val writeMutex = Mutex()
 
     /**
      * Run one-shot migration if needed, then load basic trainings from local file or assets.
@@ -80,43 +86,55 @@ class TrainingStore(private val context: Context) {
     }
 
     suspend fun saveBasicTraining(training: BasicTraining) = withContext(Dispatchers.IO) {
-        val list = loadBasicTrainings().toMutableList()
-        val toSave = training.copy(isDefault = false)
-        val idx = list.indexOfFirst { it.id == toSave.id }
-        if (idx >= 0) list[idx] = toSave else list.add(0, toSave)
-        basicFile.writeText(json.encodeToString(list))
+        writeMutex.withLock {
+            val list = loadBasicTrainings().toMutableList()
+            val toSave = training.copy(isDefault = false)
+            val idx = list.indexOfFirst { it.id == toSave.id }
+            if (idx >= 0) list[idx] = toSave else list.add(0, toSave)
+            basicFile.writeText(json.encodeToString(list))
+        }
     }
 
     suspend fun saveAdvancedTraining(training: AdvancedTraining) = withContext(Dispatchers.IO) {
-        val list = loadAdvancedTrainings().toMutableList()
-        val toSave = training.copy(isDefault = false)
-        val idx = list.indexOfFirst { it.id == toSave.id }
-        if (idx >= 0) list[idx] = toSave else list.add(0, toSave)
-        advancedFile.writeText(json.encodeToString(list))
+        writeMutex.withLock {
+            val list = loadAdvancedTrainings().toMutableList()
+            val toSave = training.copy(isDefault = false)
+            val idx = list.indexOfFirst { it.id == toSave.id }
+            if (idx >= 0) list[idx] = toSave else list.add(0, toSave)
+            advancedFile.writeText(json.encodeToString(list))
+        }
     }
 
     suspend fun deleteBasicTraining(id: Int) = withContext(Dispatchers.IO) {
-        val list = loadBasicTrainings().filter { it.id != id }
-        basicFile.writeText(json.encodeToString(list))
+        writeMutex.withLock {
+            val list = loadBasicTrainings().filter { it.id != id }
+            basicFile.writeText(json.encodeToString(list))
+        }
     }
 
     suspend fun deleteAdvancedTraining(id: Int) = withContext(Dispatchers.IO) {
-        val list = loadAdvancedTrainings().filter { it.id != id }
-        advancedFile.writeText(json.encodeToString(list))
+        writeMutex.withLock {
+            val list = loadAdvancedTrainings().filter { it.id != id }
+            advancedFile.writeText(json.encodeToString(list))
+        }
     }
 
     suspend fun toggleBasicFavourite(id: Int) = withContext(Dispatchers.IO) {
-        val list = loadBasicTrainings().map {
-            if (it.id == id) it.copy(isFavourite = if (it.isFavourite == 1) 0 else 1) else it
+        writeMutex.withLock {
+            val list = loadBasicTrainings().map {
+                if (it.id == id) it.copy(isFavourite = if (it.isFavourite == 1) 0 else 1) else it
+            }
+            basicFile.writeText(json.encodeToString(list))
         }
-        basicFile.writeText(json.encodeToString(list))
     }
 
     suspend fun toggleAdvancedFavourite(id: Int) = withContext(Dispatchers.IO) {
-        val list = loadAdvancedTrainings().map {
-            if (it.id == id) it.copy(isFavourite = if (it.isFavourite == 1) 0 else 1) else it
+        writeMutex.withLock {
+            val list = loadAdvancedTrainings().map {
+                if (it.id == id) it.copy(isFavourite = if (it.isFavourite == 1) 0 else 1) else it
+            }
+            advancedFile.writeText(json.encodeToString(list))
         }
-        advancedFile.writeText(json.encodeToString(list))
     }
 
     @Deprecated("Use TrainingViewModel.nextBasicId() which derives from in-memory state")
@@ -168,37 +186,39 @@ class TrainingStore(private val context: Context) {
      * For collisions in [overwriteKeys], replace existing. Non-colliding always added with fresh ID.
      */
     suspend fun importBundle(bundle: DrillExportBundle, overwriteKeys: Set<String>) = withContext(Dispatchers.IO) {
-        val existingBasic = loadBasicTrainings().toMutableList()
-        val existingAdvanced = loadAdvancedTrainings().toMutableList()
+        writeMutex.withLock {
+            val existingBasic = loadBasicTrainings().toMutableList()
+            val existingAdvanced = loadAdvancedTrainings().toMutableList()
 
-        var nextBasic = (existingBasic.maxOfOrNull { it.id } ?: 999) + 1
-        var nextAdvanced = (existingAdvanced.maxOfOrNull { it.id } ?: 999) + 1
-        var basicChanged = false
-        var advancedChanged = false
+            var nextBasic = (existingBasic.maxOfOrNull { it.id } ?: 999) + 1
+            var nextAdvanced = (existingAdvanced.maxOfOrNull { it.id } ?: 999) + 1
+            var basicChanged = false
+            var advancedChanged = false
 
-        bundle.basic.forEach { incoming ->
-            val collidingIdx = existingBasic.indexOfFirst { it.name == incoming.name }
-            if (collidingIdx >= 0 && "basic:${incoming.name}" in overwriteKeys) {
-                existingBasic[collidingIdx] = incoming.copy(id = existingBasic[collidingIdx].id, isDefault = false)
-                basicChanged = true
-            } else if (collidingIdx < 0) {
-                existingBasic.add(0, incoming.copy(id = nextBasic++, isDefault = false))
-                basicChanged = true
+            bundle.basic.forEach { incoming ->
+                val collidingIdx = existingBasic.indexOfFirst { it.name == incoming.name }
+                if (collidingIdx >= 0 && "basic:${incoming.name}" in overwriteKeys) {
+                    existingBasic[collidingIdx] = incoming.copy(id = existingBasic[collidingIdx].id, isDefault = false)
+                    basicChanged = true
+                } else if (collidingIdx < 0) {
+                    existingBasic.add(0, incoming.copy(id = nextBasic++, isDefault = false))
+                    basicChanged = true
+                }
             }
-        }
 
-        bundle.advanced.forEach { incoming ->
-            val collidingIdx = existingAdvanced.indexOfFirst { it.name == incoming.name }
-            if (collidingIdx >= 0 && "advanced:${incoming.name}" in overwriteKeys) {
-                existingAdvanced[collidingIdx] = incoming.copy(id = existingAdvanced[collidingIdx].id, isDefault = false)
-                advancedChanged = true
-            } else if (collidingIdx < 0) {
-                existingAdvanced.add(0, incoming.copy(id = nextAdvanced++, isDefault = false))
-                advancedChanged = true
+            bundle.advanced.forEach { incoming ->
+                val collidingIdx = existingAdvanced.indexOfFirst { it.name == incoming.name }
+                if (collidingIdx >= 0 && "advanced:${incoming.name}" in overwriteKeys) {
+                    existingAdvanced[collidingIdx] = incoming.copy(id = existingAdvanced[collidingIdx].id, isDefault = false)
+                    advancedChanged = true
+                } else if (collidingIdx < 0) {
+                    existingAdvanced.add(0, incoming.copy(id = nextAdvanced++, isDefault = false))
+                    advancedChanged = true
+                }
             }
-        }
 
-        if (basicChanged) basicFile.writeText(json.encodeToString(existingBasic))
-        if (advancedChanged) advancedFile.writeText(json.encodeToString(existingAdvanced))
+            if (basicChanged) basicFile.writeText(json.encodeToString(existingBasic))
+            if (advancedChanged) advancedFile.writeText(json.encodeToString(existingAdvanced))
+        }
     }
 }

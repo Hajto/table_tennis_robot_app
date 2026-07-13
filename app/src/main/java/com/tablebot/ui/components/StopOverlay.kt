@@ -17,6 +17,7 @@ import androidx.compose.ui.unit.sp
 @Composable
 fun StopOverlay(
     trainingName: String?,
+    countdownSec: Int? = null,
     onStop: () -> Unit,
 ) {
     Box(
@@ -51,6 +52,16 @@ fun StopOverlay(
                 fontSize = 48.sp,
                 fontWeight = FontWeight.Black,
             )
+
+            countdownSec?.let {
+                Spacer(Modifier.height(16.dp))
+                Text(
+                    formatDurationMmSs(it),
+                    color = Color.White,
+                    fontSize = 40.sp,
+                    fontWeight = FontWeight.Bold,
+                )
+            }
 
             Spacer(Modifier.height(16.dp))
 

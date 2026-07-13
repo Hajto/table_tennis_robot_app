@@ -11,8 +11,12 @@ object AppPrefs {
     private const val KEY_DEBUG_MODE = "debug_mode"
     private const val KEY_INFER_ROW_CALIBRATION = "infer_row_calibration"
     private const val KEY_HAS_SEEN_ONBOARDING = "has_seen_onboarding"
+    private const val KEY_BALL_TRAY_CAPACITY = "ball_tray_capacity"
     private const val KEY_TRAINING_MIGRATION_VERSION = "training_migration_version"
     const val CURRENT_MIGRATION_VERSION = 2 // 1 = tags, 2 = isDefault
+
+    /** Default tray capacity (a JOOLA with wings holds ~100 balls). */
+    const val DEFAULT_BALL_TRAY_CAPACITY = 100
 
     private lateinit var prefs: SharedPreferences
 
@@ -28,12 +32,16 @@ object AppPrefs {
     private val _hasSeenOnboarding = MutableStateFlow(false)
     val hasSeenOnboarding: StateFlow<Boolean> = _hasSeenOnboarding
 
+    private val _ballTrayCapacity = MutableStateFlow(DEFAULT_BALL_TRAY_CAPACITY)
+    val ballTrayCapacity: StateFlow<Int> = _ballTrayCapacity
+
     fun init(context: Context) {
         prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         _showFieldNumbers.value = prefs.getBoolean(KEY_SHOW_FIELD_NUMBERS, true)
         _debugMode.value = prefs.getBoolean(KEY_DEBUG_MODE, false)
         _inferRowCalibration.value = prefs.getBoolean(KEY_INFER_ROW_CALIBRATION, false)
         _hasSeenOnboarding.value = prefs.getBoolean(KEY_HAS_SEEN_ONBOARDING, false)
+        _ballTrayCapacity.value = prefs.getInt(KEY_BALL_TRAY_CAPACITY, DEFAULT_BALL_TRAY_CAPACITY)
     }
 
     fun setShowFieldNumbers(show: Boolean) {
@@ -54,6 +62,11 @@ object AppPrefs {
     fun setHasSeenOnboarding(seen: Boolean) {
         _hasSeenOnboarding.value = seen
         prefs.edit().putBoolean(KEY_HAS_SEEN_ONBOARDING, seen).apply()
+    }
+
+    fun setBallTrayCapacity(capacity: Int) {
+        _ballTrayCapacity.value = capacity
+        prefs.edit().putInt(KEY_BALL_TRAY_CAPACITY, capacity).apply()
     }
 
     fun trainingMigrationVersion(): Int =
