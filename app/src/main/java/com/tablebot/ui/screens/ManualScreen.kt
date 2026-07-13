@@ -516,8 +516,10 @@ val helpArticles: List<HelpArticle> = listOf(
             HelpSection.Illustration { IllustrationWeightedGrid() },
             HelpSection.Heading("Randomising the target"),
             HelpSection.Paragraph(
-                "When a ball card has more than one position it automatically fires to a randomly " +
-                "chosen one of them each time (\"Randomises target, weighted by repeats\"). " +
+                "To randomise the target, give a ball card more than one position: tap two or more " +
+                "grid cells (tap a cell again to weight it, and long-press a cell to remove one). " +
+                "A card with two or more positions then automatically fires to a randomly chosen " +
+                "one each time (\"Randomises target, weighted by repeats\"). " +
                 "A card with a single position always fires there."
             ),
             HelpSection.Illustration { IllustrationRandomTarget() },
