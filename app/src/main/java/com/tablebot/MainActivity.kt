@@ -328,6 +328,7 @@ class MainActivity : ComponentActivity() {
                     if (isPlaying) {
                         StopOverlay(
                             trainingName = robotVm.currentTrainingName.collectAsState().value,
+                            countdownSec = robotVm.playCountdownSec.collectAsState().value,
                             onStop = { robotVm.stop() },
                         )
                     }

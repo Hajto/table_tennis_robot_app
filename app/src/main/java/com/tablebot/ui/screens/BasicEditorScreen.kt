@@ -42,6 +42,9 @@ class DrillEditorState(
     var isFavourite by mutableIntStateOf(initial?.isFavourite ?: 0)
     var skillLevel: SkillLevel = initial?.skillLevel ?: SkillLevel()
     var tags by mutableStateOf(initial?.tags ?: emptyList())
+    var playMode by mutableIntStateOf(initial?.playMode ?: 0)
+    var ballCount by mutableIntStateOf(initial?.ballCount ?: 30)
+    var durationSec by mutableIntStateOf(initial?.durationSec ?: 60)
 
     fun loadFrom(training: BasicTraining) {
         id = training.id
@@ -58,6 +61,9 @@ class DrillEditorState(
         isFavourite = training.isFavourite
         skillLevel = training.skillLevel
         tags = training.tags
+        playMode = training.playMode
+        ballCount = training.ballCount
+        durationSec = training.durationSec
     }
 
     fun toTraining(): BasicTraining = BasicTraining(
@@ -67,6 +73,7 @@ class DrillEditorState(
         ballTime = ballTime, times = times, landType = landType,
         points = points, adjustSpin = adjustSpin, adjustPosition = adjustPosition,
         isFavourite = isFavourite, skillLevel = skillLevel, tags = tags,
+        playMode = playMode, ballCount = ballCount, durationSec = durationSec,
     )
 }
 
@@ -270,24 +277,19 @@ fun DrillEditorContent(
         // 3. Ball Interval
         StepSlider("Ball Interval", state.ballTime, 2..30) { state.ballTime = it }
 
-        // 4. Play Mode
-        Text("Play Mode", style = MaterialTheme.typography.labelLarge)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            FilterChip(
-                selected = true,
-                onClick = { },
-                label = { Text("Count") },
-            )
-            FilterChip(
-                selected = false,
-                onClick = { },
-                enabled = false,
-                label = { Text("Time (coming soon)") },
-            )
-        }
-
-        // 5. Repetitions
-        StepSlider("Repetitions", state.times, 1..100) { state.times = it }
+        // 4. Play mode
+        com.tablebot.ui.components.PlayModeSelector(
+            playMode = state.playMode,
+            reps = state.times,
+            ballCount = state.ballCount,
+            durationSec = state.durationSec,
+            ballsPerPattern = state.points.size,
+            repsRange = 1..100,
+            onPlayModeChange = { state.playMode = it },
+            onRepsChange = { state.times = it },
+            onBallCountChange = { state.ballCount = it },
+            onDurationChange = { state.durationSec = it },
+        )
 
         // 6. Ball Adjustments (disabled)
         Text("Ball Adjustments", style = MaterialTheme.typography.labelLarge)

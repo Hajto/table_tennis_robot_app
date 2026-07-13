@@ -11,6 +11,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.tablebot.data.AppPrefs
+import com.tablebot.ui.components.StepSlider
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -18,6 +19,7 @@ fun SettingsScreen(onBack: () -> Unit) {
     val showFieldNumbers by AppPrefs.showFieldNumbers.collectAsState()
     val debugMode by AppPrefs.debugMode.collectAsState()
     val inferRowCalibration by AppPrefs.inferRowCalibration.collectAsState()
+    val ballTrayCapacity by AppPrefs.ballTrayCapacity.collectAsState()
 
     Scaffold(
         topBar = {
@@ -62,6 +64,25 @@ fun SettingsScreen(onBack: () -> Unit) {
                 checked = inferRowCalibration,
                 onCheckedChange = { AppPrefs.setInferRowCalibration(it) },
             )
+
+            HorizontalDivider()
+
+            Column(modifier = Modifier.padding(vertical = 12.dp)) {
+                Text("Ball tray capacity", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    "Caps how many balls a drill will request in Reps and Ball-count modes. Lower it if you run without wings.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Spacer(Modifier.height(8.dp))
+                StepSlider(
+                    label = "Capacity",
+                    value = ballTrayCapacity,
+                    range = 10..250,
+                    displayValue = { "$it balls" },
+                    onValueChange = { AppPrefs.setBallTrayCapacity(it) },
+                )
+            }
         }
     }
 }
