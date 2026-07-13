@@ -13,8 +13,8 @@ android {
         applicationId = "com.tablebot"
         minSdk = 26
         targetSdk = 34
-        versionCode = 5
-        versionName = "0.2.3"
+        versionCode = 6
+        versionName = "0.3.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
