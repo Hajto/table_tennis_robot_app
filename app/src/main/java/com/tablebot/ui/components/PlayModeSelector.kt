@@ -49,7 +49,7 @@ fun PlayModeSelector(
             }
             PlayMode.BALL_COUNT -> {
                 val bpp = ballsPerPattern.coerceAtLeast(1)
-                StepSlider("Ball count", ballCount, 1..300, displayValue = { "$it  (≈ ${(it + bpp - 1) / bpp} reps)" }) {
+                StepSlider("Ball count", ballCount, 1..100, displayValue = { "$it  (≈ ${(it + bpp - 1) / bpp} reps)" }) {
                     onBallCountChange(it)
                 }
             }
