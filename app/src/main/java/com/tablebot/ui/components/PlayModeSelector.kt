@@ -1,0 +1,60 @@
+package com.tablebot.ui.components
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import com.tablebot.data.PlayMode
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun PlayModeSelector(
+    playMode: Int,
+    reps: Int,
+    ballCount: Int,
+    durationSec: Int,
+    ballsPerPattern: Int,
+    repsRange: IntRange,
+    onPlayModeChange: (Int) -> Unit,
+    onRepsChange: (Int) -> Unit,
+    onBallCountChange: (Int) -> Unit,
+    onDurationChange: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val labels = listOf("Reps", "Balls", "Time")
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+            labels.forEachIndexed { i, label ->
+                SegmentedButton(
+                    selected = playMode == i,
+                    onClick = { onPlayModeChange(i) },
+                    shape = SegmentedButtonDefaults.itemShape(i, labels.size),
+                ) { Text(label) }
+            }
+        }
+        when (PlayMode.fromValue(playMode)) {
+            PlayMode.REPETITIONS -> {
+                val bpp = ballsPerPattern.coerceAtLeast(1)
+                StepSlider("Repetitions", reps, repsRange, displayValue = { "$it  (≈ ${it * bpp} balls)" }) {
+                    onRepsChange(it)
+                }
+            }
+            PlayMode.BALL_COUNT -> {
+                val bpp = ballsPerPattern.coerceAtLeast(1)
+                StepSlider("Ball count", ballCount, 1..300, displayValue = { "$it  (≈ ${(it + bpp - 1) / bpp} reps)" }) {
+                    onBallCountChange(it)
+                }
+            }
+            PlayMode.TIMED -> {
+                StepSlider("Duration (seconds)", durationSec, 15..1800, displayValue = { "%d:%02d".format(it / 60, it % 60) }) {
+                    onDurationChange(it)
+                }
+            }
+        }
+    }
+}
