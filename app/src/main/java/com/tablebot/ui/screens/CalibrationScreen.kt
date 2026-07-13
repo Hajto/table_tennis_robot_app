@@ -26,12 +26,18 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.tablebot.FeatureFlags
 import com.tablebot.ble.ConnectionState
 import com.tablebot.data.*
 import com.tablebot.ui.components.BallSettingsDropdowns
 import com.tablebot.ui.components.ConnectionBar
 import com.tablebot.ui.components.StepSlider
 import com.tablebot.viewmodel.RobotViewModel
+import com.tablebot.viewmodel.interpolateCell
+import com.tablebot.viewmodel.rowLeftCell
+import com.tablebot.viewmodel.rowMiddleCells
+import com.tablebot.viewmodel.rowOf
+import com.tablebot.viewmodel.rowRightCell
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -341,6 +347,59 @@ fun CalibrationScreen(
                             modifier = Modifier.weight(1f),
                         ) {
                             Text("Accept")
+                        }
+                    }
+
+                    // ── PoC (feature-flagged, off by default): infer this row's middle cells
+                    //    by interpolating between its two hand-calibrated ends ──
+                    if (FeatureFlags.INFER_ROW_CALIBRATION) {
+                        var pocMessage by remember(selectedCell) { mutableStateOf<String?>(null) }
+                        val rowNum = rowOf(selectedCell!!) + 1
+                        val leftEnd = rowLeftCell(selectedCell!!)
+                        val rightEnd = rowRightCell(selectedCell!!)
+                        OutlinedButton(
+                            onClick = {
+                                scope.launch {
+                                    // Capture the end you're currently editing: slider changes aren't
+                                    // saved until Accept, so without this the infer would read the stale
+                                    // saved value and the reload would snap the slider back (the "reset").
+                                    if (dirty) {
+                                        robotVm.saveMotorParams(buildParams())
+                                        dirty = false
+                                    }
+                                    val mc = robotVm.motorConfig
+                                    val left = mc.lookup(ball, spin, power, leftEnd)
+                                    val right = mc.lookup(ball, spin, power, rightEnd)
+                                    if (left == null || right == null) {
+                                        pocMessage = "Set + Accept both ends first — cells $leftEnd and $rightEnd."
+                                    } else {
+                                        val filled = mutableListOf<Int>()
+                                        for (mid in rowMiddleCells(selectedCell!!)) {
+                                            val base = mc.lookup(ball, spin, power, mid) ?: MotorParams(
+                                                id = mc.nextId(), ball = ball, spin = spin, power = power,
+                                                landarea = mid, m1speed = 0, m2speed = 0, xaxis = 0, yaxis = 0, zaxis = 0,
+                                            )
+                                            robotVm.saveMotorParams(interpolateCell(left, right, base))
+                                            filled += mid
+                                        }
+                                        robotVm.reloadMotorConfig()
+                                        loadParams()
+                                        pocMessage = "Filled ${filled.joinToString(", ")} from ends " +
+                                            "$leftEnd(m1=${left.m1speed * 225}) ↔ $rightEnd(m1=${right.m1speed * 225}). " +
+                                            "Ends kept. Play to test; Reset to Factory Defaults to undo."
+                                    }
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text("⚡ Infer row $rowNum middle from ends ($leftEnd↔$rightEnd)")
+                        }
+                        pocMessage?.let {
+                            Text(
+                                it,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
                         }
                     }
 

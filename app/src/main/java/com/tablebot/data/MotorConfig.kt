@@ -79,4 +79,7 @@ class MotorConfig(private val context: Context, private val fileName: String = "
     fun isCustomized(): Boolean = file.exists()
 
     fun isEmpty(): Boolean = configs.isEmpty()
+
+    /** Next free id, for creating a config entry that doesn't exist yet. */
+    fun nextId(): Int = (configs.maxOfOrNull { it.id } ?: 0) + 1
 }
