@@ -92,10 +92,10 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
         ballTimeOverride: Int? = null,
     ) {
         robotManager.drillJob?.cancel()
-        robotManager.drillJob = viewModelScope.launch {
-            _isPlaying.value = true
-            _currentTrainingName.value = training.name
-            val profile = activeProfile.value
+        // History logging is decoupled from the drill path: it runs in its own
+        // coroutine so history I/O can never block or crash drill playback.
+        val profile = activeProfile.value
+        viewModelScope.launch {
             if (historyStore.logEntry(HistoryEntry(
                     trainingName = training.name,
                     trainingType = "basic",
@@ -107,6 +107,10 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
                 ))) {
                 _breakReminder.tryEmit(Unit)
             }
+        }
+        robotManager.drillJob = viewModelScope.launch {
+            _isPlaying.value = true
+            _currentTrainingName.value = training.name
             val payload = RobotProtocol.encodeBasicPattern(
                 training, motorConfig,
                 timesOverride = timesOverride,
@@ -122,10 +126,10 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
         repeatDelayOverride: Int? = null,
     ) {
         robotManager.drillJob?.cancel()
-        robotManager.drillJob = viewModelScope.launch {
-            _isPlaying.value = true
-            _currentTrainingName.value = training.name
-            val profile = activeProfile.value
+        // History logging is decoupled from the drill path: it runs in its own
+        // coroutine so history I/O can never block or crash drill playback.
+        val profile = activeProfile.value
+        viewModelScope.launch {
             if (historyStore.logEntry(HistoryEntry(
                     trainingName = training.name,
                     trainingType = "advanced",
@@ -137,6 +141,10 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
                 ))) {
                 _breakReminder.tryEmit(Unit)
             }
+        }
+        robotManager.drillJob = viewModelScope.launch {
+            _isPlaying.value = true
+            _currentTrainingName.value = training.name
             val payload = RobotProtocol.encodeAdvancedPattern(
                 training, motorConfig,
                 repeatNumOverride = repeatNumOverride,

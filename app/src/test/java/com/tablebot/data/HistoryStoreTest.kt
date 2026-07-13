@@ -136,6 +136,30 @@ class HistoryStoreTest {
     }
 
     @Test
+    fun `unwritable file makes logEntry return false instead of throwing`() = runTest {
+        // A regular file used as a parent directory makes every write/rename
+        // underneath it fail at the filesystem level.
+        val blocker = tmp.newFile("blocker")
+        val store = HistoryStore(File(blocker, "history.json"))
+
+        assertFalse(store.logEntry(entry(T0)))
+        assertTrue(store.loadSessions().isEmpty())
+    }
+
+    @Test
+    fun `write leaves no temp file and stays decodable`() = runTest {
+        val store = HistoryStore(file())
+        store.logEntry(entry(T0))
+
+        val tmpFile = File(file().parentFile, file().name + ".tmp")
+        assertFalse("temp file must not survive a successful write", tmpFile.exists())
+
+        val sessions = store.loadSessions()
+        assertEquals(1, sessions.size)
+        assertEquals(T0, sessions[0].entries[0].timestamp)
+    }
+
+    @Test
     fun `break reminder fires once per 30 continuous minutes`() = runTest {
         val store = HistoryStore(file())
         assertFalse(store.logEntry(entry(T0)))                 // session start

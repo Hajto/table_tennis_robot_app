@@ -41,9 +41,13 @@ class HistoryStore(private val file: File) {
         runCatching {
             json.decodeFromString<List<TrainingSession>>(file.readText())
         }.getOrElse {
-            val backup = File(file.parentFile, file.nameWithoutExtension + ".corrupt.json")
-            file.copyTo(backup, overwrite = true)
-            file.delete()
+            // Quarantine what we can; if even the copy/delete fails, degrade to
+            // an empty result rather than propagating the I/O error.
+            runCatching {
+                val backup = File(file.parentFile, file.nameWithoutExtension + ".corrupt.json")
+                file.copyTo(backup, overwrite = true)
+                file.delete()
+            }
             emptyList()
         }
     }
@@ -59,36 +63,61 @@ class HistoryStore(private val file: File) {
     suspend fun logEntry(entry: HistoryEntry): Boolean = mutex.withLock {
         val now = entry.timestamp
 
-        val sessions = loadSessionsLocked().toMutableList()
-        val last = sessions.lastOrNull()
+        // All file work is guarded: an I/O or decode failure degrades to a
+        // false result rather than throwing (which, on the drill path, would
+        // otherwise crash the app before the drill was ever sent).
+        runCatching {
+            val sessions = loadSessionsLocked().toMutableList()
+            val last = sessions.lastOrNull()
 
-        val sessionStart: Long
-        if (last != null && (now - last.entries.last().timestamp) < SESSION_GAP_MS) {
-            sessions[sessions.lastIndex] = last.copy(
-                entries = last.entries + entry,
-            )
-            sessionStart = last.startedAt
-        } else {
-            sessions.add(
-                TrainingSession(
-                    id = UUID.randomUUID().toString(),
-                    startedAt = now,
-                    entries = listOf(entry),
+            val sessionStart: Long
+            if (last != null && (now - last.entries.last().timestamp) < SESSION_GAP_MS) {
+                sessions[sessions.lastIndex] = last.copy(
+                    entries = last.entries + entry,
                 )
-            )
-            sessionStart = now
+                sessionStart = last.startedAt
+            } else {
+                sessions.add(
+                    TrainingSession(
+                        id = UUID.randomUUID().toString(),
+                        startedAt = now,
+                        entries = listOf(entry),
+                    )
+                )
+                sessionStart = now
+            }
+
+            withContext(Dispatchers.IO) { writeAtomically(json.encodeToString(sessions)) }
+
+            val elapsed = now - sessionStart
+            val shouldRemind = elapsed >= BREAK_INTERVAL_MS &&
+                (now - lastBreakReminderAt) >= BREAK_INTERVAL_MS
+            if (shouldRemind) lastBreakReminderAt = now
+            shouldRemind
+        }.getOrDefault(false)
+    }
+
+    /**
+     * Writes [contents] via a sibling temp file then renames it over [file].
+     * Rename within a directory is atomic on Android/Linux filesystems, so a
+     * crash mid-write can only ever lose the newest entry — never truncate or
+     * corrupt the existing history. Throws on failure so the caller's
+     * [runCatching] can degrade gracefully; leaves no temp file on success.
+     */
+    private fun writeAtomically(contents: String) {
+        val tmp = File(file.parentFile, file.name + ".tmp")
+        tmp.writeText(contents)
+        if (!tmp.renameTo(file)) {
+            file.delete()
+            if (!tmp.renameTo(file)) {
+                tmp.delete()
+                error("Failed to rename ${tmp.path} to ${file.path}")
+            }
         }
-
-        withContext(Dispatchers.IO) { file.writeText(json.encodeToString(sessions)) }
-
-        val elapsed = now - sessionStart
-        val shouldRemind = elapsed >= BREAK_INTERVAL_MS &&
-            (now - lastBreakReminderAt) >= BREAK_INTERVAL_MS
-        if (shouldRemind) lastBreakReminderAt = now
-        shouldRemind
     }
 
     suspend fun clearHistory() = mutex.withLock {
-        withContext(Dispatchers.IO) { file.delete() }
+        runCatching { withContext(Dispatchers.IO) { file.delete() } }
+        Unit
     }
 }
