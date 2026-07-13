@@ -425,6 +425,24 @@ private fun BallEntryEditor(
                     cellBallNumbers = entryBallNumbers,
                     enabledCells = enabledCells,
                 )
+
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Randomize position", style = MaterialTheme.typography.labelMedium)
+                        Text(
+                            "Shoot this ball to a randomly chosen one of the selected positions.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Switch(
+                        checked = entry.random == 1,
+                        onCheckedChange = { on -> onUpdate(entry.copy(random = if (on) 1 else 0)) },
+                    )
+                }
             }
         }
     }
