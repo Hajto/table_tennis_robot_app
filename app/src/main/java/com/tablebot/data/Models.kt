@@ -1,5 +1,6 @@
 package com.tablebot.data
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -131,6 +132,11 @@ data class TestBallRequest(
 @Serializable
 data class RobotPosition(val x: Float = 0.5f, val y: Float = 0.5f)
 
+/**
+ * On-disk contract: the constant NAMES (JOOLA_V1, JOOLA_V2) — not the labels —
+ * are serialized into persisted files (profiles, training history). Renaming a
+ * constant breaks decoding of existing files; only `label` is safe to change.
+ */
 @Serializable
 enum class RobotType(val label: String) {
     JOOLA_V1("Infinity V1"),
@@ -152,4 +158,51 @@ data class Profile(
 data class ProfileIndex(
     val activeProfileId: String,
     val profiles: List<Profile>,
+)
+
+// ── Training History ──────────────────────────────────────────────────
+
+/**
+ * Immutable capture of exactly what was played, embedded in each history
+ * entry so history survives later edits/deletions of the drill or profile.
+ * Closed sealed hierarchy: kotlinx-serialization writes a "type"
+ * discriminator from the @SerialName values — no SerializersModule needed.
+ */
+@Serializable
+sealed class DrillSnapshot {
+    @Serializable
+    @SerialName("basic")
+    data class Basic(
+        val training: BasicTraining,
+        val timesOverride: Int? = null,
+        val ballTimeOverride: Int? = null,
+    ) : DrillSnapshot()
+
+    @Serializable
+    @SerialName("advanced")
+    data class Advanced(
+        val training: AdvancedTraining,
+        val repeatNumOverride: Int? = null,
+        val repeatDelayOverride: Int? = null,
+    ) : DrillSnapshot()
+}
+
+@Serializable
+data class HistoryEntry(
+    val trainingName: String,
+    val trainingType: String,       // "basic" or "advanced"
+    val trainingId: Int,
+    val timestamp: Long,            // epoch millis
+    // Nullable with null defaults: entries written before these fields
+    // existed must keep decoding (no migration, ever).
+    val snapshot: DrillSnapshot? = null,
+    val profileName: String? = null,
+    val robotType: RobotType? = null,
+)
+
+@Serializable
+data class TrainingSession(
+    val id: String,                 // UUID
+    val startedAt: Long,            // epoch millis of first entry
+    val entries: List<HistoryEntry> = emptyList(),
 )

@@ -6,6 +6,7 @@ import androidx.lifecycle.viewModelScope
 import com.tablebot.ble.ConnectionState
 import com.tablebot.ble.RobotManager
 import com.tablebot.data.*
+import com.tablebot.data.HistoryStore
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -21,6 +22,7 @@ import kotlinx.coroutines.withContext
 class RobotViewModel(app: Application) : AndroidViewModel(app) {
 
     val robotManager = RobotManager(app.applicationContext)
+    val historyStore = HistoryStore(app.applicationContext)
 
     private val _motorConfig = MutableStateFlow(MotorConfig(app.applicationContext))
     val motorConfigFlow: StateFlow<MotorConfig> = _motorConfig
@@ -50,6 +52,9 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
 
     private val _profileError = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val profileError: SharedFlow<String> = _profileError.asSharedFlow()
+
+    private val _breakReminder = MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+    val breakReminder: SharedFlow<Unit> = _breakReminder.asSharedFlow()
 
     private var profilesLoaded = false
 
@@ -87,6 +92,22 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
         ballTimeOverride: Int? = null,
     ) {
         robotManager.drillJob?.cancel()
+        // History logging is decoupled from the drill path: it runs in its own
+        // coroutine so history I/O can never block or crash drill playback.
+        val profile = activeProfile.value
+        viewModelScope.launch {
+            if (historyStore.logEntry(HistoryEntry(
+                    trainingName = training.name,
+                    trainingType = "basic",
+                    trainingId = training.id,
+                    timestamp = System.currentTimeMillis(),
+                    snapshot = DrillSnapshot.Basic(training, timesOverride, ballTimeOverride),
+                    profileName = profile?.name,
+                    robotType = profile?.robotType,
+                ))) {
+                _breakReminder.tryEmit(Unit)
+            }
+        }
         robotManager.drillJob = viewModelScope.launch {
             _isPlaying.value = true
             _currentTrainingName.value = training.name
@@ -105,6 +126,22 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
         repeatDelayOverride: Int? = null,
     ) {
         robotManager.drillJob?.cancel()
+        // History logging is decoupled from the drill path: it runs in its own
+        // coroutine so history I/O can never block or crash drill playback.
+        val profile = activeProfile.value
+        viewModelScope.launch {
+            if (historyStore.logEntry(HistoryEntry(
+                    trainingName = training.name,
+                    trainingType = "advanced",
+                    trainingId = training.id,
+                    timestamp = System.currentTimeMillis(),
+                    snapshot = DrillSnapshot.Advanced(training, repeatNumOverride, repeatDelayOverride),
+                    profileName = profile?.name,
+                    robotType = profile?.robotType,
+                ))) {
+                _breakReminder.tryEmit(Unit)
+            }
+        }
         robotManager.drillJob = viewModelScope.launch {
             _isPlaying.value = true
             _currentTrainingName.value = training.name

@@ -77,14 +77,14 @@ Tap the training name card on the main screen to open the drill library. Use the
 - [x] Dark/light theme support
 - [x] Proper app icon
 - [x] Onboarding / first-use guide
-- [ ] Training history / session logging
-- [ ] Cooldown timer warning (robot suggests 15min break every 2hrs)
+- [x] Training history / session logging (auto-grouped into sessions with 30min gap)
+- [x] Break reminder (suggests 5min break every 30min of continuous training)
 
 ### Data Management
 - [x] Create calibration profiles, will give robot option to be repositioned.
 - [x] Export drills to JSON file (user drills only)
 - [x] Import drills from JSON file with collision resolution
-- [ ] Import/export motor calibration
+- [x] Import/export motor calibration
 - [ ] Backup & restore all data
 - [ ] Share drills via file/link
 
@@ -132,6 +132,7 @@ app/src/main/java/com/tablebot/
     Models.kt           # Training data classes, ball/spin/power enums
     MotorConfig.kt      # Motor parameter lookup from base-conf
     TrainingStore.kt    # JSON-backed local training storage
+    HistoryStore.kt     # Training history with auto session grouping + break reminders
   viewmodel/
     RobotViewModel.kt   # Robot connection and drill playback state
     TrainingViewModel.kt# Training list, search, CRUD operations
@@ -148,6 +149,7 @@ app/src/main/java/com/tablebot/
       TrainingListScreen.kt    # Training card composables (used in library)
       BasicEditorScreen.kt     # DrillEditorState + DrillEditorContent
       AdvancedEditorScreen.kt  # AdvancedEditorState + AdvancedEditorContent
+      HistoryScreen.kt         # Training history grouped by session
       CalibrationScreen.kt     # Per-position motor calibration
       DebugScreen.kt           # Raw byte control for testing
 

@@ -64,6 +64,7 @@ fun QuickPlayScreen(
     onDebug: () -> Unit,
     onSettings: () -> Unit,
     onManual: () -> Unit,
+    onHistory: () -> Unit,
     // Profiles
     activeProfileName: String? = null,
     profileIndex: ProfileIndex? = null,
@@ -328,6 +329,10 @@ fun QuickPlayScreen(
                                     onClick = { menuExpanded = false; onDebug() },
                                 )
                             }
+                            DropdownMenuItem(
+                                text = { Text("Training History") },
+                                onClick = { menuExpanded = false; onHistory() },
+                            )
                             DropdownMenuItem(
                                 text = { Text("Settings") },
                                 onClick = { menuExpanded = false; onSettings() },
