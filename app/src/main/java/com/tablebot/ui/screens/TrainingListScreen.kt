@@ -269,7 +269,7 @@ private fun AdvancedTrainingCard(
                         fontWeight = FontWeight.Bold,
                     )
                     Text(
-                        "${SkillLevelType.fromValue(training.skillLevel.id).label} · ${training.steps.size} balls",
+                        "${SkillLevelType.fromValue(training.skillLevel.id).label} · ${training.steps.size} steps",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

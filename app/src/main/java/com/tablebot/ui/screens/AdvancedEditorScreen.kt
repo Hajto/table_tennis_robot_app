@@ -425,7 +425,7 @@ private fun StepEditor(
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                if (entry.balls.size > 1) {
+                if (entry.withinRandom) {
                     Text(
                         "Randomises target (weighted by repeats)",
                         style = MaterialTheme.typography.bodySmall,
@@ -443,7 +443,10 @@ private fun StepEditor(
                         onUpdate(entry.copy(balls = addBallAt(entry.balls, cellNum)))
                     },
                     onCellLongClick = { cellNum ->
-                        onUpdate(entry.copy(balls = removeBallAt(entry.balls, cellNum)))
+                        // Keep at least one ball per step.
+                        if (entry.balls.size > 1) {
+                            onUpdate(entry.copy(balls = removeBallAt(entry.balls, cellNum)))
+                        }
                     },
                     cellBallNumbers = entryBallCounts,
                     enabledCells = enabledCells,

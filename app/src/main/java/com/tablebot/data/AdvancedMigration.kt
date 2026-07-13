@@ -5,6 +5,7 @@ fun migrateBallEntriesToSteps(ballList: List<BallEntry>): List<Step> =
     ballList.flatMap { e ->
         val random = e.random == 1
         when {
+            e.points.isEmpty() -> emptyList()
             random && e.points.size <= 1 ->
                 listOf(Step(e.ball, e.spin, e.power, e.ballTime, e.points, orderRandom = true))
             random ->

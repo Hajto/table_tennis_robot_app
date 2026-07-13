@@ -225,22 +225,25 @@ object RobotProtocol {
         val effectiveRepeatDelay = repeatDelayOverride ?: training.repeatDelay
         val points = mutableListOf<ByteArray>()
         for (step in training.steps) {
-            val n = step.balls.size
-            val within = n > 1
-            val rnd = within || step.orderRandom
-            step.balls.forEachIndexed { j, p ->
-                val params = lookup(step.ball, step.spin, step.power, p.x)
-                val b = ByteArray(12)
-                b[0] = (params?.m1speed ?: 0).toByte(); b[1] = (params?.m2speed ?: 0).toByte()
-                b[2] = (params?.xaxis ?: 0).toByte(); b[3] = (params?.yaxis ?: 0).toByte()
-                b[4] = (params?.zaxis ?: 0).toByte()
-                b[5] = 0; b[6] = (effectiveRepeatDelay.coerceAtLeast(1) and 0xFF).toByte()
-                b[7] = if (rnd) 0x80.toByte() else 0
-                b[8] = (step.ballTime and 0xFF).toByte()
-                b[9] = n.coerceIn(1, 5).toByte()
-                b[10] = if (within && j == 0) 1 else 0
-                b[11] = if (rnd) 1 else 0
-                points.add(b)
+            // Skip empty steps entirely; chunk balls into within-random groups of
+            // at most 5 so a step with >5 balls never emits a malformed group.
+            step.balls.chunked(5).forEach { chunk ->
+                val m = chunk.size
+                val rnd = m > 1 || step.orderRandom
+                chunk.forEachIndexed { j, p ->
+                    val params = lookup(step.ball, step.spin, step.power, p.x)
+                    val b = ByteArray(12)
+                    b[0] = (params?.m1speed ?: 0).toByte(); b[1] = (params?.m2speed ?: 0).toByte()
+                    b[2] = (params?.xaxis ?: 0).toByte(); b[3] = (params?.yaxis ?: 0).toByte()
+                    b[4] = (params?.zaxis ?: 0).toByte()
+                    b[5] = 0; b[6] = (effectiveRepeatDelay.coerceAtLeast(1) and 0xFF).toByte()
+                    b[7] = if (rnd) 0x80.toByte() else 0
+                    b[8] = (step.ballTime and 0xFF).toByte()
+                    b[9] = m.toByte()
+                    b[10] = if (m > 1 && j == 0) 1 else 0
+                    b[11] = if (rnd) 1 else 0
+                    points.add(b)
+                }
             }
         }
         val payload = ByteArray(points.size * 12 + 4)

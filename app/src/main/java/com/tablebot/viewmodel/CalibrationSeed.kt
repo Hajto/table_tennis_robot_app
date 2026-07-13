@@ -8,8 +8,8 @@ data class CalibrationSeed(val ball: Int, val spin: Int, val power: Int, val cel
 
 /**
  * Derives the calibration seed from the active editor tab.
- * Basic (mode 0): the single basic ball. Dynamic (mode 1): the last expanded ball entry,
- * else the last entry in the list. Empty ball list falls back to the basic ball.
+ * Basic (mode 0): the single basic ball. Dynamic (mode 1): the last expanded step,
+ * else the last step in the list. Empty step list falls back to the basic ball.
  */
 fun calibrationSeed(mode: Int, basic: DrillEditorState, advanced: AdvancedEditorState): CalibrationSeed {
     if (mode == 0) {

@@ -40,6 +40,18 @@ class HistoryStore(private val file: File) {
         if (!file.exists()) return@withContext emptyList()
         runCatching {
             json.decodeFromString<List<TrainingSession>>(file.readText())
+                .map { session ->
+                    // Migrate-on-load: a legacy-format advanced snapshot must yield
+                    // migrated steps (never surface an un-migrated ballList).
+                    session.copy(
+                        entries = session.entries.map { entry ->
+                            val snap = entry.snapshot
+                            if (snap is DrillSnapshot.Advanced) {
+                                entry.copy(snapshot = snap.copy(training = snap.training.migrated()))
+                            } else entry
+                        }
+                    )
+                }
         }.getOrElse {
             // Quarantine what we can; if even the copy/delete fails, degrade to
             // an empty result rather than propagating the I/O error.
