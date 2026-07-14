@@ -90,7 +90,7 @@ Tap the training name card on the main screen to open the drill library. Use the
 
 ### Stretch Goals
 - [x] Time based trainings instead of ball count based. So you can do 30s instead of 20 reps.
-- [ ] Delayed start — countdown timer (e.g. 10s) before drill begins, so you can place the phone on a tripod
+- [x] Delayed start — a get-in-position countdown (default 10s) before the drill begins, with last-3s beeps and a higher "go" tone at zero (sound toggle in Settings)
 - [ ] Camera sync — auto-start video recording when drill starts
 - [ ] Remote start button support (e.g. Bluetooth clicker/shutter remote)
 - [ ] Pairing guide (on pairing fail OR first time pairing, show a guide that you might need to press a button)
