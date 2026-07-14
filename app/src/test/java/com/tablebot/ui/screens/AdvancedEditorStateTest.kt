@@ -77,4 +77,35 @@ class AdvancedEditorStateTest {
         assertNull(s.lastExpandedIndex())
         assertFalse(s.isExpanded(2))
     }
+
+    @Test fun `duplicateStep inserts a copy right after the index`() {
+        val s = state(3)                                  // positions x = [1,2,3]
+        s.duplicateStep(1)                                // duplicate the middle step (x=2)
+        assertEquals(4, s.steps.size)
+        assertEquals(listOf(1, 2, 2, 3), s.steps.map { it.balls[0].x })
+        assertEquals(s.steps[1], s.steps[2])              // the copy equals its source
+    }
+
+    @Test fun `duplicateStep shifts expanded flags after the insertion point`() {
+        val s = state(3)
+        s.toggleExpanded(2)                               // last step expanded
+        s.duplicateStep(0)                                // copy inserted at index 1
+        assertFalse(s.isExpanded(1))                      // the fresh copy is collapsed
+        assertTrue(s.isExpanded(3))                       // old step 2 shifted 2 -> 3
+        assertEquals(3, s.lastExpandedIndex())
+    }
+
+    @Test fun `duplicateStep keeps the duplicated step's own expanded flag in place`() {
+        val s = state(3)
+        s.toggleExpanded(0)
+        s.duplicateStep(0)                                // index 0 not > 0, so unshifted
+        assertTrue(s.isExpanded(0))
+        assertFalse(s.isExpanded(1))                      // copy collapsed
+    }
+
+    @Test fun `duplicateStep out of range is a no-op`() {
+        val s = state(2)
+        s.duplicateStep(5)
+        assertEquals(2, s.steps.size)
+    }
 }
