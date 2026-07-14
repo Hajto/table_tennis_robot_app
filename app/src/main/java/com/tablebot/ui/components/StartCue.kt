@@ -1,9 +1,12 @@
 package com.tablebot.ui.components
 
-import android.media.AudioManager
-import android.media.ToneGenerator
+import android.media.AudioAttributes
+import android.media.AudioFormat
+import android.media.AudioTrack
 import android.util.Log
 import kotlinx.coroutines.delay
+import kotlin.math.PI
+import kotlin.math.sin
 
 /**
  * Audio cue for the delayed-start lead-in. Abstracted behind an interface so the countdown logic
@@ -20,44 +23,83 @@ interface StartCue {
 }
 
 /**
- * Real [StartCue] backed by Android's [ToneGenerator]. All audio calls are wrapped in try/catch:
- * a failure to obtain the generator (silent mode, resource exhaustion, …) must never block the
- * countdown or the drill — it just means no sound.
+ * Real [StartCue] that synthesises its own sine tones with [AudioTrack]. Unlike `ToneGenerator`
+ * (fixed preset pitches) this gives exact frequency control, so the "go" tone can sit a perfect
+ * fifth (×3:2) above the ticks.
+ *
+ * Each tone plays on its own short-lived thread that releases the track once playback finishes, so
+ * it can't be clipped by a caller releasing the cue right after [go]. All audio work is wrapped in
+ * try/catch: a failure (silent mode, resource exhaustion, …) must never block the countdown or the
+ * drill — it just means no sound.
  */
 class AndroidStartCue : StartCue {
-    private val tone: ToneGenerator? = try {
-        ToneGenerator(AudioManager.STREAM_MUSIC, 90)
-    } catch (e: RuntimeException) {
-        Log.w(TAG, "ToneGenerator unavailable; delayed-start beeps disabled", e)
-        null
+    override fun tick() = playTone(TICK_HZ, TICK_MS)
+
+    /** A perfect fifth above the tick, so zero reads as a clear, higher "go". */
+    override fun go() = playTone(TICK_HZ * FIFTH_RATIO, GO_MS)
+
+    /** Tones self-release on their own threads; nothing persistent to free here. */
+    override fun release() = Unit
+
+    private fun playTone(freqHz: Double, durationMs: Int) {
+        Thread {
+            var track: AudioTrack? = null
+            try {
+                val samples = synth(freqHz, durationMs)
+                track = AudioTrack.Builder()
+                    .setAudioAttributes(
+                        AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_MEDIA)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                            .build()
+                    )
+                    .setAudioFormat(
+                        AudioFormat.Builder()
+                            .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
+                            .setSampleRate(SAMPLE_RATE)
+                            .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+                            .build()
+                    )
+                    .setBufferSizeInBytes(samples.size * 2)
+                    .setTransferMode(AudioTrack.MODE_STATIC)
+                    .build()
+                track.write(samples, 0, samples.size)
+                track.play()
+                Thread.sleep(durationMs.toLong() + 60)
+            } catch (e: Exception) {
+                Log.w(TAG, "start tone failed", e)
+            } finally {
+                try { track?.release() } catch (e: Exception) { Log.w(TAG, "track release failed", e) }
+            }
+        }.apply { isDaemon = true }.start()
     }
 
-    override fun tick() {
-        try {
-            tone?.startTone(ToneGenerator.TONE_PROP_BEEP, 150)
-        } catch (e: RuntimeException) {
-            Log.w(TAG, "tick tone failed", e)
+    /** A [durationMs] sine wave at [freqHz] with short linear fades to avoid click artifacts. */
+    private fun synth(freqHz: Double, durationMs: Int): ShortArray {
+        val count = SAMPLE_RATE * durationMs / 1000
+        val fade = (SAMPLE_RATE * FADE_MS / 1000).coerceIn(1, count / 2)
+        val out = ShortArray(count)
+        for (i in 0 until count) {
+            val env = when {
+                i < fade -> i.toDouble() / fade
+                i >= count - fade -> (count - i).toDouble() / fade
+                else -> 1.0
+            }
+            val s = sin(2.0 * PI * i * freqHz / SAMPLE_RATE)
+            out[i] = (s * env * AMPLITUDE * Short.MAX_VALUE).toInt().toShort()
         }
-    }
-
-    override fun go() {
-        try {
-            tone?.startTone(ToneGenerator.TONE_PROP_BEEP2, 400)
-        } catch (e: RuntimeException) {
-            Log.w(TAG, "go tone failed", e)
-        }
-    }
-
-    override fun release() {
-        try {
-            tone?.release()
-        } catch (e: RuntimeException) {
-            Log.w(TAG, "tone release failed", e)
-        }
+        return out
     }
 
     private companion object {
         const val TAG = "AndroidStartCue"
+        const val SAMPLE_RATE = 44_100
+        const val TICK_HZ = 880.0        // A5
+        const val FIFTH_RATIO = 1.5      // perfect fifth (3:2) → go tone ≈ 1320 Hz (E6)
+        const val TICK_MS = 150
+        const val GO_MS = 450
+        const val FADE_MS = 8
+        const val AMPLITUDE = 0.6
     }
 }
 
