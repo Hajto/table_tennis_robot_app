@@ -485,7 +485,7 @@ fun QuickPlayScreen(
                                 1 -> onPlayAdvancedDelayed(advancedState.toTraining())
                             }
                         },
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.weight(1.8f),
                     )
                 }
             }
