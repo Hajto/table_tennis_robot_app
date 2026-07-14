@@ -114,18 +114,22 @@ Offset  Size  Field           Source
   3     1     yaxis           Y servo position index (from base-conf lookup, 0-32)
   4     1     zaxis           Z servo position index (from base-conf lookup, 0-20)
   5     2     repeatDelay     Big-endian uint16 (1 = 0.2s between set repeats)
-  7     1     flags           0x80 on any point that takes part in randomness, else 0 (travels with b11)
+  7     1     flags           0x80 on points whose step is order-random, else 0 (travels with b11=1)
   8     1     ballTime        Inter-ball delay (1=fast, 20=slow)
-  9     1     groupSize       Size of the group this point belongs to, 1-5 (see "Random Mode")
- 10     1     groupMode       0 normally; 1 on the FIRST point of a within-step random group
-                              (advanced); 2 for a basic whole-drill random. See "Random Mode".
- 11     1     randomDraw      1 if this point takes part in a random draw, else 0
+  9     1     groupSize       Number of positions in this step's group, 1-5 (see "Random Mode")
+ 10     1     targetMode      Which position within the step fires. 0 = single/fixed target ("one");
+                              1 = random one of the group, set on the group LEADER (first point) when
+                              b9>1 ("random"); 2 = basic whole-drill random. Independent of b11.
+ 11     1     orderRandom     1 if this step's ORDER is shuffled among its sibling steps, else 0.
+                              Independent of b10; b7=0x80 travels with it.
 ```
 
-> Earlier revisions of this doc listed bytes 7/9/10/11 as "reserved / always 1", then later as
-> a single "random mode" flag. Both were misreads from partial captures. The current model
-> (byte 9 = group size, byte 10 = group leader / random-mode selector, byte 11 = random-draw
-> enable) is confirmed by a battery of controlled HCI captures — see "Random Mode".
+> Earlier revisions of this doc listed bytes 7/9/10/11 as "reserved / always 1", then later as a
+> single combined "random mode" flag. Both were misreads from partial captures. Randomness is
+> actually **two independent axes** — byte 10 (target mode) and byte 11 (order-random), each its own
+> byte — with byte 9 carrying the group size and byte 7 = 0x80 travelling with byte 11. This is
+> confirmed by a battery of controlled HCI captures, including a toggle capture that flips one axis
+> while holding the other fixed — see "Random Mode".
 
 ### Trailer (4 bytes, after all points)
 
@@ -166,64 +170,82 @@ inter-step timing field beyond the per-point `ballTime`/`repeatDelay`.
 
 There are two kinds of step:
 
-- **Single-ball step** (1 position) → a group of size 1 (`b9=1`).
-- **Multi-ball step** (2-5 positions) → one group of that size (`b9=N`), and it is **always
-  within-step random** ("fire a random one of its balls"); the app has no fixed-order multi-ball
-  step. See "Random Mode".
+- **Single-ball step** (1 position) → a group of size 1 (`b9=1`, target mode `b10=0`).
+- **Multi-ball step** (2-5 positions) → one group of that size (`b9=N`) whose leader carries
+  `b10=1`, so the step fires a **random one** of its positions ("random" target mode); the app has
+  no fixed-target multi-ball step. Whether the step's *order* is shuffled among its siblings is a
+  **separate**, independent choice (`b11`), not implied by the step having multiple positions. See
+  "Random Mode".
 
 ## Random Mode
 
-Randomness is a firmware feature — the app only sets flag bytes, and the robot's LCG
-(`seed = seed*mult + 12345`) does the drawing. The firmware chunks the points into **groups**
-(byte 9 = group size) and, for each point whose **byte 11 == 1**, draws from a *shuffle-bag*:
-`index = rand() % count`, skipping already-used entries and marking each used, resetting the bag
-once every entry has fired. `byte 7 == 0x80` travels with every randomised point.
+Advanced/dynamic drills expose **two independent axes of randomness**, each carried by its own
+per-step byte. Both are firmware features — the app only sets flag bytes, and the robot's LCG
+(`seed = seed*mult + 12345`) does the drawing.
 
-Two independent axes of randomness compose through that one mechanism:
+- **Target mode (byte 10)** — *which position within a step fires*. On a step with more than one
+  position, the group **leader** (first point) carries `b10=1` ("random" mode) and the firmware
+  draws a **random one** of that group's positions each time the step fires. `b10=0` is "one" mode:
+  a single, fixed target. Basic whole-drill random is a separate code path and uses `b10=2` on
+  every point (unchanged).
+- **Order-random (byte 11, with byte 7 = 0x80)** — *the order in which sibling steps fire*. A step
+  with `b11=1` is enrolled in the firmware's order shuffle-bag; `b11=0` keeps its fixed slot. `b7`
+  is set to `0x80` on exactly the points whose step is order-random — it travels with `b11`.
 
-### Axis 1 — step-order random (shuffle the order of steps)
+These axes are **independent**: `b10` decides whether a step picks a random target, `b11` decides
+whether the step's turn is shuffled, and neither implies the other. A multi-position step is **not**
+automatically order-random. Toggling one axis on the wire while holding the other fixed moves only
+that axis — verified by a controlled toggle capture. All four combinations occur:
 
-Each participating step stays as its own point(s) and gets `b7=0x80, b11=1` with `b10=0`. The
-firmware's bag then draws over these groups, i.e. it **shuffles the order** in which the steps
-fire. (Everything still fires; only the order varies.)
+| positions | b9 | b10 | b11 | behaviour |
+|---|---|---|---|---|
+| 1   | 1 | 0 | 0 | single fixed target, fixed order |
+| 1   | 1 | 0 | 1 | single target, order shuffled among steps |
+| N>1 | N | 1 | 0 | random target among N, fixed order |
+| N>1 | N | 1 | 1 | random target among N **and** order shuffled ("double random") |
 
-### Axis 2 — within-step random (a multi-ball step fires a random one of its balls)
+### The two firmware draws
 
-A multi-ball step's N points form **one group**: every point carries `b9=N, b7=0x80, b11=1`, and
-the group's **first point additionally carries `b10=1`** — that leader bit is how the firmware
-delimits the group. The bag then draws **within** the group.
+- **Internal target draw.** For a `b10=1` leader group of size `b9=N`, the firmware draws one of the
+  N positions to fire. The group is delimited by the leader bit on its first point plus the shared
+  group size across its N contiguous points.
+- **Order shuffle-bag.** The firmware collects every step whose `b11=1` and draws over them to
+  decide firing order: `index = rand() % count`, skipping already-used entries and marking each
+  used, resetting the bag once every entry has fired. Everything still fires; only the order varies.
 
-`b10=1` on the leader is the "random within a multi-point group" firmware code path. It is
-distinct from **basic** whole-drill random, which uses `b10=2` on every point.
-
-**"Double random"** = a within-step group (`b9=N, b10=1`) whose points are also `b11=1`, so the
-group takes part in the order shuffle-bag alongside its sibling steps. On the wire this is
-identical to a lone within-step group; the ordering effect only manifests when sibling groups
-exist to shuffle against.
+A step can use either draw, both, or neither — that is exactly the four rows above. "Double random"
+is a step that uses **both** (`b10=1` random target **and** `b11=1` order shuffle); it is not
+merely a re-encoding of a within-step group — flipping `b11` off leaves the same random-target group
+firing in fixed order.
 
 ### Probability weighting via duplicate positions
 
 A step is an ordered **list** of up to 5 balls, not a set — the same position may appear more than
-once, which adds it to the shuffle-bag again and raises its draw odds. E.g. a step
-`{5, 5, 11, 11, 20}` draws position 5 and position 11 with probability 2/5 each and position 20
-with 1/5.
+once, which adds it to the internal target draw again and raises its odds. E.g. a step
+`{5, 5, 11, 11, 20}` draws position 5 and position 11 with probability 2/5 each and position 20 with
+1/5.
 
 ### Summary of the flag combinations
 
 ```
-Step kind                         b7    b9   b10  b11
-in-order single-ball step         0x00   1    0    0
-order-random single-ball step     0x80   1    0    1
-within-random multi-ball step:
-   - group leader (first point)   0x80   N    1    1
-   - other points in the group    0x80   N    0    1
-basic whole-drill random (each)   0x80   1    2    1
+Step kind                                    b7    b9   b10  b11
+single-ball, fixed order                     0x00   1    0    0
+single-ball, order-random                    0x80   1    0    1
+multi-ball (random target), fixed order:
+   - group leader (first point)              0x00   N    1    0
+   - other points in the group               0x00   N    0    0
+multi-ball, random target + order-random:    ("double random")
+   - group leader (first point)              0x80   N    1    1
+   - other points in the group               0x80   N    0    1
+basic whole-drill random (each point)        0x80   1    2    1
 ```
 
 ### Worked example — bundled "Half Long 2/3 FH Loop"
 
-Two within-random steps of 5 balls each, both flagged for order-random between them, repeated 15×.
-Note the `b10=1` leader on each group and the duplicated positions (weighting):
+Two 5-ball steps that are **double random** — each fires a random one of its five positions
+(`b9=5, b10=1` on the leader) *and* the two steps are order-shuffled between each other
+(`b11=1, b7=0x80` throughout) — repeated 15×. Note the `b10=1` leader on each group and the
+duplicated positions (weighting):
 
 ```
       m1 m2  x  y   b9 b10 b11
@@ -305,7 +327,11 @@ In practice, CMD 0x01 worked on the tested robot (firmware 02.02).
   validated. Our app sends the name-derived ID and the robot accepts it, so the field may be
   ignored or derived differently — not yet traced.
 
-**Resolved** (previously open): byte 9 is a per-point group size (1-5); byte 10 selects the random
-code path (`1` = within-group leader, `2` = basic whole-drill); byte 7 = 0x80 marks a randomised
-point. Advanced multi-ball timing/sequencing is just contiguous per-step groups (no separate
-inter-step field). See "Random Mode" and "Advanced Patterns".
+**Resolved** (previously open): byte 9 is a per-step group size (1-5); the **target-mode (`b10`)**
+and **order-random (`b11`)** axes are **independent** — a controlled toggle capture flipped one
+while holding the other, and each moved only its own axis on the wire, so they are not one combined
+flag and a multi-position step is not implicitly order-random. `b10=1` (on a multi-point group
+leader) selects a random target within the group and `b10=2` selects the basic whole-drill random
+code path; `b11=1` (with `b7=0x80`) enrols the step in the order shuffle-bag. Advanced multi-ball
+timing/sequencing is just contiguous per-step groups (no separate inter-step field). See "Random
+Mode" and "Advanced Patterns".
