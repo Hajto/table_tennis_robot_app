@@ -1,7 +1,9 @@
 package com.tablebot.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
@@ -13,8 +15,10 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.tablebot.data.*
 import com.tablebot.ui.components.BallSettingsDropdowns
 import com.tablebot.ui.components.PlayModeSelector
@@ -38,6 +42,156 @@ sealed class HelpSection {
 }
 
 // ── Illustration composables (non-interactive UI previews) ─────────
+
+/** Static preview of QuickPlay's split Play button with the mode chooser menu open. */
+@Composable
+private fun IllustrationSplitPlayButton() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        ),
+    ) {
+        Column(modifier = Modifier.padding(12.dp)) {
+            Text(
+                "Play button",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(8.dp))
+            // The chooser menu, shown open above the button (anchored to the up-arrow on the right).
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.surface,
+                    tonalElevation = 3.dp,
+                    shadowElevation = 4.dp,
+                ) {
+                    Column(Modifier.padding(vertical = 4.dp)) {
+                        MenuRow(Icons.Default.PlayArrow, "Start now", selected = false)
+                        MenuRow(Icons.Default.Timer, "Delayed", selected = true)
+                    }
+                }
+            }
+            Spacer(Modifier.height(6.dp))
+            Row(Modifier.height(48.dp)) {
+                Surface(
+                    color = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    shape = RoundedCornerShape(topStart = 24.dp, bottomStart = 24.dp),
+                    modifier = Modifier.weight(0.8f).fillMaxHeight(),
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxSize().padding(horizontal = 12.dp),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        Icon(Icons.Default.Timer, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(6.dp))
+                        Text("Delayed 10s", style = MaterialTheme.typography.titleMedium)
+                    }
+                }
+                Spacer(
+                    Modifier.width(1.dp).fillMaxHeight().padding(vertical = 8.dp)
+                        .background(MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.3f)),
+                )
+                Surface(
+                    color = MaterialTheme.colorScheme.primary,
+                    contentColor = MaterialTheme.colorScheme.onPrimary,
+                    shape = RoundedCornerShape(topEnd = 24.dp, bottomEnd = 24.dp),
+                    modifier = Modifier.weight(0.2f).fillMaxHeight(),
+                ) {
+                    Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Icon(Icons.Default.ArrowDropUp, contentDescription = null, modifier = Modifier.size(24.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** One row of the static mode-chooser menu preview. */
+@Composable
+private fun MenuRow(icon: ImageVector, label: String, selected: Boolean) {
+    Row(
+        modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp))
+        Spacer(Modifier.width(12.dp))
+        Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.width(120.dp))
+        if (selected) {
+            Icon(Icons.Default.Check, contentDescription = "Selected", modifier = Modifier.size(18.dp))
+        } else {
+            Spacer(Modifier.size(18.dp))
+        }
+    }
+}
+
+/** Static preview of the Settings toggle that turns the delayed-start sound off. */
+@Composable
+private fun IllustrationSoundToggle() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        ),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Delayed-start sound", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    "Beep during the get-in-position countdown, with a higher \"go\" tone at zero",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Switch(checked = true, onCheckedChange = {})
+        }
+    }
+}
+
+/** Static preview of the get-in-position countdown overlay. */
+@Composable
+private fun IllustrationCountdown() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        ),
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Text(
+                "Get in position",
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.Bold,
+            )
+            Text(
+                "Countdown before the first ball",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Spacer(Modifier.height(12.dp))
+            Text(
+                "3",
+                fontSize = 56.sp,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Text(
+                "sec",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
 
 @Composable
 private fun IllustrationTableGrid() {
@@ -560,6 +714,54 @@ val helpArticles: List<HelpArticle> = listOf(
             HelpSection.Paragraph(
                 "Repeat Delay adds a pause, in seconds, between repetitions of the full sequence. " +
                 "It applies to every play mode."
+            ),
+        ),
+    ),
+    HelpArticle(
+        id = "delayed_start",
+        title = "Delayed start",
+        sections = listOf(
+            HelpSection.Paragraph(
+                "Delayed start is an optional get-in-position countdown before the robot fires " +
+                "the first ball, so you have time to walk to the table and get ready. " +
+                "The last 3 seconds beep, and a distinct \"go\" tone plays at zero."
+            ),
+            HelpSection.Illustration { IllustrationCountdown() },
+            HelpSection.Paragraph(
+                "The delay is a single global setting — its mode (start now / delayed) and its " +
+                "duration are remembered between plays, so once you pick \"Delayed\" it stays " +
+                "selected until you change it again."
+            ),
+            HelpSection.Heading("Choosing the mode"),
+            HelpSection.Paragraph(
+                "The Play button in the bottom bar is split in two. The wide part shows the " +
+                "current start mode and plays in it when tapped:"
+            ),
+            HelpSection.BulletList(listOf(
+                "Start now \u2014 fires immediately, as before",
+                "Delayed \u2014 shows a seconds countdown before firing",
+            )),
+            HelpSection.Illustration { IllustrationSplitPlayButton() },
+            HelpSection.Paragraph(
+                "The small up-arrow on the right opens a menu where you switch between " +
+                "\"Start now\" and \"Delayed\" without starting a drill. Your choice is " +
+                "remembered, so the wide part always plays whichever mode you last picked."
+            ),
+            HelpSection.Paragraph(
+                "When Delayed is selected, tapping Play opens a seconds picker (default 10 " +
+                "seconds); the duration is remembered for next time."
+            ),
+            HelpSection.Heading("Sound"),
+            HelpSection.Paragraph(
+                "The countdown beeps through the last 3 seconds, with a higher \"go\" tone at " +
+                "zero. Turn it off with the \"Delayed-start sound\" switch in Settings."
+            ),
+            HelpSection.Illustration { IllustrationSoundToggle() },
+            HelpSection.Heading("Canceling"),
+            HelpSection.Paragraph(
+                "You can cancel the countdown any time before it reaches zero — tap the " +
+                "overlay or use back. The robot is never sent anything until the countdown " +
+                "completes, so canceling means the robot never starts."
             ),
         ),
     ),

@@ -76,10 +76,10 @@ fun DurationWheelPicker(
     }
 }
 
-private const val ITEM_HEIGHT_DP = 44
+internal const val ITEM_HEIGHT_DP = 44
 
 @Composable
-private fun NumberColumn(
+internal fun NumberColumn(
     value: Int,
     range: IntRange,
     label: String,
