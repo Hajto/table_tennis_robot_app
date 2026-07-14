@@ -574,34 +574,26 @@ val helpArticles: List<HelpArticle> = listOf(
             ),
             HelpSection.Paragraph(
                 "The delay is a single global setting — its mode (start now / delayed) and its " +
-                "duration are shared across QuickPlay and the drill library, so choosing " +
-                "\"Delayed\" in one place applies everywhere until you change it again."
+                "duration are remembered between plays, so once you pick \"Delayed\" it stays " +
+                "selected until you change it again."
             ),
-            HelpSection.Heading("QuickPlay"),
+            HelpSection.Heading("Choosing the mode"),
             HelpSection.Paragraph(
-                "The Play button in the bottom bar is a segmented control with two options:"
+                "The Play button in the bottom bar is split in two. The wide part shows the " +
+                "current start mode and plays in it when tapped:"
             ),
             HelpSection.BulletList(listOf(
                 "Start now \u2014 fires immediately, as before",
                 "Delayed \u2014 shows a seconds countdown before firing",
             )),
             HelpSection.Paragraph(
-                "Tap a segment to select it, then press the button to play in that mode. " +
-                "Choosing \"Delayed\" opens a seconds picker (default 10 seconds); your choice " +
-                "is remembered for next time."
+                "The small up-arrow on the right opens a menu where you switch between " +
+                "\"Start now\" and \"Delayed\" without starting a drill. Your choice is " +
+                "remembered, so the wide part always plays whichever mode you last picked."
             ),
-            HelpSection.Heading("Drill library"),
             HelpSection.Paragraph(
-                "Each saved drill's Play button keeps its single-button footprint, but supports " +
-                "a long-press chooser:"
-            ),
-            HelpSection.BulletList(listOf(
-                "Play now \u2014 fires immediately",
-                "Countdown \u2014 shows the seconds countdown before firing",
-            )),
-            HelpSection.Paragraph(
-                "A plain tap repeats whichever choice you made last, so the button stays " +
-                "one-tap once you've picked a mode."
+                "When Delayed is selected, tapping Play opens a seconds picker (default 10 " +
+                "seconds); the duration is remembered for next time."
             ),
             HelpSection.Heading("Canceling"),
             HelpSection.Paragraph(
