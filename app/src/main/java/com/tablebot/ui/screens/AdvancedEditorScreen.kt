@@ -1,5 +1,6 @@
 package com.tablebot.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -116,6 +117,14 @@ class AdvancedEditorState(
             val shifted = _expandedIndices.filter { it != index }.map { if (it > index) it - 1 else it }
             _expandedIndices.clear(); _expandedIndices.addAll(shifted)
         }
+    }
+
+    fun duplicateStep(index: Int) {
+        if (index !in steps.indices) return
+        steps = steps.toMutableList().apply { add(index + 1, steps[index]) }
+        // The copy is inserted collapsed; shift any expanded indices past it down by one.
+        val shifted = _expandedIndices.map { if (it > index) it + 1 else it }
+        _expandedIndices.clear(); _expandedIndices.addAll(shifted)
     }
 
     fun moveStep(from: Int, to: Int) {
@@ -256,6 +265,7 @@ fun AdvancedEditorContent(
                     motorConfig = motorConfig,
                     expanded = state.isExpanded(index),
                     onToggleExpanded = { state.toggleExpanded(index) },
+                    onDuplicate = { state.duplicateStep(index) },
                 )
             }
         }
@@ -348,6 +358,7 @@ private fun StepEditor(
     motorConfig: MotorConfig? = null,
     expanded: Boolean,
     onToggleExpanded: () -> Unit,
+    onDuplicate: (() -> Unit)? = null,
 ) {
     val constraints = rememberMotorConstraints(
         ball = entry.ball, spin = entry.spin, power = entry.power,
@@ -362,7 +373,11 @@ private fun StepEditor(
 
     Card(modifier = Modifier.fillMaxWidth()) {
         Column(modifier = Modifier.padding(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            // Tapping the header row toggles expand/collapse (in addition to the chevron).
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth().clickable { onToggleExpanded() },
+            ) {
                 // Drag handle + up/down arrows
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -389,26 +404,75 @@ private fun StepEditor(
                         Icon(Icons.Default.KeyboardArrowDown, "Move down", modifier = Modifier.size(20.dp))
                     }
                 }
-                Text(
-                    "Ball ${index + 1}",
-                    style = MaterialTheme.typography.titleSmall,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.weight(1f),
-                )
-                Text(
-                    "${BallType.fromValue(entry.ball).label} ${SpinType.fromValue(entry.spin).label} ${PowerType.fromValue(entry.power).label}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                IconButton(onClick = onToggleExpanded) {
-                    Icon(
-                        if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                        "Toggle",
+                // Two-line content: title + randomness indicators on top, ball summary below.
+                Column(modifier = Modifier.weight(1f).padding(horizontal = 4.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            "Ball ${index + 1}",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.Bold,
+                        )
+                        Spacer(Modifier.weight(1f))
+                        // At-a-glance randomness indicators (visible without expanding the card).
+                        // The two controls are independent:
+                        //  target icon + count → multi-position card fires to a random position
+                        //  shuffle icon        → step's order is shuffled among sibling steps
+                        if (entry.withinRandom || entry.orderRandom) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (entry.withinRandom) {
+                                    Icon(
+                                        Icons.Default.Adjust,
+                                        contentDescription = "Random target among ${entry.balls.size} positions",
+                                        modifier = Modifier.size(16.dp),
+                                        tint = MaterialTheme.colorScheme.primary,
+                                    )
+                                    Text(
+                                        "${entry.balls.size}",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.padding(start = 1.dp),
+                                    )
+                                }
+                                if (entry.orderRandom) {
+                                    Icon(
+                                        Icons.Default.Shuffle,
+                                        contentDescription = "Random order",
+                                        modifier = Modifier.size(16.dp).padding(start = 4.dp),
+                                        tint = MaterialTheme.colorScheme.primary,
+                                    )
+                                }
+                            }
+                        }
+                    }
+                    Text(
+                        "${BallType.fromValue(entry.ball).label} ${SpinType.fromValue(entry.spin).label} ${PowerType.fromValue(entry.power).label}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                if (onRemove != null) {
-                    IconButton(onClick = onRemove) {
-                        Icon(Icons.Default.Close, "Remove", tint = MaterialTheme.colorScheme.error)
+                // Action column: expand / duplicate / remove, mirroring the reorder column.
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    IconButton(onClick = onToggleExpanded, modifier = Modifier.size(36.dp)) {
+                        Icon(
+                            if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
+                            "Toggle",
+                            modifier = Modifier.size(20.dp),
+                        )
+                    }
+                    if (onDuplicate != null) {
+                        IconButton(onClick = onDuplicate, modifier = Modifier.size(36.dp)) {
+                            Icon(Icons.Default.ContentCopy, "Duplicate", modifier = Modifier.size(18.dp))
+                        }
+                    }
+                    if (onRemove != null) {
+                        IconButton(onClick = onRemove, modifier = Modifier.size(36.dp)) {
+                            Icon(
+                                Icons.Default.Close,
+                                "Remove",
+                                tint = MaterialTheme.colorScheme.error,
+                                modifier = Modifier.size(20.dp),
+                            )
+                        }
                     }
                 }
             }
@@ -470,25 +534,23 @@ private fun StepEditor(
                     enabledCells = enabledCells,
                 )
 
-                // Random order toggle (multi-ball steps are always randomised)
+                // Random order toggle — independent of the multi-position random-target grouping.
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Random order", style = MaterialTheme.typography.labelMedium)
-                        if (entry.withinRandom) {
-                            Text(
-                                "Multi-ball steps are always randomised.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
+                        Text(
+                            "Shuffles this step's order among the other steps.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                     Switch(
-                        checked = entry.orderRandom || entry.withinRandom,
+                        checked = entry.orderRandom,
                         onCheckedChange = { onUpdate(entry.copy(orderRandom = it)) },
-                        enabled = !entry.withinRandom,
+                        enabled = true,
                     )
                 }
             }
