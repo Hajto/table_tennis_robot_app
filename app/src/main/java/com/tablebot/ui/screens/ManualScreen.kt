@@ -564,6 +564,54 @@ val helpArticles: List<HelpArticle> = listOf(
         ),
     ),
     HelpArticle(
+        id = "delayed_start",
+        title = "Delayed start",
+        sections = listOf(
+            HelpSection.Paragraph(
+                "Delayed start is an optional get-in-position countdown before the robot fires " +
+                "the first ball, so you have time to walk to the table and get ready. " +
+                "The last 5 seconds beep, and a distinct \"go\" tone plays at zero."
+            ),
+            HelpSection.Paragraph(
+                "The delay is a single global setting — its mode (start now / delayed) and its " +
+                "duration are shared across QuickPlay and the drill library, so choosing " +
+                "\"Delayed\" in one place applies everywhere until you change it again."
+            ),
+            HelpSection.Heading("QuickPlay"),
+            HelpSection.Paragraph(
+                "The Play button in the bottom bar is a segmented control with two options:"
+            ),
+            HelpSection.BulletList(listOf(
+                "Start now \u2014 fires immediately, as before",
+                "Delayed \u2014 shows a seconds countdown before firing",
+            )),
+            HelpSection.Paragraph(
+                "Tap a segment to select it, then press the button to play in that mode. " +
+                "Choosing \"Delayed\" opens a seconds picker (default 10 seconds); your choice " +
+                "is remembered for next time."
+            ),
+            HelpSection.Heading("Drill library"),
+            HelpSection.Paragraph(
+                "Each saved drill's Play button keeps its single-button footprint, but supports " +
+                "a long-press chooser:"
+            ),
+            HelpSection.BulletList(listOf(
+                "Play now \u2014 fires immediately",
+                "Countdown \u2014 shows the seconds countdown before firing",
+            )),
+            HelpSection.Paragraph(
+                "A plain tap repeats whichever choice you made last, so the button stays " +
+                "one-tap once you've picked a mode."
+            ),
+            HelpSection.Heading("Canceling"),
+            HelpSection.Paragraph(
+                "You can cancel the countdown any time before it reaches zero — tap the " +
+                "overlay or use back. The robot is never sent anything until the countdown " +
+                "completes, so canceling means the robot never starts."
+            ),
+        ),
+    ),
+    HelpArticle(
         id = "calibration",
         title = "Calibrating the robot",
         sections = listOf(
