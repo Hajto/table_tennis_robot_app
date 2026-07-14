@@ -232,7 +232,7 @@ private fun IllustrationRandomOrder() {
     ) {
         Column(modifier = Modifier.padding(12.dp)) {
             Text(
-                "Example: Random order toggle (locked on for a multi-ball card)",
+                "Example: Random order toggle",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -244,12 +244,12 @@ private fun IllustrationRandomOrder() {
                 Column(modifier = Modifier.weight(1f)) {
                     Text("Random order", style = MaterialTheme.typography.labelMedium)
                     Text(
-                        "Multi-ball steps are always randomised.",
+                        "Shuffles this card's order among the others.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(checked = true, onCheckedChange = null, enabled = false)
+                Switch(checked = true, onCheckedChange = null)
             }
         }
     }
@@ -525,9 +525,11 @@ val helpArticles: List<HelpArticle> = listOf(
             HelpSection.Illustration { IllustrationRandomTarget() },
             HelpSection.Heading("Random order"),
             HelpSection.Paragraph(
-                "The \"Random order\" toggle shuffles the order the ball cards fire in, rather than " +
-                "playing them top-to-bottom. Multi-position cards are always randomised, so the toggle " +
-                "is shown on and locked for them; it is freely settable on single-position cards."
+                "\"Random order\" is an independent on/off toggle available on every card, whether it " +
+                "has one position or many. When on, it shuffles that card's position in the firing " +
+                "sequence instead of playing it in its top-to-bottom slot. This is separate from the " +
+                "automatic random target you get from a multi-position card: the two combine freely, so " +
+                "a multi-position card can fire to a random target while keeping a fixed order, or do both."
             ),
             HelpSection.Illustration { IllustrationRandomOrder() },
             HelpSection.Heading("Sequence Overview"),
