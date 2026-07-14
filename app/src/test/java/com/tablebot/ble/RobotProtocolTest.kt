@@ -390,11 +390,21 @@ class RobotProtocolTest {
         assertEquals(0x80.toByte(), buf[7]); assertEquals(1.toByte(), buf[9])
         assertEquals(0.toByte(), buf[10]); assertEquals(1.toByte(), buf[11])
     }
-    @Test fun `advanced within-random multi-ball step groups with b10=1 on leader only`() {
-        val buf = RobotProtocol.encodeAdvancedPattern(adv(step(6, 8, 10)), lookup = nullLookup)
+    @Test fun `advanced multi-position step with order-random on sets b10 leader and b7 b11`() {
+        // Order-random ON + multi-position: both independent controls are set.
+        val buf = RobotProtocol.encodeAdvancedPattern(adv(step(6, 8, 10, orderRandom = true)), lookup = nullLookup)
         for (i in 0 until 3) { val o = i*12
             assertEquals("b7 $i", 0x80.toByte(), buf[o+7]); assertEquals("b9 $i", 3.toByte(), buf[o+9])
             assertEquals("b11 $i", 1.toByte(), buf[o+11])
+            assertEquals("b10 $i", (if (i==0) 1 else 0).toByte(), buf[o+10]) }
+    }
+    @Test fun `advanced multi-position step with order-random off is random-target fixed-order`() {
+        // Order-random OFF + multi-position: random-target grouping (b9=N, b10 leader) is set,
+        // but the order-random flags (b7/b11) stay clear — the two controls are decoupled.
+        val buf = RobotProtocol.encodeAdvancedPattern(adv(step(6, 8, 10)), lookup = nullLookup)
+        for (i in 0 until 3) { val o = i*12
+            assertEquals("b7 $i", 0.toByte(), buf[o+7]); assertEquals("b9 $i", 3.toByte(), buf[o+9])
+            assertEquals("b11 $i", 0.toByte(), buf[o+11])
             assertEquals("b10 $i", (if (i==0) 1 else 0).toByte(), buf[o+10]) }
     }
     @Test fun `advanced weighting duplicate positions emit duplicate points`() {
@@ -411,9 +421,10 @@ class RobotProtocolTest {
     }
 
     // Mirrors the decoded "Half Long 2/3 FH Loop" frame in PROTOCOL.md: two within-random
-    // steps of 5 balls each, with duplicate positions expressing weighting.
+    // steps of 5 balls each, with duplicate positions expressing weighting. The captured frame
+    // is order-random, so the mirroring steps set orderRandom = true (b11 = 1 on every point).
     @Test fun `advanced FH-loop preset shape encodes two weighted 5-ball groups`() {
-        val training = adv(step(5, 5, 11, 11, 20), step(5, 5, 11, 11, 20))
+        val training = adv(step(5, 5, 11, 11, 20, orderRandom = true), step(5, 5, 11, 11, 20, orderRandom = true))
         val buf = RobotProtocol.encodeAdvancedPattern(training, lookup = nullLookup)
         assertEquals((10 * 12) + 4, buf.size)
         for (i in 0 until 10) {

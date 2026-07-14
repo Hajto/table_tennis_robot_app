@@ -413,12 +413,11 @@ private fun StepEditor(
                             fontWeight = FontWeight.Bold,
                         )
                         Spacer(Modifier.weight(1f))
-                        // At-a-glance randomness indicators (visible without expanding the card):
-                        //  target icon + count → multi-position card fires to a random one
-                        //  shuffle icon        → card takes part in the step-order shuffle
-                        //                        (always on for multi-position cards)
-                        val orderRandomised = entry.withinRandom || entry.orderRandom
-                        if (orderRandomised) {
+                        // At-a-glance randomness indicators (visible without expanding the card).
+                        // The two controls are independent:
+                        //  target icon + count → multi-position card fires to a random position
+                        //  shuffle icon        → step's order is shuffled among sibling steps
+                        if (entry.withinRandom || entry.orderRandom) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 if (entry.withinRandom) {
                                     Icon(
@@ -434,12 +433,14 @@ private fun StepEditor(
                                         modifier = Modifier.padding(start = 1.dp),
                                     )
                                 }
-                                Icon(
-                                    Icons.Default.Shuffle,
-                                    contentDescription = "Random order",
-                                    modifier = Modifier.size(16.dp).padding(start = 4.dp),
-                                    tint = MaterialTheme.colorScheme.primary,
-                                )
+                                if (entry.orderRandom) {
+                                    Icon(
+                                        Icons.Default.Shuffle,
+                                        contentDescription = "Random order",
+                                        modifier = Modifier.size(16.dp).padding(start = 4.dp),
+                                        tint = MaterialTheme.colorScheme.primary,
+                                    )
+                                }
                             }
                         }
                     }
@@ -533,25 +534,23 @@ private fun StepEditor(
                     enabledCells = enabledCells,
                 )
 
-                // Random order toggle (multi-ball steps are always randomised)
+                // Random order toggle — independent of the multi-position random-target grouping.
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.fillMaxWidth().padding(top = 4.dp),
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
                         Text("Random order", style = MaterialTheme.typography.labelMedium)
-                        if (entry.withinRandom) {
-                            Text(
-                                "Multi-ball steps are always randomised.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
+                        Text(
+                            "Shuffles this step's order among the other steps.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
                     Switch(
-                        checked = entry.orderRandom || entry.withinRandom,
+                        checked = entry.orderRandom,
                         onCheckedChange = { onUpdate(entry.copy(orderRandom = it)) },
-                        enabled = !entry.withinRandom,
+                        enabled = true,
                     )
                 }
             }

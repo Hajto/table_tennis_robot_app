@@ -210,10 +210,13 @@ object RobotProtocol {
 
     // Per-point layout mirrors encodeBasicPattern. Each step contributes n = balls.size points
     // (1..5). Duplicate positions within a step are emitted as duplicate points (= weighting).
-    //   [7]  0x80 when the step is random (within-random OR order-random), else 0
+    // b10 and b7/b11 are TWO INDEPENDENT firmware controls (verified against HCI captures):
+    //   [7]/[11] order-random flag — whether this step's order is shuffled among sibling steps
+    //            (b7 = 0x80, b11 = 1 when on). Independent of position count.
     //   [9]  group size n (firmware fires this many balls as one group)
-    //   [10] 1 on the group leader (first point of a within-random group), else 0
-    //   [11] 1 when the step is random, else 0
+    //   [10] random-target-mode leader — 1 on the group leader (first point) when a group has
+    //        >1 position (fire at a random position within the group), else 0. Structural.
+    // A multi-position step can therefore have order-random ON or OFF independently of b10.
     // The lookup overload keeps this unit-testable without an Android Context.
     fun encodeAdvancedPattern(
         training: AdvancedTraining,
@@ -229,7 +232,6 @@ object RobotProtocol {
             // at most 5 so a step with >5 balls never emits a malformed group.
             step.balls.chunked(5).forEach { chunk ->
                 val m = chunk.size
-                val rnd = m > 1 || step.orderRandom
                 chunk.forEachIndexed { j, p ->
                     val params = lookup(step.ball, step.spin, step.power, p.x)
                     val b = ByteArray(12)
@@ -237,11 +239,11 @@ object RobotProtocol {
                     b[2] = (params?.xaxis ?: 0).toByte(); b[3] = (params?.yaxis ?: 0).toByte()
                     b[4] = (params?.zaxis ?: 0).toByte()
                     b[5] = 0; b[6] = (effectiveRepeatDelay.coerceAtLeast(1) and 0xFF).toByte()
-                    b[7] = if (rnd) 0x80.toByte() else 0
+                    b[7] = if (step.orderRandom) 0x80.toByte() else 0
                     b[8] = (step.ballTime and 0xFF).toByte()
                     b[9] = m.toByte()
                     b[10] = if (m > 1 && j == 0) 1 else 0
-                    b[11] = if (rnd) 1 else 0
+                    b[11] = if (step.orderRandom) 1 else 0
                     points.add(b)
                 }
             }
