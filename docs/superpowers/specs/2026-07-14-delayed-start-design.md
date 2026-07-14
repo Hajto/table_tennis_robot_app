@@ -15,8 +15,8 @@ overlay with a running countdown; the robot fires only when it reaches zero. The
 beep, and a distinct "go" tone plays at zero.
 
 The delay is a **global, remembered** setting (not per-drill): a mode (immediate vs. delayed) and a
-duration (default **0:10**). Both are shared across every play surface, so choosing "countdown"
-anywhere applies everywhere until changed.
+duration in **whole seconds** (default **10 s**). Both are shared across every play surface, so
+choosing "countdown" anywhere applies everywhere until changed.
 
 Two surfaces expose the choice with **different, surface-appropriate controls**, both backed by the
 same global state:
@@ -45,8 +45,9 @@ This is a pure UI + ViewModel lead-in phase. **No BLE/firmware change** — the 
   both. The lead-in gets its own state and overlay.
 - Global app settings live in `AppPrefs` (an `object` over `SharedPreferences`, each value mirrored
   as a `StateFlow`). New global settings belong here.
-- A reusable `DurationWheelPicker` (mm:ss wheel) already exists and is used by the Timed play mode;
-  the delay picker reuses it.
+- A reusable `DurationWheelPicker` (a two-column min:sec wheel) already exists for the Timed play
+  mode, but it is hard-wired to two columns. The delay is expressed in **seconds only**, so this
+  feature adds a single-column seconds wheel (see UI) that reuses the same drag/selection styling.
 - The in-app manual is a `helpArticles: List<HelpArticle>` in `ManualScreen.kt`; a `HelpArticle`
   has a title and a list of `HelpSection` (`Heading`, `Paragraph`, `BulletList`, `Illustration`).
 
@@ -55,7 +56,8 @@ This is a pure UI + ViewModel lead-in phase. **No BLE/firmware change** — the 
 Goals:
 - Optional lead-in countdown before a drill starts, with a visible timer.
 - Beep on each of the last 5 seconds; distinct "go" tone at zero.
-- Global, remembered mode + duration (default 0:10), consistent across all play surfaces.
+- Global, remembered mode + duration in whole seconds (default 10 s), consistent across all play
+  surfaces.
 - Segmented Play button in QuickPlay; long-press chooser on the compact library rows.
 - Cancelable during the countdown — the robot is never touched until fire time.
 - A dedicated manual entry.
@@ -64,8 +66,7 @@ Non-goals:
 - Any change to BLE encoding, reps resolution, or the calibration flow.
 - Per-drill delay (delay is global).
 - Delaying the **Test** (single-ball) button — Test stays immediate.
-- Scheduling / very long delays as a first-class concept (the wheel can express minutes, but the
-  feature is framed as a get-in-position lead-in).
+- Minutes / scheduling / long delays — the picker is seconds-only (get-in-position lead-in).
 
 ## Data model / persistence — `AppPrefs.kt`
 
@@ -74,8 +75,9 @@ public `StateFlow` + setter that writes SharedPreferences):
 
 - `startDelayed: Boolean` (default `false`) — the current mode (false = immediate, true = countdown).
   Keys: `KEY_START_DELAYED`. Setter: `setStartDelayed(Boolean)`.
-- `startDelaySec: Int` (default `10`) — the countdown duration in seconds. Key: `KEY_START_DELAY_SEC`.
-  Setter: `setStartDelaySec(Int)`. `const val DEFAULT_START_DELAY_SEC = 10`.
+- `startDelaySec: Int` (default `10`) — the countdown duration in whole seconds, clamped to a
+  seconds-only range (e.g. 3–60). Key: `KEY_START_DELAY_SEC`. Setter: `setStartDelaySec(Int)`.
+  `const val DEFAULT_START_DELAY_SEC = 10`.
 
 No changes to `BasicTraining` / `AdvancedTraining`.
 
@@ -106,9 +108,12 @@ Lifecycle: release the `ToneGenerator` in `onCleared()` and after each countdown
 ### New `StartDelayOverlay.kt`
 A full-screen dim scrim (same dim treatment as `StopOverlay`) with two states:
 
-1. **Picker** — a `DurationWheelPicker` bound to `startDelaySec` (mm:ss, minutes start at 0, default
-   0:10, remembered), a **Confirm** button, and a **Cancel** affordance (tap-scrim / back).
-   Confirm persists the chosen duration (`AppPrefs.setStartDelaySec`) and transitions to countdown.
+1. **Picker** — a single-column **seconds** wheel bound to `startDelaySec` (default 10 s,
+   remembered; range e.g. 3–60), a **Confirm** button, and a **Cancel** affordance (tap-scrim /
+   back). Confirm persists the chosen duration (`AppPrefs.setStartDelaySec`) and transitions to
+   countdown. The seconds wheel reuses `DurationWheelPicker`'s drag/selection styling — implement by
+   promoting its private `NumberColumn` to `internal` and wrapping it in a new `SecondsWheelPicker`
+   (single "sec" column), or by adding a seconds-only mode to `DurationWheelPicker`.
 2. **Countdown** — large remaining-seconds display driven by `startCountdownSec`, plus **Cancel**
    (tap/back → `cancelStartCountdown`, overlay dismisses, drill never starts).
 
@@ -143,16 +148,16 @@ Add a new `HelpArticle` (title e.g. **"Delayed start"**) to `helpArticles`, docu
 separate entry:
 - What it is: an optional get-in-position countdown before the robot fires; last 5 seconds beep, a
   "go" tone at zero.
-- QuickPlay: the segmented `Start now` / `Delayed` Play button; the delay picker (default 0:10,
-  remembered).
+- QuickPlay: the segmented `Start now` / `Delayed` Play button; the seconds delay picker (default
+  10 s, remembered).
 - Drill library: **long-press** a drill's Play button to choose `Play now` / `Countdown`; tap
   repeats the last choice.
 - Canceling the countdown before zero (the robot never starts).
 
 ## Edge cases
 
-- **Duration 0:00** → treat as immediate (no overlay/countdown); guard `delaySec >= 1` before
-  starting a lead-in.
+- **Duration 0 s** → treat as immediate (no overlay/countdown); guard `delaySec >= 1` before
+  starting a lead-in. (The picker range starts at 3 s, but the guard keeps the ViewModel safe.)
 - **Cancel during countdown** → job canceled, `startCountdownSec` cleared, tone generator released,
   robot untouched.
 - **Play/Test pressed during a lead-in, or connection lost mid-lead-in** → cancel the pending lead-in
@@ -165,7 +170,8 @@ separate entry:
 
 ## Testing
 
-- Unit-test `AppPrefs` start-delay get/set round-trips and defaults (immediate, 10s).
+- Unit-test `AppPrefs` start-delay get/set round-trips, defaults (immediate, 10 s), and seconds
+  clamping (below/above the 3–60 range).
 - Unit/logic test the lead-in tick sequence where feasible without a device: from N seconds it emits
   N…1 then fires exactly once; a 0/negative duration fires immediately with no ticks; cancel stops
   emissions and never fires.
@@ -181,7 +187,10 @@ separate entry:
 - `viewmodel/RobotViewModel.kt` — `startCountdownSec`, `beginDelayedStart`, `cancelStartCountdown`,
   tone-generator lifecycle.
 - New `ui/components/StartCue.kt` (or inline helper) — `ToneGenerator` wrapper for tick/go tones.
-- New `ui/components/StartDelayOverlay.kt` — picker + countdown overlay.
+- `ui/components/DurationWheelPicker.kt` — promote `NumberColumn` to `internal` (or add a
+  seconds-only mode) so the seconds wheel can reuse it.
+- New `ui/components/StartDelayOverlay.kt` — seconds picker + countdown overlay (with the
+  single-column `SecondsWheelPicker`).
 - New `ui/components/SegmentedPlayButton.kt` — QuickPlay segmented control.
 - `ui/screens/QuickPlayScreen.kt` — use the segmented Play button.
 - `ui/screens/TrainingListScreen.kt` — long-press chooser + mode-aware Play on rows.
