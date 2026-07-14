@@ -32,12 +32,12 @@ class StartCountdownTest {
 
         assertEquals(listOf(10, 9, 8, 7, 6, 5, 4, 3, 2, 1, null), published)
         assertEquals(1, fired)
-        // Beep on each of the last 5 seconds; one distinct "go" tone at zero.
-        assertEquals(5, cue.ticks)
+        // Beep on each of the last 3 seconds; one distinct "go" tone at zero.
+        assertEquals(3, cue.ticks)
         assertEquals(1, cue.gos)
     }
 
-    @Test fun `short delay under five seconds beeps every second`() = runTest {
+    @Test fun `short delay at or under three seconds beeps every second`() = runTest {
         val cue = FakeCue()
         val published = mutableListOf<Int?>()
         var fired = 0

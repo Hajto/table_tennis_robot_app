@@ -698,7 +698,7 @@ val helpArticles: List<HelpArticle> = listOf(
             HelpSection.Paragraph(
                 "Delayed start is an optional get-in-position countdown before the robot fires " +
                 "the first ball, so you have time to walk to the table and get ready. " +
-                "The last 5 seconds beep, and a distinct \"go\" tone plays at zero."
+                "The last 3 seconds beep, and a distinct \"go\" tone plays at zero."
             ),
             HelpSection.Illustration { IllustrationCountdown() },
             HelpSection.Paragraph(

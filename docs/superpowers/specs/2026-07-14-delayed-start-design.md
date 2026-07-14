@@ -11,7 +11,7 @@ position. Users want an optional lead-in countdown before the first ball.
 ## Solution overview
 
 An optional **start delay**: after starting a drill in "countdown" mode, the screen shows a dim
-overlay with a running countdown; the robot fires only when it reaches zero. The last 5 seconds
+overlay with a running countdown; the robot fires only when it reaches zero. The last 3 seconds
 beep, and a distinct "go" tone plays at zero.
 
 The delay is a **global, remembered** setting (not per-drill): a mode (immediate vs. delayed) and a
@@ -55,7 +55,7 @@ This is a pure UI + ViewModel lead-in phase. **No BLE/firmware change** — the 
 
 Goals:
 - Optional lead-in countdown before a drill starts, with a visible timer.
-- Beep on each of the last 5 seconds; distinct "go" tone at zero.
+- Beep on each of the last 3 seconds; distinct "go" tone at zero.
 - Global, remembered mode + duration in whole seconds (default 10 s), consistent across all play
   surfaces.
 - Segmented Play button in QuickPlay; long-press chooser on the compact library rows.
@@ -89,7 +89,7 @@ New state for the lead-in, kept separate from `playCountdownSec`:
 - `beginDelayedStart(delaySec: Int, onFire: () -> Unit)`:
   - Cancels any existing lead-in job.
   - Ticks down once per second from `delaySec`, publishing to `startCountdownSec`.
-  - Plays a short beep on each of the last 5 seconds (`remaining in 1..5`) and a distinct "go" tone
+  - Plays a short beep on each of the last 3 seconds (`remaining in 1..3`) and a distinct "go" tone
     at 0, via a small `StartCue` sound helper wrapping Android `ToneGenerator`
     (`STREAM_MUSIC`; e.g. `TONE_PROP_BEEP` for ticks, `TONE_PROP_BEEP2` / a longer tone for go).
   - On reaching 0: clears `startCountdownSec`, then invokes `onFire`.
@@ -146,7 +146,7 @@ duration stay in sync everywhere.
 
 Add a new `HelpArticle` (title e.g. **"Delayed start"**) to `helpArticles`, documenting it as a
 separate entry:
-- What it is: an optional get-in-position countdown before the robot fires; last 5 seconds beep, a
+- What it is: an optional get-in-position countdown before the robot fires; last 3 seconds beep, a
   "go" tone at zero.
 - QuickPlay: the segmented `Start now` / `Delayed` Play button; the seconds delay picker (default
   10 s, remembered).
@@ -175,7 +175,7 @@ separate entry:
 - Unit/logic test the lead-in tick sequence where feasible without a device: from N seconds it emits
   N…1 then fires exactly once; a 0/negative duration fires immediately with no ticks; cancel stops
   emissions and never fires.
-- Verify the tone helper is invoked for `remaining in 1..5` and once at 0 (via an injectable
+- Verify the tone helper is invoked for `remaining in 1..3` and once at 0 (via an injectable
   cue interface so tests don't need real audio).
 - Manual on-device: countdown reaches zero and the drill starts; last-5s beeps + go tone audible;
   cancel aborts without starting; QuickPlay segmented control and library long-press both drive the

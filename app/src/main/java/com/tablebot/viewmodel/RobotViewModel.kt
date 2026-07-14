@@ -199,7 +199,7 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
     /**
      * Start a get-in-position lead-in of [delaySec] whole seconds, then invoke [onFire] (the
      * existing, unchanged `playBasicTraining` / `playAdvancedTraining` call). Beeps through the
-     * last 5 seconds and plays a distinct "go" tone at zero. Cancels any lead-in already running.
+     * last 3 seconds and plays a distinct "go" tone at zero. Cancels any lead-in already running.
      * A [delaySec] of 0 or less fires immediately with no countdown.
      */
     fun beginDelayedStart(delaySec: Int, onFire: () -> Unit) {

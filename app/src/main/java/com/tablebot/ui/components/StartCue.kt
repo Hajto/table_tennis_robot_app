@@ -12,7 +12,7 @@ import kotlin.math.sin
  * Audio cue for the delayed-start lead-in. Abstracted behind an interface so the countdown logic
  * can be unit-tested without touching real audio hardware.
  *
- *  - [tick] — a short beep, played on each of the last 5 seconds.
+ *  - [tick] — a short beep, played on each of the last 3 seconds.
  *  - [go]   — a distinct "go" tone, played once when the countdown reaches zero.
  *  - [release] — free any underlying resources; safe to call repeatedly.
  */
@@ -98,8 +98,8 @@ class AndroidStartCue : StartCue {
         const val FIFTH_RATIO = 1.5      // perfect fifth (3:2) → go tone ≈ 1320 Hz (E6)
         const val TICK_MS = 150
         const val GO_MS = 450
-        const val FADE_MS = 8
-        const val AMPLITUDE = 0.6
+        const val FADE_MS = 15           // longer fades soften the attack/decay
+        const val AMPLITUDE = 0.35       // gentler than a full-scale beep
     }
 }
 
@@ -107,7 +107,7 @@ class AndroidStartCue : StartCue {
  * Pure lead-in countdown, extracted so it can be unit-tested with virtual time.
  *
  * From [delaySec] it publishes remaining whole seconds `delaySec … 1` via [publish], beeps through
- * [cue] on each of the last 5 seconds, then at zero clears the display (`publish(null)`), plays the
+ * [cue] on each of the last 3 seconds, then at zero clears the display (`publish(null)`), plays the
  * distinct "go" tone, and invokes [onFire] exactly once.
  *
  * A [delaySec] of 0 or less is treated as immediate: [onFire] runs at once with no ticks and no
@@ -125,7 +125,7 @@ suspend fun runStartCountdown(
     }
     for (remaining in delaySec downTo 1) {
         publish(remaining)
-        if (remaining <= 5) cue.tick()
+        if (remaining <= 3) cue.tick()
         delay(1000)
     }
     cue.go()
