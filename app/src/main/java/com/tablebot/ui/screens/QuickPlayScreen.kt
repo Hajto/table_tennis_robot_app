@@ -37,6 +37,8 @@ fun QuickPlayScreen(
     onTestBall: (TestBallRequest) -> Unit,
     onPlayBasic: (BasicTraining) -> Unit,
     onPlayAdvanced: (AdvancedTraining) -> Unit,
+    onPlayBasicDelayed: (BasicTraining) -> Unit,
+    onPlayAdvancedDelayed: (AdvancedTraining) -> Unit,
     onStop: () -> Unit,
     // Connection bar
     connectionState: ConnectionState,
@@ -463,26 +465,28 @@ fun QuickPlayScreen(
                         Text("Test", style = MaterialTheme.typography.titleMedium)
                     }
 
-                    // Play button
+                    // Segmented Play button: Start now / Delayed (remembered mode)
                     val playEnabled = when (mode) {
                         0 -> connected && profileCalibrated && basicState.points.isNotEmpty() && !isPlaying
                         1 -> connected && profileCalibrated && advancedState.steps.isNotEmpty() && !isPlaying
                         else -> false
                     }
-                    Button(
-                        onClick = {
+                    com.tablebot.ui.components.SegmentedPlayButton(
+                        enabled = playEnabled,
+                        onPlayNow = {
                             when (mode) {
                                 0 -> onPlayBasic(basicState.toTraining())
                                 1 -> onPlayAdvanced(advancedState.toTraining())
                             }
                         },
-                        enabled = playEnabled,
-                        modifier = Modifier.weight(1f).height(48.dp),
-                    ) {
-                        Icon(Icons.Default.PlayArrow, null, Modifier.size(20.dp))
-                        Spacer(Modifier.width(6.dp))
-                        Text("Play", style = MaterialTheme.typography.titleMedium)
-                    }
+                        onPlayDelayed = {
+                            when (mode) {
+                                0 -> onPlayBasicDelayed(basicState.toTraining())
+                                1 -> onPlayAdvancedDelayed(advancedState.toTraining())
+                            }
+                        },
+                        modifier = Modifier.weight(1f),
+                    )
                 }
             }
         }

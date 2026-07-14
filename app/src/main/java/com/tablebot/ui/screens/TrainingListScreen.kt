@@ -1,5 +1,7 @@
 package com.tablebot.ui.screens
 
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
@@ -31,6 +33,7 @@ fun BasicTrainingList(
     onEdit: (BasicTraining) -> Unit,
     onDelete: (BasicTraining) -> Unit,
     onToggleFavourite: (BasicTraining) -> Unit,
+    onPlayCountdown: (BasicTraining) -> Unit = onPlay,
 ) {
     if (trainings.isEmpty()) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -53,6 +56,7 @@ fun BasicTrainingList(
                 connected = connected,
                 isPlaying = isPlaying,
                 onPlay = onPlay,
+                onPlayCountdown = onPlayCountdown,
                 onUpdate = onUpdate,
                 onStop = onStop,
                 onEdit = { onEdit(training) },
@@ -74,6 +78,7 @@ fun AdvancedTrainingList(
     onEdit: (AdvancedTraining) -> Unit,
     onDelete: (AdvancedTraining) -> Unit,
     onToggleFavourite: (AdvancedTraining) -> Unit,
+    onPlayCountdown: (AdvancedTraining) -> Unit = onPlay,
 ) {
     if (trainings.isEmpty()) {
         Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -96,6 +101,7 @@ fun AdvancedTrainingList(
                 connected = connected,
                 isPlaying = isPlaying,
                 onPlay = onPlay,
+                onPlayCountdown = onPlayCountdown,
                 onUpdate = onUpdate,
                 onStop = onStop,
                 onEdit = { onEdit(training) },
@@ -113,6 +119,7 @@ private fun BasicTrainingCard(
     connected: Boolean,
     isPlaying: Boolean,
     onPlay: (BasicTraining) -> Unit,
+    onPlayCountdown: (BasicTraining) -> Unit,
     onUpdate: (BasicTraining) -> Unit,
     onStop: () -> Unit,
     onEdit: () -> Unit,
@@ -157,13 +164,10 @@ private fun BasicTrainingCard(
                 }
 
                 if (connected && !isPlaying) {
-                    IconButton(onClick = { onPlay(editT) }) {
-                        Icon(
-                            Icons.Default.PlayArrow,
-                            "Play",
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                    }
+                    RowPlayButton(
+                        onPlayNow = { onPlay(editT) },
+                        onPlayCountdown = { onPlayCountdown(editT) },
+                    )
                 }
             }
 
@@ -261,6 +265,7 @@ private fun AdvancedTrainingCard(
     connected: Boolean,
     isPlaying: Boolean,
     onPlay: (AdvancedTraining) -> Unit,
+    onPlayCountdown: (AdvancedTraining) -> Unit,
     onUpdate: (AdvancedTraining) -> Unit,
     onStop: () -> Unit,
     onEdit: () -> Unit,
@@ -307,13 +312,10 @@ private fun AdvancedTrainingCard(
                 }
 
                 if (connected && !isPlaying) {
-                    IconButton(onClick = { onPlay(editT) }) {
-                        Icon(
-                            Icons.Default.PlayArrow,
-                            "Play",
-                            tint = MaterialTheme.colorScheme.primary,
-                        )
-                    }
+                    RowPlayButton(
+                        onPlayNow = { onPlay(editT) },
+                        onPlayCountdown = { onPlayCountdown(editT) },
+                    )
                 }
             }
 
@@ -395,6 +397,59 @@ private fun AdvancedTrainingCard(
                 TextButton(onClick = { showDeleteDialog = false }) { Text("Cancel") }
             },
         )
+    }
+}
+
+/**
+ * Compact per-row Play button. **Tap** runs the remembered global mode (immediate or countdown);
+ * **long-press** opens a chooser (Play now / Countdown) that both acts and persists the mode. The
+ * icon reflects the current mode: [Icons.Default.PlayArrow] when immediate, a timer when delayed.
+ */
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun RowPlayButton(
+    onPlayNow: () -> Unit,
+    onPlayCountdown: () -> Unit,
+) {
+    val delayed by AppPrefs.startDelayed.collectAsState()
+    var chooserOpen by remember { mutableStateOf(false) }
+    Box {
+        Box(
+            modifier = Modifier
+                .size(48.dp)
+                .combinedClickable(
+                    onClick = { if (delayed) onPlayCountdown() else onPlayNow() },
+                    onLongClick = { chooserOpen = true },
+                ),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                if (delayed) Icons.Default.Timer else Icons.Default.PlayArrow,
+                "Play",
+                tint = MaterialTheme.colorScheme.primary,
+            )
+        }
+        DropdownMenu(
+            expanded = chooserOpen,
+            onDismissRequest = { chooserOpen = false },
+        ) {
+            DropdownMenuItem(
+                text = { Text("Play now") },
+                onClick = {
+                    chooserOpen = false
+                    AppPrefs.setStartDelayed(false)
+                    onPlayNow()
+                },
+            )
+            DropdownMenuItem(
+                text = { Text("Countdown") },
+                onClick = {
+                    chooserOpen = false
+                    AppPrefs.setStartDelayed(true)
+                    onPlayCountdown()
+                },
+            )
+        }
     }
 }
 

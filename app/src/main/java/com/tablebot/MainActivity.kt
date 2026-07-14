@@ -29,6 +29,7 @@ import androidx.navigation.navArgument
 import com.tablebot.ble.ConnectionState
 import com.tablebot.data.AppPrefs
 import com.tablebot.data.TrainingStore
+import com.tablebot.ui.components.StartDelayOverlay
 import com.tablebot.ui.components.StopOverlay
 import com.tablebot.ui.screens.*
 import com.tablebot.ui.theme.TableBotTheme
@@ -53,6 +54,10 @@ class MainActivity : ComponentActivity() {
                     val motorConfig by robotVm.motorConfigFlow.collectAsState()
                     val activeProfile by robotVm.activeProfile.collectAsState()
                     val profileIndex by robotVm.profileIndex.collectAsState()
+
+                    // Pending play call for a delayed start: set when a play surface requests the
+                    // countdown, fired unchanged by the ViewModel once the lead-in reaches zero.
+                    var pendingPlay by remember { mutableStateOf<(() -> Unit)?>(null) }
 
                     NavHost(navController, startDestination = "home") {
                         composable("home") {
@@ -145,6 +150,12 @@ class MainActivity : ComponentActivity() {
                                 },
                                 onPlayBasic = { robotVm.playBasicTraining(it) },
                                 onPlayAdvanced = { robotVm.playAdvancedTraining(it) },
+                                onPlayBasicDelayed = { training ->
+                                    pendingPlay = { robotVm.playBasicTraining(training) }
+                                },
+                                onPlayAdvancedDelayed = { training ->
+                                    pendingPlay = { robotVm.playAdvancedTraining(training) }
+                                },
                                 onStop = { robotVm.stop() },
                                 connectionState = connectionState,
                                 deviceName = robotVm.deviceName.collectAsState().value,
@@ -321,6 +332,26 @@ class MainActivity : ComponentActivity() {
                                 onBack = { navController.popBackStack() },
                             )
                         }
+                    }
+
+                    // Delayed-start overlay — picker then lead-in countdown, before the drill starts
+                    val startCountdownSec by robotVm.startCountdownSec.collectAsState()
+                    val startDelaySec by AppPrefs.startDelaySec.collectAsState()
+                    if (pendingPlay != null || startCountdownSec != null) {
+                        StartDelayOverlay(
+                            countdownSec = startCountdownSec,
+                            initialDelaySec = startDelaySec,
+                            onConfirm = { delaySec ->
+                                AppPrefs.setStartDelaySec(delaySec)
+                                val play = pendingPlay
+                                pendingPlay = null
+                                robotVm.beginDelayedStart(delaySec) { play?.invoke() }
+                            },
+                            onCancel = {
+                                pendingPlay = null
+                                robotVm.cancelStartCountdown()
+                            },
+                        )
                     }
 
                     // Global stop overlay — visible on all screens when playing

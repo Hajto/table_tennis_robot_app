@@ -7,6 +7,9 @@ import com.tablebot.ble.ConnectionState
 import com.tablebot.ble.RobotManager
 import com.tablebot.data.*
 import com.tablebot.data.HistoryStore
+import com.tablebot.ui.components.AndroidStartCue
+import com.tablebot.ui.components.StartCue
+import com.tablebot.ui.components.runStartCountdown
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -55,6 +58,16 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
     private val _playCountdownSec = MutableStateFlow<Int?>(null)
     val playCountdownSec: StateFlow<Int?> = _playCountdownSec
     private var countdownJob: Job? = null
+
+    // ── Delayed start (get-in-position lead-in) ──────────────────────────
+    // Kept fully separate from the in-play `playCountdownSec` above: this is a pre-start phase
+    // that only gates *when* an unchanged play call happens; the robot is untouched until fire.
+    private val _startCountdownSec = MutableStateFlow<Int?>(null)
+    val startCountdownSec: StateFlow<Int?> = _startCountdownSec
+    private var startCountdownJob: Job? = null
+    private var startCue: StartCue? = null
+    /** Overridable so unit tests can supply a fake cue instead of real audio. */
+    var startCueFactory: () -> StartCue = { AndroidStartCue() }
 
     private val _profileError = MutableSharedFlow<String>(extraBufferCapacity = 1)
     val profileError: SharedFlow<String> = _profileError.asSharedFlow()
@@ -183,6 +196,46 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
         _playCountdownSec.value = null
     }
 
+    /**
+     * Start a get-in-position lead-in of [delaySec] whole seconds, then invoke [onFire] (the
+     * existing, unchanged `playBasicTraining` / `playAdvancedTraining` call). Beeps through the
+     * last 5 seconds and plays a distinct "go" tone at zero. Cancels any lead-in already running.
+     * A [delaySec] of 0 or less fires immediately with no countdown.
+     */
+    fun beginDelayedStart(delaySec: Int, onFire: () -> Unit) {
+        startCountdownJob?.cancel()
+        startCue?.release()
+        startCue = null
+        if (delaySec < 1) {
+            _startCountdownSec.value = null
+            onFire()
+            return
+        }
+        val cue = startCueFactory().also { startCue = it }
+        startCountdownJob = viewModelScope.launch {
+            try {
+                runStartCountdown(
+                    delaySec = delaySec,
+                    cue = cue,
+                    publish = { _startCountdownSec.value = it },
+                    onFire = onFire,
+                )
+            } finally {
+                cue.release()
+                if (startCue === cue) startCue = null
+            }
+        }
+    }
+
+    /** Cancel a running lead-in. The robot is never touched (nothing was sent yet). */
+    fun cancelStartCountdown() {
+        startCountdownJob?.cancel()
+        startCountdownJob = null
+        _startCountdownSec.value = null
+        startCue?.release()
+        startCue = null
+    }
+
     fun sendTestBall(params: MotorParams, ballTime: Int = 15) {
         viewModelScope.launch {
             val payload = RobotProtocol.encodeSingleBall(params, ballTime)
@@ -279,6 +332,9 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     override fun onCleared() {
+        startCountdownJob?.cancel()
+        startCue?.release()
+        startCue = null
         robotManager.destroy()
     }
 }
