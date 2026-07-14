@@ -11,6 +11,7 @@ object AppPrefs {
     private const val KEY_DEBUG_MODE = "debug_mode"
     private const val KEY_INFER_ROW_CALIBRATION = "infer_row_calibration"
     private const val KEY_HAS_SEEN_ONBOARDING = "has_seen_onboarding"
+    private const val KEY_START_SOUND_ENABLED = "start_sound_enabled"
     private const val KEY_BALL_TRAY_CAPACITY = "ball_tray_capacity"
     private const val KEY_START_DELAYED = "start_delayed"
     private const val KEY_START_DELAY_SEC = "start_delay_sec"
@@ -52,6 +53,9 @@ object AppPrefs {
     private val _startDelaySec = MutableStateFlow(DEFAULT_START_DELAY_SEC)
     val startDelaySec: StateFlow<Int> = _startDelaySec
 
+    private val _startSoundEnabled = MutableStateFlow(true)
+    val startSoundEnabled: StateFlow<Boolean> = _startSoundEnabled
+
     fun init(context: Context) {
         prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         _showFieldNumbers.value = prefs.getBoolean(KEY_SHOW_FIELD_NUMBERS, true)
@@ -63,6 +67,7 @@ object AppPrefs {
         _startDelaySec.value = clampStartDelaySec(
             prefs.getInt(KEY_START_DELAY_SEC, DEFAULT_START_DELAY_SEC)
         )
+        _startSoundEnabled.value = prefs.getBoolean(KEY_START_SOUND_ENABLED, true)
     }
 
     fun setShowFieldNumbers(show: Boolean) {
@@ -99,6 +104,11 @@ object AppPrefs {
         val clamped = clampStartDelaySec(sec)
         _startDelaySec.value = clamped
         prefs.edit().putInt(KEY_START_DELAY_SEC, clamped).apply()
+    }
+
+    fun setStartSoundEnabled(enabled: Boolean) {
+        _startSoundEnabled.value = enabled
+        prefs.edit().putBoolean(KEY_START_SOUND_ENABLED, enabled).apply()
     }
 
     fun trainingMigrationVersion(): Int =

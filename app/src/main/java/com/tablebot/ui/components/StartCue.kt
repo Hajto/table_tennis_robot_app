@@ -22,6 +22,13 @@ interface StartCue {
     fun release()
 }
 
+/** Silent [StartCue] used when the delayed-start sound is disabled in Settings. */
+object NoOpStartCue : StartCue {
+    override fun tick() = Unit
+    override fun go() = Unit
+    override fun release() = Unit
+}
+
 /**
  * Real [StartCue] that synthesises its own sine tones with [AudioTrack]. Unlike `ToneGenerator`
  * (fixed preset pitches) this gives exact frequency control, so the "go" tone can sit a perfect

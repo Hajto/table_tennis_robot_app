@@ -8,6 +8,7 @@ import com.tablebot.ble.RobotManager
 import com.tablebot.data.*
 import com.tablebot.data.HistoryStore
 import com.tablebot.ui.components.AndroidStartCue
+import com.tablebot.ui.components.NoOpStartCue
 import com.tablebot.ui.components.StartCue
 import com.tablebot.ui.components.runStartCountdown
 import kotlinx.coroutines.Dispatchers
@@ -211,7 +212,9 @@ class RobotViewModel(app: Application) : AndroidViewModel(app) {
             onFire()
             return
         }
-        val cue = startCueFactory().also { startCue = it }
+        // Respect the Settings toggle: a silent cue still shows the countdown, just no beeps.
+        val cue = (if (AppPrefs.startSoundEnabled.value) startCueFactory() else NoOpStartCue)
+            .also { startCue = it }
         startCountdownJob = viewModelScope.launch {
             try {
                 runStartCountdown(

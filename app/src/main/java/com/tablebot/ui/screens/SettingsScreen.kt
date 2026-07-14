@@ -19,6 +19,7 @@ fun SettingsScreen(onBack: () -> Unit) {
     val showFieldNumbers by AppPrefs.showFieldNumbers.collectAsState()
     val debugMode by AppPrefs.debugMode.collectAsState()
     val inferRowCalibration by AppPrefs.inferRowCalibration.collectAsState()
+    val startSoundEnabled by AppPrefs.startSoundEnabled.collectAsState()
     val ballTrayCapacity by AppPrefs.ballTrayCapacity.collectAsState()
 
     Scaffold(
@@ -63,6 +64,15 @@ fun SettingsScreen(onBack: () -> Unit) {
                 subtitle = "Experimental: adds a button on the calibration screen to fill a row's middle cells by interpolating its two calibrated ends",
                 checked = inferRowCalibration,
                 onCheckedChange = { AppPrefs.setInferRowCalibration(it) },
+            )
+
+            HorizontalDivider()
+
+            SettingsToggle(
+                title = "Delayed-start sound",
+                subtitle = "Beep during the get-in-position countdown, with a higher \"go\" tone at zero",
+                checked = startSoundEnabled,
+                onCheckedChange = { AppPrefs.setStartSoundEnabled(it) },
             )
 
             HorizontalDivider()

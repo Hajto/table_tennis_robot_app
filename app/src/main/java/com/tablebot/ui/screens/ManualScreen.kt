@@ -128,6 +128,32 @@ private fun MenuRow(icon: ImageVector, label: String, selected: Boolean) {
     }
 }
 
+/** Static preview of the Settings toggle that turns the delayed-start sound off. */
+@Composable
+private fun IllustrationSoundToggle() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f),
+        ),
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text("Delayed-start sound", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    "Beep during the get-in-position countdown, with a higher \"go\" tone at zero",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Switch(checked = true, onCheckedChange = {})
+        }
+    }
+}
+
 /** Static preview of the get-in-position countdown overlay. */
 @Composable
 private fun IllustrationCountdown() {
@@ -725,6 +751,12 @@ val helpArticles: List<HelpArticle> = listOf(
                 "When Delayed is selected, tapping Play opens a seconds picker (default 10 " +
                 "seconds); the duration is remembered for next time."
             ),
+            HelpSection.Heading("Sound"),
+            HelpSection.Paragraph(
+                "The countdown beeps through the last 3 seconds, with a higher \"go\" tone at " +
+                "zero. Turn it off with the \"Delayed-start sound\" switch in Settings."
+            ),
+            HelpSection.Illustration { IllustrationSoundToggle() },
             HelpSection.Heading("Canceling"),
             HelpSection.Paragraph(
                 "You can cancel the countdown any time before it reaches zero — tap the " +
